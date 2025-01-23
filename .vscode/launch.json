@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug projekt_salon_fryzjerski",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/projekt_salon_fryzjerski",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb",
+            "preLaunchTask": "C/C++: gcc build active file",
+            "serverLaunchTimeout": 10000,
+            "filterStdout": true,
+            "filterStderr": true,
+            "visualizerFile": "${workspaceFolder}/.vscode/visualizers/gdb-visualizer.xml"
+        }
+    ]
+}
