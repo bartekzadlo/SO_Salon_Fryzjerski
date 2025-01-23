@@ -54,6 +54,11 @@ bool wydaj_reszte(Kasa *kasa, int kwota) {
 }
 
 void dodaj_do_kasy(Kasa *kasa, int wartosc, int ilosc) {
+    if (wartosc != 10 && wartosc != 20 && wartosc != 50) {
+        printf("Nieprawidłowa wartość banknotu: %d\n", wartosc);
+        return;
+    }
+
     if (wartosc == 10) {
         kasa->banknot_10 += ilosc;
     } else if (wartosc == 20) {

@@ -7,7 +7,6 @@ typedef struct {
     int banknot_50; 
 } Kasa;
 
-
 void inicjalizuj_kase(Kasa *kasa);
 bool czy_ma_wystarczajaca_reszte(Kasa *kasa, int kwota);
 bool wydaj_reszte(Kasa *kasa, int kwota);

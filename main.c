@@ -4,20 +4,11 @@
 #include "klient.h"
 
 int main() {
-    Kasa kasa;
-    inicjalizuj_kase(&kasa);
+    srand(time(NULL));
 
-    dodaj_do_kasy(&kasa, 50, 3); 
-    dodaj_do_kasy(&kasa, 20, 2); 
-    dodaj_do_kasy(&kasa, 10, 0); 
+    Klient klient = {1, 0, 0, 0};
+    Salon salon = {5, true};
 
-    printf("Czy można wydać 60 zł: %s\n", czy_ma_wystarczajaca_reszte(&kasa, 60) ? "Tak" : "Nie");
-
-    if (wydaj_reszte(&kasa, 60)) {
-        printf("Reszta wydana.\n");
-    } else {
-        printf("Nie można wydać reszty.\n");
-    }
-
+    cykliczna_obsluga_klienta(&klient, &salon, 30);
     return 0;
 }
