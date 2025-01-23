@@ -14,5 +14,6 @@ typedef struct
 void inicjalizuj_kase(Kasa *kasa);
 void zamknij_kase(Kasa *kasa);
 void dodaj_banknoty(Kasa *kasa, int nominal, int ilosc);
+void odejmij_banknoty(Kasa *kasa, int nominal, int ilosc);
 
 #endif
