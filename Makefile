@@ -1,17 +1,14 @@
 CC = gcc
-CFLAGS = -I./salon -I./fryzjer -I./klient -I./komunikaty -I./kierownik
+CFLAGS = -pthread -Wall
+OBJ = kasa.o kolejka_klientow.o fotele.o fryzjer.o main.o
 
-SRC = main.c salon/salon.c fryzjer/fryzjer.c klient/klient.c komunikaty/komunikaty.c kierownik/kierownik.c
+all: main
 
-OBJ = $(SRC:.c=.o)
-
-EXEC = projekt_fryzjer
-
-$(EXEC): $(OBJ)
-	$(CC) $(OBJ) -o $(EXEC)
+main: $(OBJ)
+	$(CC) $(OBJ) -o main
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -f $(OBJ) $(EXEC)
+	rm -f *.o main

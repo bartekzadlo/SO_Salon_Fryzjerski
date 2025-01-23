@@ -3,6 +3,7 @@
     "files.associations": {
         "stdio.h": "c",
         "stdbool.h": "c",
-        "fryzjer.h": "c"
+        "fryzjer.h": "c",
+        "semaphore.h": "c"
     }
 }
