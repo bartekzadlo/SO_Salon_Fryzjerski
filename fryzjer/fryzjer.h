@@ -1,7 +1,15 @@
 #define FRYZJER_H
+#include <stdbool.h>
 
-void przyjmij_zaplate(int klient_id, int kwota, int zaplacona_kwota); //przenioslem w to miejsce obliczenie reszty
-//ma to na celu zapobiec problem gdy ostatni klient bedzie tym, ktoremu nie jestesmy w stanie wydac reszty
-//samo wydanie reszty jest wykonywane po zakonczeniu strzyzenia, ale wczesniej rezerwujemy kwote
+typedef struct {
+    int banknot_10;
+    int banknot_20; 
+    int banknot_50; 
+} Kasa;
 
-void wydaj_reszte(int klient_id);
+
+void inicjalizuj_kase(Kasa *kasa);
+bool czy_ma_wystarczajaca_reszte(Kasa *kasa, int kwota);
+bool wydaj_reszte(Kasa *kasa, int kwota);
+void dodaj_do_kasy(Kasa *kasa, int wartosc, int ilosc);
+void obsluz_klienta(Kasa *kasa, int zaplata, int koszt_uslugi);

@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS = -I./kasa -I./klient -I./fryzjer -I./komunikaty -I./kierownik
+CFLAGS = -I./fryzjer -I./klient -I./komunikaty -I./kierownik
 
-SRC = main.c kasa/kasa.c klient/klient.c fryzjer/fryzjer.c komunikaty/komunikaty.c kierownik/kierownik.c
+SRC = main.c fryzjer/fryzjer.c klient/klient.c komunikaty/komunikaty.c kierownik/kierownik.c
 
 OBJ = $(SRC:.c=.o)
 

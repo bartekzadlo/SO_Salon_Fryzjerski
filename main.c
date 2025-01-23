@@ -4,24 +4,20 @@
 #include "klient.h"
 
 int main() {
+    Kasa kasa;
+    inicjalizuj_kase(&kasa);
 
-    int klient1_id = 1;
-    int klient2_id = 2;
+    dodaj_do_kasy(&kasa, 50, 3); 
+    dodaj_do_kasy(&kasa, 20, 2); 
+    dodaj_do_kasy(&kasa, 10, 0); 
 
-    przyjdz_do_salonu(klient1_id);
-    przyjdz_do_salonu(klient2_id);
+    printf("Czy można wydać 60 zł: %s\n", czy_ma_wystarczajaca_reszte(&kasa, 60) ? "Tak" : "Nie");
 
-    zaplac_za_usluge(klient1_id, 30);
-    zaplac_za_usluge(klient2_id, 50);
-
-    przyjmij_zaplate(klient1_id, 30, 40);
-    przyjmij_zaplate(klient2_id, 50, 50);
-
-    wydaj_reszte(klient1_id);
-    wydaj_reszte(klient2_id);
-
-    wyslij_sygnal_1(1);
-    wyslij_sygnal_2();
+    if (wydaj_reszte(&kasa, 60)) {
+        printf("Reszta wydana.\n");
+    } else {
+        printf("Nie można wydać reszty.\n");
+    }
 
     return 0;
 }
