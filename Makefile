@@ -1,15 +1,17 @@
-CC=gcc
-CFLAGS=-Wall -pthread
+CC = gcc
+CFLAGS = -I./kasa -I./klient -I./fryzjer -I./komunikaty -I./kierownik
 
-SRC=$(wildcard *.c)
-OBJ=$(SRC:.c=.o)
-EXEC=projekt_salon_fryzjerski
+SRC = main.c kasa/kasa.c klient/klient.c fryzjer/fryzjer.c komunikaty/komunikaty.c kierownik/kierownik.c
+
+OBJ = $(SRC:.c=.o)
+
+EXEC = projekt_fryzjer
 
 $(EXEC): $(OBJ)
 	$(CC) $(OBJ) -o $(EXEC)
 
 %.o: %.c
-	$(CC) -c $<
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(OBJ) $(EXEC)
