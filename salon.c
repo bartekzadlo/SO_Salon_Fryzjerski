@@ -11,11 +11,13 @@ void inicjalizuj_kase(Kasa *kasa)
     kasa->banknot_20 = 0;
     kasa->banknot_50 = 0;
     pthread_mutex_init(&kasa->mutex, NULL);
+    pthread_cond_init(&kasa->uzupelnienie, NULL); // Inicjalizacja warunku
 }
 
 void zamknij_kase(Kasa *kasa)
 {
     pthread_mutex_destroy(&kasa->mutex);
+    pthread_cond_destroy(&kasa->uzupelnienie); // Niszczenie warunku
 }
 
 void dodaj_banknoty(Kasa *kasa, int nominal, int ilosc)
@@ -89,6 +91,9 @@ void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli)
     // Inicjalizacja fotela (semafor dla wolnych foteli)
     sem_init(&salon->fotel.wolne_fotele, 0, liczba_foteli);
     pthread_mutex_init(&salon->fotel.mutex, NULL);
+
+    // Inicjalizacja kasy
+    inicjalizuj_kase(&salon->kasa); // Inicjalizowanie kasy
 }
 
 void zajmij_fotel(Fotel *fotel)

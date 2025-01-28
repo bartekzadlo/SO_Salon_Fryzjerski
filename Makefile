@@ -1,13 +1,10 @@
 CC = gcc
 CFLAGS = -Wall -pthread
 
-# Lista plików źródłowych i obiektowych
-SRC = $(wildcard *.c)
+# Zaktualizowana lista źródeł - nie ma już folderu 'kasa'
+SRC = $(wildcard *.c) 
 OBJ = $(SRC:.c=.o)
 EXEC = projekt_salon_fryzjerski
-
-# Domyślna reguła
-all: $(EXEC)
 
 $(EXEC): $(OBJ)
 	$(CC) $(OBJ) -o $(EXEC)
@@ -16,4 +13,4 @@ $(EXEC): $(OBJ)
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -f *.o $(EXEC)
+	rm -f $(OBJ) $(EXEC)

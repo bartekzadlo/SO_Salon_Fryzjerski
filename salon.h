@@ -10,6 +10,15 @@ typedef struct
     pthread_mutex_t mutex; // Mutex do synchronizacji dostępu do fotela
 } Fotel;
 
+typedef struct
+{
+    int banknot_10;
+    int banknot_20;
+    int banknot_50;
+    pthread_mutex_t mutex;       // Mutex do synchronizacji dostępu do kasy
+    pthread_cond_t uzupelnienie; // Warunek dla uzupełnienia kasy
+} Kasa;
+
 // Struktura Salon
 typedef struct
 {
@@ -17,16 +26,8 @@ typedef struct
     pthread_mutex_t mutex_poczekalnia; // Mutex do synchronizacji dostępu do poczekalni
     int klienci_w_poczekalni;          // Liczba klientów w poczekalni
     Fotel fotel;                       // Struktura fotela
+    Kasa kasa;
 } Salon;
-
-// Struktura Kasa (przeniesiona z kasa.c)
-typedef struct
-{
-    int banknot_10;
-    int banknot_20;
-    int banknot_50;
-    pthread_mutex_t mutex; // Mutex do synchronizacji dostępu do kasy
-} Kasa;
 
 // Funkcje operujące na salonie
 void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli);
