@@ -2,7 +2,6 @@
 #define SALON_H
 #include <semaphore.h>
 #include <pthread.h>
-#include "klient.h"
 
 // Struktura Fotel
 typedef struct
