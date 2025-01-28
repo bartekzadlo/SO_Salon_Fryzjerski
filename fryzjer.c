@@ -27,7 +27,9 @@ void *fryzjer_praca(void *arg)
             pthread_mutex_lock(&klient->mutex);              // Zamek dla klienta
             pthread_cond_signal(&klient->czekaj_na_zaplate); // Wysłanie sygnału
             pthread_mutex_unlock(&klient->mutex);
-        }
+            dodaj_banknoty_do_kasy(salon);
+            printf("Fryzjer wykonuje obsługę");
+                }
         pthread_mutex_unlock(&salon->mutex_poczekalnia); // Zwolnienie mutexa
 
         zajmij_fotel(&salon->fotel); // Używamy semafora wolnych foteli

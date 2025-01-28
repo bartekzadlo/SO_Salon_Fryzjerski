@@ -49,45 +49,57 @@ void dodaj_banknoty_do_kasy(Salon *salon)
     pthread_mutex_unlock(&salon->mutex_kasa); // Zwolnienie mutexu kasy
 }
 
-void odejmij_banknoty(Kasa *kasa, int nominal, int ilosc)
+void wydaj_reszte(Kasa *kasa, int reszta)
 {
-    pthread_mutex_lock(&kasa->mutex_kasa);
+    pthread_mutex_lock(&kasa->mutex_kasa); // Blokowanie mutexu na kasie
 
-    if (nominal == 10)
+    // Zmienna przechowująca liczbę wydanych banknotów
+    int wydane_10 = 0, wydane_20 = 0, wydane_50 = 0;
+
+    // Próba wydania reszty
+    while (reszta > 0)
     {
-        if (kasa->banknot_10 >= ilosc)
+        // Sprawdzamy, czy możemy wydać 50z
+        if (reszta >= 50 && kasa->banknot_50 > 0)
         {
-            kasa->banknot_10 -= ilosc;
+            kasa->banknot_50--;
+            reszta -= 50;
+            wydane_50++;
+            printf("Wydano banknot 50z. Pozostała reszta: %dz.\n", reszta);
+        }
+        // Sprawdzamy, czy możemy wydać 20z
+        else if (reszta >= 20 && kasa->banknot_20 > 0)
+        {
+            kasa->banknot_20--;
+            reszta -= 20;
+            wydane_20++;
+            printf("Wydano banknot 20z. Pozostała reszta: %dz.\n", reszta);
+        }
+        // Sprawdzamy, czy możemy wydać 10z
+        else if (reszta >= 10 && kasa->banknot_10 > 0)
+        {
+            kasa->banknot_10--;
+            reszta -= 10;
+            wydane_10++;
+            printf("Wydano banknot 10z. Pozostała reszta: %dz.\n", reszta);
         }
         else
         {
-            printf("Brak wystarczającej ilości banknotów 10z\n");
-        }
-    }
-    else if (nominal == 20)
-    {
-        if (kasa->banknot_20 >= ilosc)
-        {
-            kasa->banknot_20 -= ilosc;
-        }
-        else
-        {
-            printf("Brak wystarczającej ilości banknotów 20z\n");
-        }
-    }
-    else if (nominal == 50)
-    {
-        if (kasa->banknot_50 >= ilosc)
-        {
-            kasa->banknot_50 -= ilosc;
-        }
-        else
-        {
-            printf("Brak wystarczającej ilości banknotów 50z\n");
+            // Jeśli brak banknotów, czekamy na uzupełnienie kasy
+            printf("Brak wystarczających banknotów do wydania reszty. Czekam na uzupełnienie.\n");
+            pthread_cond_wait(&kasa->uzupelnienie, &kasa->mutex_kasa); // Czekamy na sygnał
         }
     }
 
-    pthread_mutex_unlock(&kasa->mutex_kasa);
+    // Zapamiętanie liczby wydanych banknotów
+    kasa->wydane_10 = wydane_10;
+    kasa->wydane_20 = wydane_20;
+    kasa->wydane_50 = wydane_50;
+
+    pthread_mutex_unlock(&kasa->mutex_kasa); // Zwolnienie mutexu
+
+    // Wysyłamy sygnał o wydaniu reszty
+    pthread_cond_signal(&kasa->uzupelnienie);
 }
 
 void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli)

@@ -16,8 +16,12 @@ typedef struct
     int banknot_10;
     int banknot_20;
     int banknot_50;
+    int wydane_10;
+    int wydane_20;
+    int wydane_50;
     pthread_mutex_t mutex_kasa;  // Mutex do synchronizacji dostępu do kasy
     pthread_cond_t uzupelnienie; // Warunek dla uzupełnienia kasy
+    pthread_cond_t wydano_reszte;
 } Kasa;
 
 // Struktura Salon
@@ -46,6 +50,6 @@ void zamknij_salon(Salon *salon);
 void inicjalizuj_kase(Kasa *kasa);
 void zamknij_kase(Kasa *kasa);
 void dodaj_banknoty(Kasa *kasa, int nominal, int ilosc);
-void odejmij_banknoty(Kasa *kasa, int nominal, int ilosc);
+void wydaj_reszte(Kasa *kasa, int reszta);
 
 #endif // SALON_H
