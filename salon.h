@@ -26,8 +26,13 @@ typedef struct
     sem_t poczekalnia;                 // Semafor dla poczekalni
     pthread_mutex_t mutex_poczekalnia; // Mutex do synchronizacji dostępu do poczekalni
     int klienci_w_poczekalni;          // Liczba klientów w poczekalni
-    Fotel fotel;                       // Fotel z semaforem i mutexem
-    Kasa kasa;                         // Kasa z banknotami i mutexem
+    int max_klientow;
+    Fotel fotel; // Fotel z semaforem i mutexem
+    Kasa kasa;   // Kasa z banknotami i mutexem
+    int zaplacone_10;
+    int zaplacone_20;
+    int zaplacone_50;
+    int zaplacona_kwota;
 } Salon;
 
 // Funkcje operujące na salonie

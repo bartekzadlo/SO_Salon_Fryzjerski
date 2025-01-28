@@ -82,8 +82,9 @@ void odejmij_banknoty(Kasa *kasa, int nominal, int ilosc)
 
 void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli)
 {
-    sem_init(&salon->poczekalnia, 0, max_klientow);      // Inicjalizowanie semafora dla poczekalni
-    pthread_mutex_init(&salon->mutex_poczekalnia, NULL); // Inicjalizowanie mutexu dla poczekalni
+    salon->max_klientow = max_klientow;                  // Przypisanie wartości max_klientow
+    sem_init(&salon->poczekalnia, 0, max_klientow);      // Inicjalizowanie semafora
+    pthread_mutex_init(&salon->mutex_poczekalnia, NULL); // Mutex dla poczekalni
     salon->klienci_w_poczekalni = 0;
 
     // Inicjalizacja fotela

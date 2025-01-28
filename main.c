@@ -1,14 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include "salon.h"
 #include "klient.h"
+#include "fryzjer.h"
 
 int main()
 {
-    int Tp, Tk;              // Godziny otwarcia i zamknięcia salonu
-    int liczba_fryzjerow;    // Liczba fryzjerów w salonie
-    int wielkosc_poczekalni; // Wielkość poczekalni (maksymalna liczba klientów)
-    int liczba_klientow;     // Liczba istniejących klientów
+    int Tp, Tk;                  // Godziny otwarcia i zamknięcia salonu
+    int liczba_fryzjerow = 1;    // Liczba fryzjerów w salonie
+    int wielkosc_poczekalni = 1; // Wielkość poczekalni
+    int liczba_klientow = 2;     // Liczba istniejących klientów
 
     // Prośba o podanie godzin otwarcia i zamknięcia salonu
     printf("Podaj godzinę otwarcia salonu (Tp): ");
@@ -16,28 +18,33 @@ int main()
     printf("Podaj godzinę zamknięcia salonu (Tk): ");
     scanf("%d", &Tk);
 
-    // Prośba o liczbę fryzjerów
-    printf("Podaj liczbę fryzjerów w salonie: ");
-    scanf("%d", &liczba_fryzjerow);
+    // Tworzymy salon i inicjalizujemy go
+    Salon salon;
+    inicjalizuj_salon(&salon, wielkosc_poczekalni, 3); // Zakładamy 1 fotel
 
-    // Prośba o wielkość poczekalni
-    printf("Podaj maksymalną liczbę klientów w poczekalni: ");
-    scanf("%d", &wielkosc_poczekalni);
-
-    // Prośba o liczbę istniejących klientów
-    printf("Podaj liczbę istniejących klientów: ");
-    scanf("%d", &liczba_klientow);
-
-    printf("\nSalon działa od %d:00 do %d:00.\n", Tp, Tk);
-    printf("Liczba fryzjerów: %d\n", liczba_fryzjerow);
-    printf("Maksymalna liczba klientów w poczekalni: %d\n", wielkosc_poczekalni);
-    printf("Istniejący klienci: %d\n", liczba_klientow);
-
-    // Iteracja po godzinach, od Tp do Tk
-    for (int godzina = Tp; godzina < Tk; godzina++)
+    // Tworzymy fryzjerów
+    Fryzjer fryzjerowie[liczba_fryzjerow];
+    for (int i = 0; i < liczba_fryzjerow; i++)
     {
-        printf("Godzina: %d:00\n", godzina);
+        inicjalizuj_fryzjera(&fryzjerowie[i], &salon, i + 1);
     }
 
+    // Tworzymy klientów
+    Klient klienci[liczba_klientow];
+    for (int i = 0; i < liczba_klientow; i++)
+    {
+        inicjalizuj_portfel(&klienci[i]);
+        pthread_t klient_watek;
+        pthread_create(&klient_watek, NULL, (void *)klient_przychodzi_do_salon, &klienci[i]);
+    }
+
+    // Kończenie pracy fryzjerów
+    for (int i = 0; i < liczba_fryzjerow; i++)
+    {
+        zakoncz_fryzjera(&fryzjerowie[i]);
+    }
+
+    // Zamykanie zasobów
+    zamknij_salon(&salon);
     return 0;
 }

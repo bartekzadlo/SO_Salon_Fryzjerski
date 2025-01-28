@@ -21,14 +21,12 @@ void *fryzjer_praca(void *arg)
         {
             salon->klienci_w_poczekalni--; // Zmniejszenie liczby klientów
             printf("Fryzjer %d pobiera klienta z poczekalni.\n", fryzjer->id);
+            printf("W poczekalni pozostało %d wolnych miejsc.\n", salon->max_klientow - salon->klienci_w_poczekalni);
         }
         pthread_mutex_unlock(&salon->mutex_poczekalnia); // Zwolnienie mutexa
 
         zajmij_fotel(&salon->fotel); // Używamy semafora wolnych foteli
         printf("Fryzjer %d obsługuje klienta.\n", fryzjer->id);
-
-        int cena = (rand() % 10 + 1) * 10; // Cena w wielokrotności 10
-        printf("Fryzjer %d: Cena za usługę: %d zł.\n", fryzjer->id, cena);
 
         pthread_mutex_lock(&salon->kasa.mutex_kasa);
         while (1)
