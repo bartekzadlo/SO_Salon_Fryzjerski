@@ -19,24 +19,34 @@ void zamknij_kase(Kasa *kasa)
     pthread_cond_destroy(&kasa->uzupelnienie); // Niszczenie warunku
 }
 
-void dodaj_banknoty(Kasa *kasa, int nominal, int ilosc)
+void dodaj_banknoty_do_kasy(Salon *salon)
 {
-    pthread_mutex_lock(&kasa->mutex_kasa);
+    pthread_mutex_lock(&salon->mutex_kasa); // Blokowanie mutexu kasy
 
-    if (nominal == 10)
+    // Oczekiwanie na sygnał o zapłacie
+    pthread_cond_wait(&salon->kasa.uzupelnienie, &salon->mutex_kasa);
+
+    int zaplacona_kwota = salon->zaplacona_kwota;
+    int reszta = zaplacona_kwota - salon->zaplacona_kwota; // Obliczanie reszty
+
+    // Dodawanie banknotów do kasy
+    if (salon->zaplacone_50 > 0)
     {
-        kasa->banknot_10 += ilosc;
+        dodaj_banknoty(&salon->kasa, 50, salon->zaplacone_50);
     }
-    else if (nominal == 20)
+    if (salon->zaplacone_20 > 0)
     {
-        kasa->banknot_20 += ilosc;
+        dodaj_banknoty(&salon->kasa, 20, salon->zaplacone_20);
     }
-    else if (nominal == 50)
+    if (salon->zaplacone_10 > 0)
     {
-        kasa->banknot_50 += ilosc;
+        dodaj_banknoty(&salon->kasa, 10, salon->zaplacone_10);
     }
 
-    pthread_mutex_unlock(&kasa->mutex_kasa);
+    // Zapamiętanie reszty
+    salon->reszta = reszta; // Przechowywanie reszty do późniejszego wydania
+
+    pthread_mutex_unlock(&salon->mutex_kasa); // Zwolnienie mutexu kasy
 }
 
 void odejmij_banknoty(Kasa *kasa, int nominal, int ilosc)

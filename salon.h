@@ -33,6 +33,7 @@ typedef struct
     int zaplacone_20;
     int zaplacone_50;
     int zaplacona_kwota;
+    int reszta;
 } Salon;
 
 // Funkcje operujące na salonie

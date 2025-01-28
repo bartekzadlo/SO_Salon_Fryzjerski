@@ -5,11 +5,13 @@
 #include "klient.h"
 #include "salon.h"
 
-void inicjalizuj_portfel(Klient *klient)
+void inicjalizuj_klienta(Klient *klient, int id)
 {
+    klient->id = id;
     klient->portfel_10 = 0;
     klient->portfel_20 = 0;
     klient->portfel_50 = 0;
+    pthread_create(&klient->watek, NULL, dzialanie_klienta, klient);
 }
 
 void zarabiaj_pieniadze(Klient *klient)
@@ -49,22 +51,25 @@ void zaplac_za_usluge(Klient *klient, Salon *salon)
     salon->zaplacone_10 = 0;
 
     // Obliczanie nominalów
-    if (klient->portfel_50 >= cena / 50)
+    while (cena >= 50 && klient->portfel_50 > 0)
     {
-        salon->zaplacone_50 = cena / 50;
-        cena %= 50;
-        klient->portfel_50 -= salon->zaplacone_50;
+        salon->zaplacone_50++;
+        cena -= 50;
+        klient->portfel_50--;
     }
-    if (klient->portfel_20 >= cena / 20)
+
+    while (cena >= 20 && klient->portfel_20 > 0)
     {
-        salon->zaplacone_20 = cena / 20;
-        cena %= 20;
-        klient->portfel_20 -= salon->zaplacone_20;
+        salon->zaplacone_20++;
+        cena -= 20;
+        klient->portfel_20--;
     }
-    if (klient->portfel_10 >= cena / 10)
+
+    while (cena >= 10 && klient->portfel_10 > 0)
     {
-        salon->zaplacone_10 = cena / 10;
-        klient->portfel_10 -= salon->zaplacone_10;
+        salon->zaplacone_10++;
+        cena -= 10;
+        klient->portfel_10--;
     }
 
     printf("Zapłacono: %dzł w nominalach: %d x 50z, %d x 20z, %d x 10z.\n",
@@ -83,11 +88,11 @@ void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk)
     {
         if (sem_trywait(&salon->poczekalnia) == 0)
         {
-            printf("Klient wchodzi do poczekalni.\n");
-
-            pthread_mutex_lock(&salon->mutex_poczekalnia);
-            salon->klienci_w_poczekalni++;
-            pthread_mutex_unlock(&salon->mutex_poczekalnia);
+            printf("Klient wchodzi do poczekalni.\n");       // klient wchodzi do poczekalni
+            pthread_mutex_lock(&salon->mutex_poczekalnia);   // klient blokuje mutex na poczekalnie
+            salon->klienci_w_poczekalni++;                   // dodajemy osobe do poczekalni
+            pthread_mutex_unlock(&salon->mutex_poczekalnia); // odblokowujemy mutex
+            pthread_cond_wait(&klient->czekaj_na_zaplate, &klient->mutex);
             zaplac_za_usluge(klient);
             printf("Fryzjer obsługuje klienta.\n");
 

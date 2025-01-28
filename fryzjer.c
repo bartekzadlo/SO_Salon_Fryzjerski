@@ -13,15 +13,20 @@ void *fryzjer_praca(void *arg)
 
     while (1)
     {
-        printf("Fryzjer %d czeka na klienta w poczekalni.\n", fryzjer->id);
-        sem_wait(&salon->poczekalnia); // Wywołanie semafora poczekalni
+        printf("Fryzjer %d czeka na klienta w poczekalni.\n", fryzjer->id); // fryzjer czeka na klienta
+        sem_wait(&salon->poczekalnia);                                      // wywołanie semafora poczekalni
 
-        pthread_mutex_lock(&salon->mutex_poczekalnia); // Zamek na mutexie poczekalni
+        pthread_mutex_lock(&salon->mutex_poczekalnia); // blokujemy muteks poczekalni
         if (salon->klienci_w_poczekalni > 0)
         {
-            salon->klienci_w_poczekalni--; // Zmniejszenie liczby klientów
+            salon->klienci_w_poczekalni--;           // zmniejszenie liczby klientów w poczekalni
+            Klient *klient = pobierz_klienta(salon); // pobranie infomracji o kliencie z poczekalni
             printf("Fryzjer %d pobiera klienta z poczekalni.\n", fryzjer->id);
-            printf("W poczekalni pozostało %d wolnych miejsc.\n", salon->max_klientow - salon->klienci_w_poczekalni);
+            printf("W poczekalni pozostało %d wolnych miejsc.\n", salon->max_klientow - salon->klienci_w_poczekalni); // informacja o liczbie miejsc
+            printf("Fryzjer %d przygotowuje się do przyjęcia płatności od klienta %d.\n", fryzjer->id, klient->id);
+            pthread_mutex_lock(&klient->mutex);              // Zamek dla klienta
+            pthread_cond_signal(&klient->czekaj_na_zaplate); // Wysłanie sygnału
+            pthread_mutex_unlock(&klient->mutex);
         }
         pthread_mutex_unlock(&salon->mutex_poczekalnia); // Zwolnienie mutexa
 
