@@ -3,7 +3,6 @@
 #include <time.h>
 #include <pthread.h>
 #include "klient.h"
-#include "kasa.h"
 #include "salon.h"
 
 void inicjalizuj_portfel(Klient *klient)

@@ -1,26 +1,43 @@
 #ifndef SALON_H
 #define SALON_H
-
-#include <pthread.h>
 #include <semaphore.h>
+#include <pthread.h>
 
-typedef struct Fotel
+// Struktura Fotel
+typedef struct
 {
-    sem_t wolne_fotele;    // Semafor do kontrolowania liczby wolnych foteli
-    pthread_mutex_t mutex; // Mutex dla foteli, aby zablokować dostęp do fotela
+    sem_t wolne_fotele;    // Semafor dla wolnych foteli
+    pthread_mutex_t mutex; // Mutex do synchronizacji dostępu do fotela
 } Fotel;
 
-typedef struct Salon
+// Struktura Salon
+typedef struct
 {
-    sem_t poczekalnia;                 // Semafor do kontrolowania liczby wolnych miejsc w poczekalni
-    pthread_mutex_t mutex_poczekalnia; // Mutex dla poczekalni
-    Fotel fotel;                       // Fotel w salonie
+    sem_t poczekalnia;                 // Semafor dla poczekalni
+    pthread_mutex_t mutex_poczekalnia; // Mutex do synchronizacji dostępu do poczekalni
     int klienci_w_poczekalni;          // Liczba klientów w poczekalni
+    Fotel fotel;                       // Struktura fotela
 } Salon;
 
+// Struktura Kasa (przeniesiona z kasa.c)
+typedef struct
+{
+    int banknot_10;
+    int banknot_20;
+    int banknot_50;
+    pthread_mutex_t mutex; // Mutex do synchronizacji dostępu do kasy
+} Kasa;
+
+// Funkcje operujące na salonie
 void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli);
 void zajmij_fotel(Fotel *fotel);
 void zwolnij_fotel(Fotel *fotel);
 void zamknij_salon(Salon *salon);
+
+// Funkcje operujące na kasie
+void inicjalizuj_kase(Kasa *kasa);
+void zamknij_kase(Kasa *kasa);
+void dodaj_banknoty(Kasa *kasa, int nominal, int ilosc);
+void odejmij_banknoty(Kasa *kasa, int nominal, int ilosc);
 
 #endif // SALON_H
