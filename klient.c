@@ -76,7 +76,7 @@ void zaplac_za_usluge(Klient *klient, Salon *salon)
            salon->zaplacona_kwota, salon->zaplacone_50, salon->zaplacone_20, salon->zaplacone_10);
 
     // Sygnał dla fryzjera, że klient zapłacił
-    pthread_cond_signal(&salon->kasa.uzupelnienie);
+    pthread_cond_signal(&salon->kasa.zaplata);
 }
 
 void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk)
@@ -94,8 +94,7 @@ void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk)
             pthread_mutex_unlock(&salon->mutex_poczekalnia); // odblokowujemy mutex
             pthread_cond_wait(&klient->czekaj_na_zaplate, &klient->mutex);
             zaplac_za_usluge(klient);
-            printf("Fryzjer obsługuje klienta.\n");
-            o dbierz_reszte(klient, &salon->kasa);
+            odbierz_reszte(klient, &salon->kasa);
             pthread_mutex_lock(&salon->mutex_poczekalnia);
             salon->klienci_w_poczekalni--;
             pthread_mutex_unlock(&salon->mutex_poczekalnia);

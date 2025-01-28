@@ -21,6 +21,7 @@ typedef struct
     int wydane_50;
     pthread_mutex_t mutex_kasa;  // Mutex do synchronizacji dostępu do kasy
     pthread_cond_t uzupelnienie; // Warunek dla uzupełnienia kasy
+    pthread_cond_t zaplata;
     pthread_cond_t wydano_reszte;
 } Kasa;
 

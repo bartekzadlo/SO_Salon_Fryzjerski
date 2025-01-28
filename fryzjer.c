@@ -19,42 +19,19 @@ void *fryzjer_praca(void *arg)
         pthread_mutex_lock(&salon->mutex_poczekalnia); // blokujemy muteks poczekalni
         if (salon->klienci_w_poczekalni > 0)
         {
-            salon->klienci_w_poczekalni--;           // zmniejszenie liczby klientów w poczekalni
-            Klient *klient = pobierz_klienta(salon); // pobranie infomracji o kliencie z poczekalni
+            salon->klienci_w_poczekalni--; // zmniejszenie liczby klientów w poczekalni
             printf("Fryzjer %d pobiera klienta z poczekalni.\n", fryzjer->id);
             printf("W poczekalni pozostało %d wolnych miejsc.\n", salon->max_klientow - salon->klienci_w_poczekalni); // informacja o liczbie miejsc
+            zajmij_fotel(Fotel);
             printf("Fryzjer %d przygotowuje się do przyjęcia płatności od klienta %d.\n", fryzjer->id, klient->id);
-            pthread_mutex_lock(&klient->mutex);              // Zamek dla klienta
             pthread_cond_signal(&klient->czekaj_na_zaplate); // Wysłanie sygnału
-            pthread_mutex_unlock(&klient->mutex);
             dodaj_banknoty_do_kasy(salon);
             printf("Fryzjer wykonuje obsługę");
-                }
-        pthread_mutex_unlock(&salon->mutex_poczekalnia); // Zwolnienie mutexa
-
-        zajmij_fotel(&salon->fotel); // Używamy semafora wolnych foteli
-        printf("Fryzjer %d obsługuje klienta.\n", fryzjer->id);
-
-        pthread_mutex_lock(&salon->kasa.mutex_kasa);
-        while (1)
-        {
-            if (salon->kasa.banknot_10 * 10 + salon->kasa.banknot_20 * 20 + salon->kasa.banknot_50 * 50 >= cena)
-            {
-                odejmij_banknoty(&salon->kasa, 50, cena / 50);
-                cena %= 50;
-                odejmij_banknoty(&salon->kasa, 20, cena / 20);
-                cena %= 20;
-                odejmij_banknoty(&salon->kasa, 10, cena / 10);
-                break;
-            }
-            else
-            {
-                printf("Fryzjer %d: Brak pieniędzy w kasie na resztę. Czekanie na uzupełnienie.\n", fryzjer->id);
-                pthread_cond_wait(&salon->kasa.uzupelnienie, &salon->kasa.mutex_kasa); // Czekanie na uzupełnienie kasy
-            }
+            zwolnij_fotel(Fotel);
         }
-        pthread_mutex_unlock(&salon->kasa.mutex_kasa);
-
+        pthread_mutex_unlock(&salon->mutex_poczekalnia); // Zwolnienie mutexa
+        zajmij_fotel(&salon->fotel);                     // Używamy semafora wolnych foteli
+        printf("Fryzjer %d obsługuje klienta.\n", fryzjer->id);
         zwolnij_fotel(&salon->fotel); // Zwolnienie semafora foteli
         printf("Fryzjer %d zwolnił fotel, klient zakończył wizytę.\n", fryzjer->id);
     }
