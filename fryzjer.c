@@ -28,12 +28,8 @@ void *fryzjer_praca(void *arg)
             dodaj_banknoty_do_kasy(salon);
             printf("Fryzjer wykonuje obsługę");
             zwolnij_fotel(Fotel);
+            wydaj_reszte(&salon->kasa, reszta);
         }
-        pthread_mutex_unlock(&salon->mutex_poczekalnia); // Zwolnienie mutexa
-        zajmij_fotel(&salon->fotel);                     // Używamy semafora wolnych foteli
-        printf("Fryzjer %d obsługuje klienta.\n", fryzjer->id);
-        zwolnij_fotel(&salon->fotel); // Zwolnienie semafora foteli
-        printf("Fryzjer %d zwolnił fotel, klient zakończył wizytę.\n", fryzjer->id);
     }
     return NULL;
 }
