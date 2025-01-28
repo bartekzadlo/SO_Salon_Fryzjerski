@@ -89,7 +89,6 @@ void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli)
     // Inicjalizacja fotela
     sem_init(&salon->fotel.wolne_fotele, 0, liczba_foteli);
     pthread_mutex_init(&salon->fotel.mutex_fotel, NULL);
-
     // Inicjalizacja kasy
     inicjalizuj_kase(&salon->kasa);
 }

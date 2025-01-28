@@ -37,9 +37,46 @@ void zarabiaj_pieniadze(Klient *klient)
            klient->portfel_10, klient->portfel_20, klient->portfel_50);
 }
 
+void zaplac_za_usluge(Klient *klient, Salon *salon)
+{
+    int cena = (rand() % 10 + 1) * 10;
+    printf("Cena za usługę: %dzł.\n", cena);
+
+    // Przygotowanie informacji o zapłacie
+    salon->zaplacona_kwota = cena;
+    salon->zaplacone_50 = 0;
+    salon->zaplacone_20 = 0;
+    salon->zaplacone_10 = 0;
+
+    // Obliczanie nominalów
+    if (klient->portfel_50 >= cena / 50)
+    {
+        salon->zaplacone_50 = cena / 50;
+        cena %= 50;
+        klient->portfel_50 -= salon->zaplacone_50;
+    }
+    if (klient->portfel_20 >= cena / 20)
+    {
+        salon->zaplacone_20 = cena / 20;
+        cena %= 20;
+        klient->portfel_20 -= salon->zaplacone_20;
+    }
+    if (klient->portfel_10 >= cena / 10)
+    {
+        salon->zaplacone_10 = cena / 10;
+        klient->portfel_10 -= salon->zaplacone_10;
+    }
+
+    printf("Zapłacono: %dzł w nominalach: %d x 50z, %d x 20z, %d x 10z.\n",
+           salon->zaplacona_kwota, salon->zaplacone_50, salon->zaplacone_20, salon->zaplacone_10);
+
+    // Sygnał dla fryzjera, że klient zapłacił
+    pthread_cond_signal(&salon->kasa.uzupelnienie);
+}
+
 void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk)
 {
-    int czas_przyjscia = rand() % (Tk - Tp + 1) + Tp;
+    int czas_przyjscia = Tp + rand() % (Tk - Tp + 1);
     printf("Klient pojawia się o godzinie %d:00.\n", czas_przyjscia);
 
     while (1)
@@ -51,8 +88,7 @@ void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk)
             pthread_mutex_lock(&salon->mutex_poczekalnia);
             salon->klienci_w_poczekalni++;
             pthread_mutex_unlock(&salon->mutex_poczekalnia);
-
-            zajmij_fotel(&salon->fotel);
+            zaplac_za_usluge(klient);
             printf("Fryzjer obsługuje klienta.\n");
 
             printf("Tu informacja od fryzjera o reszcie.\n");
@@ -69,37 +105,6 @@ void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk)
             zarabiaj_pieniadze(klient);
         }
     }
-}
-
-void zaplac_za_usluge(Klient *klient)
-{
-    int cena = (rand() % 10 + 1) * 10;
-    printf("Cena za usługę: %dzł.\n", cena);
-
-    int kwota_do_zaplaty = 0;
-
-    if (klient->portfel_50 >= cena / 50)
-    {
-        kwota_do_zaplaty = cena;
-        klient->portfel_50 -= cena / 50;
-    }
-    else if (klient->portfel_20 >= cena / 20)
-    {
-        kwota_do_zaplaty = cena;
-        klient->portfel_20 -= cena / 20;
-    }
-    else if (klient->portfel_10 >= cena / 10)
-    {
-        kwota_do_zaplaty = cena;
-        klient->portfel_10 -= cena / 10;
-    }
-    else
-    {
-        printf("Klient nie ma wystarczającej ilości pieniędzy. Wraca do zarabiania.\n");
-        zarabiaj_pieniadze(klient);
-    }
-
-    printf("Klient płaci za usługę: %d zł.\n", kwota_do_zaplaty);
 }
 
 void otrzymaj_reszte(Klient *klient)
