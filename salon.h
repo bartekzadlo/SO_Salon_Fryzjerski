@@ -6,27 +6,21 @@
 // Struktura Fotel
 typedef struct
 {
-    sem_t wolne_fotele;    // Semafor dla wolnych foteli
-    pthread_mutex_t mutex; // Mutex do synchronizacji dostępu do fotela
-} Fotel;
+    // Semafor i mutex dla foteli
+    sem_t wolne_fotele;          // Semafor dla wolnych foteli
+    pthread_mutex_t mutex_fotel; // Mutex do synchronizacji dostępu do fotela
 
-typedef struct
-{
-    int banknot_10;
-    int banknot_20;
-    int banknot_50;
-    pthread_mutex_t mutex;       // Mutex do synchronizacji dostępu do kasy
-    pthread_cond_t uzupelnienie; // Warunek dla uzupełnienia kasy
-} Kasa;
-
-// Struktura Salon
-typedef struct
-{
+    // Semafor i mutex dla poczekalni
     sem_t poczekalnia;                 // Semafor dla poczekalni
     pthread_mutex_t mutex_poczekalnia; // Mutex do synchronizacji dostępu do poczekalni
     int klienci_w_poczekalni;          // Liczba klientów w poczekalni
-    Fotel fotel;                       // Struktura fotela
-    Kasa kasa;
+
+    // Struktura kasy
+    int banknot_10;
+    int banknot_20;
+    int banknot_50;
+    pthread_mutex_t mutex_kasa;  // Mutex do synchronizacji dostępu do kasy
+    pthread_cond_t uzupelnienie; // Warunek dla uzupełnienia kasy
 } Salon;
 
 // Funkcje operujące na salonie
