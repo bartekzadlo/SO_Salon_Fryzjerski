@@ -1,7 +1,7 @@
 {
     "files.associations": {
-        "*.h": "cpp",
-        "*.c": "cpp",
+        "*.h": "c",
+        "*.c": "c",
         "stdio.h": "c",
         "stdbool.h": "c",
         "fryzjer.h": "c",

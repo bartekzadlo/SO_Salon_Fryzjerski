@@ -1,6 +1,6 @@
 #ifndef FRYZJER_H
 #define FRYZJER_H
-
+#include <semaphore.h>
 #include <pthread.h>
 #include "salon.h"
 
