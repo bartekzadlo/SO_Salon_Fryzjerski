@@ -33,5 +33,11 @@ int main()
     printf("Maksymalna liczba klientów w poczekalni: %d\n", wielkosc_poczekalni);
     printf("Istniejący klienci: %d\n", liczba_klientow);
 
+    // Iteracja po godzinach, od Tp do Tk
+    for (int godzina = Tp; godzina < Tk; godzina++)
+    {
+        printf("Godzina: %d:00\n", godzina);
+    }
+
     return 0;
 }
