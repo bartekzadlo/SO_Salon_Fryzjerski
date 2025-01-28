@@ -99,7 +99,7 @@ void wydaj_reszte(Kasa *kasa, int reszta)
     pthread_mutex_unlock(&kasa->mutex_kasa); // Zwolnienie mutexu
 
     // Wysyłamy sygnał o wydaniu reszty
-    pthread_cond_signal(&kasa->uzupelnienie);
+    pthread_cond_signal(&kasa->wydano_reszte);
 }
 
 void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli)
