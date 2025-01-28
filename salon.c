@@ -21,10 +21,9 @@ void zamknij_kase(Kasa *kasa)
 
 void dodaj_banknoty_do_kasy(Salon *salon)
 {
-    pthread_mutex_lock(&salon->mutex_kasa); // Blokowanie mutexu kasy
-
     // Oczekiwanie na sygnał o zapłacie
-    pthread_cond_wait(&salon->kasa.zaplata, &salon->mutex_kasa);
+    pthread_cond_wait(&salon->kasa.zaplata, &salon->kasa.mutex_kasa);
+    pthread_mutex_lock(&salon->kasa.mutex_kasa); // Blokowanie mutexu kasy
 
     int zaplacona_kwota = salon->zaplacona_kwota;
     int reszta = zaplacona_kwota - salon->zaplacona_kwota; // Obliczanie reszty
@@ -32,21 +31,24 @@ void dodaj_banknoty_do_kasy(Salon *salon)
     // Dodawanie banknotów do kasy
     if (salon->zaplacone_50 > 0)
     {
-        dodaj_banknoty(&salon->kasa, 50, salon->zaplacone_50);
+        salon->kasa.banknot_50 += salon->zaplacone_50; // Dodaj banknoty 50 do kasy
     }
     if (salon->zaplacone_20 > 0)
     {
-        dodaj_banknoty(&salon->kasa, 20, salon->zaplacone_20);
+        salon->kasa.banknot_20 += salon->zaplacone_20; // Dodaj banknoty 20 do kasy
     }
     if (salon->zaplacone_10 > 0)
     {
-        dodaj_banknoty(&salon->kasa, 10, salon->zaplacone_10);
+        salon->kasa.banknot_10 += salon->zaplacone_10; // Dodaj banknoty 10 do kasy
     }
 
     // Zapamiętanie reszty
     salon->reszta = reszta; // Przechowywanie reszty do późniejszego wydania
+
+    // Sygnalizowanie, że kasa jest uzupełniona
     pthread_cond_signal(&salon->kasa.uzupelnienie);
-    pthread_mutex_unlock(&salon->mutex_kasa); // Zwolnienie mutexu kasy
+
+    pthread_mutex_unlock(&salon->kasa.mutex_kasa); // Zwolnienie mutexu kasy
 }
 
 void wydaj_reszte(Kasa *kasa, int reszta)

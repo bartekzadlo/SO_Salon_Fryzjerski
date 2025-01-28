@@ -3,6 +3,23 @@
 #include <semaphore.h>
 #include <pthread.h>
 
+typedef struct
+{
+    int id;
+    int portfel_10;
+    int portfel_20;
+    int portfel_50;
+    pthread_cond_t czekaj_na_zaplate;
+    pthread_mutex_t mutex;
+} Klient;
+
+typedef struct
+{
+    Klient *klienci[100]; // Tablica wskaźników na klientów
+    int poczatek;         // Indeks początku kolejki
+    int koniec;           // Indeks końca kolejki
+} KolejkaKlientow;
+
 // Struktura Fotel
 typedef struct
 {
@@ -39,6 +56,7 @@ typedef struct
     int zaplacone_50;
     int zaplacona_kwota;
     int reszta;
+    KolejkaKlientow kolejka;
 } Salon;
 
 // Funkcje operujące na salonie
@@ -50,7 +68,7 @@ void zamknij_salon(Salon *salon);
 // Funkcje operujące na kasie
 void inicjalizuj_kase(Kasa *kasa);
 void zamknij_kase(Kasa *kasa);
-void dodaj_banknoty(Kasa *kasa, int nominal, int ilosc);
+void dodaj_banknoty_do_kasy(Salon *salon);
 void wydaj_reszte(Kasa *kasa, int reszta);
 
 #endif // SALON_H

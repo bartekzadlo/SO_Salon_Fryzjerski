@@ -20,16 +20,19 @@ void *fryzjer_praca(void *arg)
         if (salon->klienci_w_poczekalni > 0)
         {
             salon->klienci_w_poczekalni--; // zmniejszenie liczby klientów w poczekalni
-            printf("Fryzjer %d pobiera klienta z poczekalni.\n", fryzjer->id);
+            fryzjer->klient = pobierz_klienta_z_kolejki(salon);
+            printf("Fryzjer %d pobiera klienta %d.\n", fryzjer->id, fryzjer->klient->id);
             printf("W poczekalni pozostało %d wolnych miejsc.\n", salon->max_klientow - salon->klienci_w_poczekalni); // informacja o liczbie miejsc
-            zajmij_fotel(Fotel);
-            printf("Fryzjer %d przygotowuje się do przyjęcia płatności od klienta %d.\n", fryzjer->id, klient->id);
-            pthread_cond_signal(&klient->czekaj_na_zaplate); // Wysłanie sygnału
-            dodaj_banknoty_do_kasy(salon);
-            printf("Fryzjer wykonuje obsługę");
-            zwolnij_fotel(Fotel);
-            wydaj_reszte(&salon->kasa, reszta);
         }
+        pthread_mutex_unlock(&salon->mutex_poczekalnia); // Odblokowujemy mutex poczekalni
+
+        zajmij_fotel(&salon->fotel);
+        printf("Fryzjer %d przygotowuje się do przyjęcia płatności od klienta.\n", fryzjer->id);
+        pthread_cond_signal(&fryzjer->klient->czekaj_na_zaplate); // Wysłanie sygnału
+        dodaj_banknoty_do_kasy(salon);
+        printf("Fryzjer wykonuje obsługę");
+        zwolnij_fotel(&salon->fotel);
+        wydaj_reszte(&salon->kasa, salon->reszta);
     }
     return NULL;
 }
@@ -45,4 +48,11 @@ void zakoncz_fryzjera(Fryzjer *fryzjer)
 {
     pthread_cancel(fryzjer->watek);     // Zakończenie wątku fryzjera
     pthread_join(fryzjer->watek, NULL); // Dołączenie wątku
+}
+
+Klient *pobierz_klienta_z_kolejki(Salon *salon)
+{
+    Klient *klient = salon->kolejka.klienci[salon->kolejka.poczatek];
+    salon->kolejka.poczatek = (salon->kolejka.poczatek + 1) % 100; // Obsługa cyklicznej kolejki
+    return klient;
 }

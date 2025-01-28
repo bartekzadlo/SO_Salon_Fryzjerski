@@ -10,7 +10,7 @@ int main()
     int Tp, Tk;                  // Godziny otwarcia i zamknięcia salonu
     int liczba_fryzjerow = 1;    // Liczba fryzjerów w salonie
     int wielkosc_poczekalni = 1; // Wielkość poczekalni
-    int liczba_klientow = 2;     // Liczba istniejących klientów
+    int liczba_klientow = 1;     // Liczba istniejących klientów
 
     // Prośba o podanie godzin otwarcia i zamknięcia salonu
     printf("Podaj godzinę otwarcia salonu (Tp): ");
@@ -33,7 +33,7 @@ int main()
     Klient klienci[liczba_klientow];
     for (int i = 0; i < liczba_klientow; i++)
     {
-        inicjalizuj_portfel(&klienci[i]);
+        inicjalizuj_klienta(&klienci[i], i); // Przekazanie numeru klienta jako id
         pthread_t klient_watek;
         pthread_create(&klient_watek, NULL, (void *)klient_przychodzi_do_salon, &klienci[i]);
     }
