@@ -1,24 +1,19 @@
 #ifndef KLIENT_H
 #define KLIENT_H
 
-#include <pthread.h>
+#include "salon.h"
 
-typedef struct
+typedef struct Klient
 {
-    int banknot_10;
-    int banknot_20;
-    int banknot_50;
-    pthread_mutex_t mutex;
-} Portfel;
-
-typedef struct
-{
-    Portfel portfel;
+    int portfel_10;
+    int portfel_20;
+    int portfel_50;
 } Klient;
 
-void inicjalizuj_portfel(Portfel *portfel);
-void dodaj_pieniadze_do_portfela(Portfel *portfel, int nominal, int ilosc);
-void zarabiaj_pieniadze(Klient *klient);
-void zamknij_portfel(Portfel *portfel);
+void inicjalizuj_portfel(Klient *klient);                                      // Inicjalizacja pustego portfela klienta
+void zarabiaj_pieniadze(Klient *klient);                                       // Losowanie i dodawanie banknotów do portfela klienta
+void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk); // Klient przychodzi do salonu
+void zaplac_za_usluge(Klient *klient);                                         // Klient płaci za usługę
+void otrzymaj_reszte(Klient *klient);                                          // Klient otrzymuje resztę (tymczasowa funkcjonalność)
 
 #endif
