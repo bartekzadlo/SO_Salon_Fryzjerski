@@ -112,7 +112,20 @@ void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk)
     }
 }
 
-void otrzymaj_reszte(Klient *klient)
+void odbierz_reszte(Klient *klient, Kasa *kasa)
 {
-    printf("Tu informacja od fryzjera o reszcie.\n");
+    pthread_mutex_lock(&klient->mutex);
+
+    // Oczekiwanie na sygnał o wydanej reszcie
+    pthread_cond_wait(&kasa->wydano_reszte, &klient->mutex);
+
+    // Dodanie wydanych banknotów do portfela klienta
+    klient->portfel_10 += kasa->wydane_10;
+    klient->portfel_20 += kasa->wydane_20;
+    klient->portfel_50 += kasa->wydane_50;
+
+    printf("Klient odebrał resztę: %d x 10z, %d x 20z, %d x 50z.\n",
+           kasa->wydane_10, kasa->wydane_20, kasa->wydane_50);
+
+    pthread_mutex_unlock(&klient->mutex);
 }

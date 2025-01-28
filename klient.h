@@ -20,6 +20,6 @@ void inicjalizuj_klienta(Klient *klient, int id)                               /
     void zarabiaj_pieniadze(Klient *klient);                                   // Losowanie i dodawanie banknotów do portfela klienta
 void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk); // Klient przychodzi do salonu
 void zaplac_za_usluge(Klient *klient, Salon *salon);                           // Klient płaci za usługę
-void otrzymaj_reszte(Klient *klient);                                          // Klient otrzymuje resztę (tymczasowa funkcjonalność)
+void odbierz_reszte(Klient *klient, Kasa *kasa);
 
 #endif
