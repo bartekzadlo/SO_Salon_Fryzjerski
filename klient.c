@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
+#include <unistd.h>
 #include "klient.h"
 #include "salon.h"
 
@@ -109,14 +110,17 @@ void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk)
             salon->kolejka.koniec = (salon->kolejka.koniec + 1) % 100; // Obsługa cyklicznej kolejki
             pthread_mutex_unlock(&salon->mutex_poczekalnia);           // odblokowujemy mutex
             pthread_cond_wait(&klient->czekaj_na_zaplate, &klient->mutex);
+            printf("Tu jestem");
             zaplac_za_usluge(klient, salon);
             odbierz_reszte(klient, &salon->kasa);
             break;
         }
         else
         {
+            usleep(1000000);
             printf("Brak wolnych miejsc w poczekalni. Klient wraca do zarabiania.\n");
             zarabiaj_pieniadze(klient);
+            void klient_przychodzi_do_salon(Salon * salon, Klient * klient, int Tp, int Tk);
         }
     }
 }

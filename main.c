@@ -5,12 +5,25 @@
 #include "klient.h"
 #include "fryzjer.h"
 
+void wyswietl_wartosc_semafora(sem_t *semafor)
+{
+    int semafor_value;
+    if (sem_getvalue(semafor, &semafor_value) == 0)
+    {
+        printf("Wartość semafora: %d\n", semafor_value);
+    }
+    else
+    {
+        perror("Błąd przy pobieraniu wartości semafora");
+    }
+}
+
 int main()
 {
-    int Tp, Tk;                  // Godziny otwarcia i zamknięcia salonu
-    int liczba_fryzjerow = 1;    // Liczba fryzjerów w salonie
-    int wielkosc_poczekalni = 1; // Wielkość poczekalni
-    int liczba_klientow = 1;     // Liczba istniejących klientów
+    int Tp, Tk;                   // Godziny otwarcia i zamknięcia salonu
+    int liczba_fryzjerow = 1;     // Liczba fryzjerów w salonie
+    int wielkosc_poczekalni = 20; // Wielkość poczekalni
+    int liczba_klientow = 1;      // Liczba istniejących klientów
 
     // Prośba o podanie godzin otwarcia i zamknięcia salonu
     printf("Podaj godzinę otwarcia salonu (Tp): ");
@@ -21,6 +34,8 @@ int main()
     // Tworzymy salon i inicjalizujemy go
     Salon salon;
     inicjalizuj_salon(&salon, wielkosc_poczekalni, 3); // Zakładamy 1 fotel
+    int poczekalnia_value;
+    wyswietl_wartosc_semafora(&salon.poczekalnia); // Używamy wskaźnika do semafora
 
     // Tworzymy fryzjerów
     Fryzjer fryzjerowie[liczba_fryzjerow];
