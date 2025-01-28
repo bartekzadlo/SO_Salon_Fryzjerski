@@ -2,25 +2,33 @@
 #define SALON_H
 #include <semaphore.h>
 #include <pthread.h>
+#include "klient.h"
 
 // Struktura Fotel
 typedef struct
 {
-    // Semafor i mutex dla foteli
     sem_t wolne_fotele;          // Semafor dla wolnych foteli
     pthread_mutex_t mutex_fotel; // Mutex do synchronizacji dostępu do fotela
+} Fotel;
 
-    // Semafor i mutex dla poczekalni
-    sem_t poczekalnia;                 // Semafor dla poczekalni
-    pthread_mutex_t mutex_poczekalnia; // Mutex do synchronizacji dostępu do poczekalni
-    int klienci_w_poczekalni;          // Liczba klientów w poczekalni
-
-    // Struktura kasy
+// Struktura Kasa
+typedef struct
+{
     int banknot_10;
     int banknot_20;
     int banknot_50;
     pthread_mutex_t mutex_kasa;  // Mutex do synchronizacji dostępu do kasy
     pthread_cond_t uzupelnienie; // Warunek dla uzupełnienia kasy
+} Kasa;
+
+// Struktura Salon
+typedef struct
+{
+    sem_t poczekalnia;                 // Semafor dla poczekalni
+    pthread_mutex_t mutex_poczekalnia; // Mutex do synchronizacji dostępu do poczekalni
+    int klienci_w_poczekalni;          // Liczba klientów w poczekalni
+    Fotel fotel;                       // Fotel z semaforem i mutexem
+    Kasa kasa;                         // Kasa z banknotami i mutexem
 } Salon;
 
 // Funkcje operujące na salonie

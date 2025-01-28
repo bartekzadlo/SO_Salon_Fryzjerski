@@ -3,12 +3,15 @@
 #include <semaphore.h>
 #include <pthread.h>
 #include "salon.h"
+#include "klient.h"
 
-typedef struct Fryzjer
+struct Salon;
+
+typedef struct
 {
-    int id;          // ID fryzjera
-    Salon *salon;    // Wskaźnik na przypisany salon
-    pthread_t watek; // Wątek fryzjera
+    int id;
+    pthread_t watek;
+    Salon *salon;
 } Fryzjer;
 
 // Funkcja reprezentująca pracę fryzjera

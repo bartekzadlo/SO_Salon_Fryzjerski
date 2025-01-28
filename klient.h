@@ -1,6 +1,5 @@
 #ifndef KLIENT_H
 #define KLIENT_H
-
 #include "salon.h"
 
 typedef struct Klient

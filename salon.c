@@ -4,25 +4,24 @@
 #include <semaphore.h>
 #include <pthread.h>
 
-// Funkcje operujące na kasie (przeniesione z kasa.c)
 void inicjalizuj_kase(Kasa *kasa)
 {
     kasa->banknot_10 = 0;
     kasa->banknot_20 = 0;
     kasa->banknot_50 = 0;
-    pthread_mutex_init(&kasa->mutex, NULL);
+    pthread_mutex_init(&kasa->mutex_kasa, NULL);
     pthread_cond_init(&kasa->uzupelnienie, NULL); // Inicjalizacja warunku
 }
 
 void zamknij_kase(Kasa *kasa)
 {
-    pthread_mutex_destroy(&kasa->mutex);
+    pthread_mutex_destroy(&kasa->mutex_kasa);
     pthread_cond_destroy(&kasa->uzupelnienie); // Niszczenie warunku
 }
 
 void dodaj_banknoty(Kasa *kasa, int nominal, int ilosc)
 {
-    pthread_mutex_lock(&kasa->mutex);
+    pthread_mutex_lock(&kasa->mutex_kasa);
 
     if (nominal == 10)
     {
@@ -37,12 +36,12 @@ void dodaj_banknoty(Kasa *kasa, int nominal, int ilosc)
         kasa->banknot_50 += ilosc;
     }
 
-    pthread_mutex_unlock(&kasa->mutex);
+    pthread_mutex_unlock(&kasa->mutex_kasa);
 }
 
 void odejmij_banknoty(Kasa *kasa, int nominal, int ilosc)
 {
-    pthread_mutex_lock(&kasa->mutex);
+    pthread_mutex_lock(&kasa->mutex_kasa);
 
     if (nominal == 10)
     {
@@ -78,38 +77,37 @@ void odejmij_banknoty(Kasa *kasa, int nominal, int ilosc)
         }
     }
 
-    pthread_mutex_unlock(&kasa->mutex);
+    pthread_mutex_unlock(&kasa->mutex_kasa);
 }
 
-// Reszta funkcji z salon.c
 void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli)
 {
     sem_init(&salon->poczekalnia, 0, max_klientow);      // Inicjalizowanie semafora dla poczekalni
     pthread_mutex_init(&salon->mutex_poczekalnia, NULL); // Inicjalizowanie mutexu dla poczekalni
     salon->klienci_w_poczekalni = 0;
 
-    // Inicjalizacja fotela (semafor dla wolnych foteli)
+    // Inicjalizacja fotela
     sem_init(&salon->fotel.wolne_fotele, 0, liczba_foteli);
-    pthread_mutex_init(&salon->fotel.mutex, NULL);
+    pthread_mutex_init(&salon->fotel.mutex_fotel, NULL);
 
     // Inicjalizacja kasy
-    inicjalizuj_kase(&salon->kasa); // Inicjalizowanie kasy
+    inicjalizuj_kase(&salon->kasa);
 }
 
 void zajmij_fotel(Fotel *fotel)
 {
-    sem_wait(&fotel->wolne_fotele);    // Czekaj na wolny fotel
-    pthread_mutex_lock(&fotel->mutex); // Zablokuj mutex, aby fotel był zajęty przez jednego klienta
+    sem_wait(&fotel->wolne_fotele);          // Czekaj na wolny fotel
+    pthread_mutex_lock(&fotel->mutex_fotel); // Zablokuj mutex, aby fotel był zajęty przez jednego klienta
     printf("Klient zajmuje fotel.\n");
-    pthread_mutex_unlock(&fotel->mutex); // Zwolnij mutex
+    pthread_mutex_unlock(&fotel->mutex_fotel); // Zwolnij mutex
 }
 
 void zwolnij_fotel(Fotel *fotel)
 {
-    pthread_mutex_lock(&fotel->mutex); // Zablokuj mutex przed zwolnieniem fotela
-    sem_post(&fotel->wolne_fotele);    // Zwolnij fotel
+    pthread_mutex_lock(&fotel->mutex_fotel); // Zablokuj mutex przed zwolnieniem fotela
+    sem_post(&fotel->wolne_fotele);          // Zwolnij fotel
     printf("Fotel został zwolniony.\n");
-    pthread_mutex_unlock(&fotel->mutex); // Zwolnij mutex
+    pthread_mutex_unlock(&fotel->mutex_fotel); // Zwolnij mutex
 }
 
 void zamknij_salon(Salon *salon)
@@ -118,6 +116,6 @@ void zamknij_salon(Salon *salon)
     pthread_mutex_destroy(&salon->mutex_poczekalnia); // Zwalniamy mutex dla poczekalni
 
     // Niszczenie zasobów związanych z fotelami
-    sem_destroy(&salon->fotel.wolne_fotele);    // Zwalniamy semafor dla foteli
-    pthread_mutex_destroy(&salon->fotel.mutex); // Zwalniamy mutex dla foteli
+    sem_destroy(&salon->fotel.wolne_fotele);          // Zwalniamy semafor dla foteli
+    pthread_mutex_destroy(&salon->fotel.mutex_fotel); // Zwalniamy mutex dla foteli
 }
