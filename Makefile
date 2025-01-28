@@ -1,7 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -pthread
 
-# Zaktualizowana lista źródeł - nie ma już folderu 'kasa'
 SRC = $(wildcard *.c) 
 OBJ = $(SRC:.c=.o)
 EXEC = projekt_salon_fryzjerski
