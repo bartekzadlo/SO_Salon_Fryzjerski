@@ -1,38 +1,57 @@
 #include <stdio.h>
 #include "kasa.h"
+#include "klient.h"
 #include <pthread.h>
 
 int main()
 {
+    // Inicjalizacja kasy
     Kasa kasa;
     inicjalizuj_kase(&kasa);
 
-    // Dodawanie banknotów
-    dodaj_banknoty(&kasa, 10, 5); // Dodajemy 5 banknotów 10zł
-    dodaj_banknoty(&kasa, 20, 3); // Dodajemy 3 banknoty 20zł
-    dodaj_banknoty(&kasa, 50, 2); // Dodajemy 2 banknoty 50zł
+    // Inicjalizacja klienta
+    Klient klient;
+    inicjalizuj_portfel(&klient.portfel);
+
+    // Klient zarabia pieniądze
+    zarabiaj_pieniadze(&klient);
+
+    // Wyświetlanie stanu portfela klienta
+    pthread_mutex_lock(&klient.portfel.mutex);
+    printf("Stan portfela klienta po zarabianiu:\n");
+    printf("Banknoty 10z: %d\n", klient.portfel.banknot_10);
+    printf("Banknoty 20z: %d\n", klient.portfel.banknot_20);
+    printf("Banknoty 50z: %d\n", klient.portfel.banknot_50);
+    pthread_mutex_unlock(&klient.portfel.mutex);
+
+    // Klient dodaje pieniądze do kasy
+    dodaj_banknoty(&kasa, 10, klient.portfel.banknot_10);
+    dodaj_banknoty(&kasa, 20, klient.portfel.banknot_20);
+    dodaj_banknoty(&kasa, 50, klient.portfel.banknot_50);
 
     // Wyświetlanie stanu kasy
-    pthread_mutex_lock(&kasa.mutex); // Blokowanie kasy na czas wyświetlania
-    printf("Stan kasy:\n");
+    pthread_mutex_lock(&kasa.mutex);
+    printf("\nStan kasy po wpłacie klienta:\n");
     printf("Banknoty 10z: %d\n", kasa.banknot_10);
     printf("Banknoty 20z: %d\n", kasa.banknot_20);
     printf("Banknoty 50z: %d\n", kasa.banknot_50);
-    pthread_mutex_unlock(&kasa.mutex); // Odblokowanie kasy
+    pthread_mutex_unlock(&kasa.mutex);
 
-    // Odejmowanie banknotów
-    odejmij_banknoty(&kasa, 10, 3); // Odejmujemy 3 banknoty 10zł
-    odejmij_banknoty(&kasa, 50, 1); // Odejmujemy 1 banknot 50zł
+    // Kasjer wydaje pieniądze (odejmujemy z kasy)
+    odejmij_banknoty(&kasa, 10, 1);
+    odejmij_banknoty(&kasa, 50, 1);
 
-    // Wyświetlanie stanu kasy po odejmowaniu
-    pthread_mutex_lock(&kasa.mutex); // Blokowanie kasy na czas wyświetlania
-    printf("\nStan kasy po odejmowaniu:\n");
+    // Wyświetlanie stanu kasy po operacjach
+    pthread_mutex_lock(&kasa.mutex);
+    printf("\nStan kasy po wydaniu pieniędzy:\n");
     printf("Banknoty 10z: %d\n", kasa.banknot_10);
     printf("Banknoty 20z: %d\n", kasa.banknot_20);
     printf("Banknoty 50z: %d\n", kasa.banknot_50);
-    pthread_mutex_unlock(&kasa.mutex); // Odblokowanie kasy
+    pthread_mutex_unlock(&kasa.mutex);
 
-    zamknij_kase(&kasa); // Zamykanie mutexa po zakończeniu
+    // Zamknięcie portfela klienta i kasy
+    zamknij_portfel(&klient.portfel);
+    zamknij_kase(&kasa);
 
     return 0;
 }
