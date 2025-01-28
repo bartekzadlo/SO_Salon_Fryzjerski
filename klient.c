@@ -95,9 +95,7 @@ void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk)
             pthread_cond_wait(&klient->czekaj_na_zaplate, &klient->mutex);
             zaplac_za_usluge(klient);
             printf("Fryzjer obsługuje klienta.\n");
-
-            printf("Tu informacja od fryzjera o reszcie.\n");
-
+            o dbierz_reszte(klient, &salon->kasa);
             pthread_mutex_lock(&salon->mutex_poczekalnia);
             salon->klienci_w_poczekalni--;
             pthread_mutex_unlock(&salon->mutex_poczekalnia);
