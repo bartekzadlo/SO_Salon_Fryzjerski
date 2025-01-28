@@ -1,6 +1,10 @@
 #ifndef KLIENT_H
 #define KLIENT_H
+#include <semaphore.h>
+#include <pthread.h>
 #include "salon.h"
+
+struct Salon;
 
 typedef struct Klient
 {
