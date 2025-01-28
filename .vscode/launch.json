@@ -2,10 +2,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug projekt_salon_fryzjerski",
+            "name": "Debug projekt_fryzjer", // Wybierz odpowiednią nazwę
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/projekt_salon_fryzjerski",
+            "program": "${workspaceFolder}/projekt_fryzjer", // Ścieżka do programu
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -14,17 +14,25 @@
             "MIMode": "gdb",
             "setupCommands": [
                 {
-                    "description": "Enable pretty-printing for gdb",
+                    "description": "Włącz debugowanie GDB",
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
                 }
             ],
             "miDebuggerPath": "/usr/bin/gdb",
-            "preLaunchTask": "C/C++: gcc build active file",
+            "preLaunchTask": "build", // Użyj tej wersji
             "serverLaunchTimeout": 10000,
             "filterStdout": true,
             "filterStderr": true,
-            "visualizerFile": "${workspaceFolder}/.vscode/visualizers/gdb-visualizer.xml"
+            "logging": {
+                "moduleLoad": false,
+                "trace": true,
+                "traceResponse": true,
+                "engineLogging": false
+            },
+            "sourceFileMap": {
+                "/usr/include": "${workspaceFolder}/include"
+            }
         }
     ]
 }
