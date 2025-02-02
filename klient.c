@@ -80,25 +80,23 @@ void klient_przychodzi_do_salon(Salon *salon, Klient *klient)
 {
     while (1)
     {
-        if (sem_trywait(&salon->poczekalnia) == 0)
-        {
-            printf("Klient wchodzi do poczekalni.\n");     // klient wchodzi do poczekalni
-            pthread_mutex_lock(&salon->mutex_poczekalnia); // klient blokuje mutex na poczekalnie
-            salon->klienci_w_poczekalni++;                 // dodajemy osobe do poczekalni
-            salon->kolejka.klienci[salon->kolejka.koniec] = klient;
-            salon->kolejka.koniec = (salon->kolejka.koniec + 1) % 100; // Obsługa cyklicznej kolejki
-            pthread_mutex_unlock(&salon->mutex_poczekalnia);           // odblokowujemy mutex
-            pthread_cond_wait(&klient->czekaj_na_zaplate, &klient->mutex);
-            printf("Tu jestem");
-            zaplac_za_usluge(klient, salon);
-            odbierz_reszte(klient, &salon->kasa);
-            break;
-        }
-        else
-        {
-            usleep(1000000);
-            printf("Brak wolnych miejsc w poczekalni. Klient wraca do zarabiania.\n");
-        }
+        sem_wait(&salon->poczekalnia); // Czekaj, aż będzie miejsce w poczekalni
+
+        printf("Klient wchodzi do poczekalni.\n");
+        pthread_mutex_lock(&salon->mutex_poczekalnia); // Zabezpieczamy dostęp do poczekalni
+        salon->klienci_w_poczekalni++;                 // Dodajemy osobę do poczekalni
+        salon->kolejka.klienci[salon->kolejka.koniec] = klient;
+        salon->kolejka.koniec = (salon->kolejka.koniec + 1) % 100; // Obsługa cyklicznej kolejki
+        pthread_mutex_unlock(&salon->mutex_poczekalnia);
+
+        pthread_cond_wait(&klient->czekaj_na_zaplate, &klient->mutex);
+        printf("Tu jestem\n");
+
+        zaplac_za_usluge(klient, salon);
+        odbierz_reszte(klient, &salon->kasa);
+
+        sem_post(&salon->poczekalnia); // Zwalniamy miejsce w poczekalni po zakończeniu usługi
+        break;
     }
 }
 
