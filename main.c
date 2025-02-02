@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <unistd.h>
 #include "salon.h"
 #include "klient.h"
 #include "fryzjer.h"
@@ -45,6 +46,8 @@ int main()
         inicjalizuj_klienta(&klienci[i], i); // Przekazanie numeru klienta jako ID, numeracja zaczyna się od 0
         printf("Klient %d został zainicjowany.\n", i);
     }
+
+    sleep(60);
 
     // Kończenie pracy fryzjerów
     printf("Kończenie pracy fryzjerów...\n");

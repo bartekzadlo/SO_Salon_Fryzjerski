@@ -19,24 +19,40 @@ void *fryzjer_praca(void *arg)
         sem_wait(&salon->poczekalnia);
 
         pthread_mutex_lock(&salon->mutex_poczekalnia);
+
+        // Sprawdzamy, czy są klienci w poczekalni
         if (salon->klienci_w_poczekalni > 0)
         {
-            salon->klienci_w_poczekalni--;
-            fryzjer->klient = pobierz_klienta_z_kolejki(salon);
+            salon->klienci_w_poczekalni--;                      // Zmniejszamy liczbę klientów w poczekalni
+            fryzjer->klient = pobierz_klienta_z_kolejki(salon); // Pobieramy klienta
             printf("Fryzjer %d pobiera klienta %d.\n", fryzjer->id, fryzjer->klient->id);
             printf("W poczekalni pozostało %d wolnych miejsc.\n", salon->max_klientow - salon->klienci_w_poczekalni);
+
+            pthread_mutex_unlock(&salon->mutex_poczekalnia);
+
+            // Dopiero teraz fryzjer zajmuje fotel
+            zajmij_fotel(&salon->fotel);
+            printf("Fryzjer %d przygotowuje się do przyjęcia płatności od klienta.\n", fryzjer->id);
+
+            // Przekazanie sygnału do klienta, aby poczekał na zapłatę
+            pthread_cond_signal(&fryzjer->klient->czekaj_na_zaplate);
+
+            // Fryzjer wykonuje obsługę
+            dodaj_banknoty_do_kasy(salon);
+            printf("Fryzjer %d wykonuje obsługę.\n", fryzjer->id);
+
+            // Po obsłudze fryzjer zwalnia fotel
+            zwolnij_fotel(&salon->fotel);
+
+            // Fryzjer wydaje resztę
+            wydaj_reszte(&salon->kasa, salon->reszta);
         }
-        pthread_mutex_unlock(&salon->mutex_poczekalnia);
-
-        zajmij_fotel(&salon->fotel);
-        printf("Fryzjer %d przygotowuje się do przyjęcia płatności od klienta.\n", fryzjer->id);
-        pthread_cond_signal(&fryzjer->klient->czekaj_na_zaplate);
-
-        dodaj_banknoty_do_kasy(salon);
-        printf("Fryzjer wykonuje obsługę.\n");
-
-        zwolnij_fotel(&salon->fotel);
-        wydaj_reszte(&salon->kasa, salon->reszta);
+        else
+        {
+            pthread_mutex_unlock(&salon->mutex_poczekalnia);
+            // Jeśli brak klientów, fryzjer czeka na następnego klienta
+            printf("Brak klientów w poczekalni. Fryzjer %d czeka.\n", fryzjer->id);
+        }
     }
 
     return NULL;
