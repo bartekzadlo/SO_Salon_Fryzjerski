@@ -42,8 +42,8 @@ int main()
     printf("Inicjalizowanie klientów...\n");
     for (int i = 0; i < liczba_klientow; i++)
     {
-        inicjalizuj_klienta(&klienci[i], i); // Przekazanie numeru klienta jako ID
-        printf("Klient %d został zainicjowany.\n", i);
+        inicjalizuj_klienta(&klienci[i], i + 1); // Przekazanie numeru klienta jako ID
+        printf("Klient %d został zainicjowany.\n", i + 1);
     }
 
     // Kończenie pracy fryzjerów
