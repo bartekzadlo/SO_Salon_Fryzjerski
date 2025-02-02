@@ -50,14 +50,6 @@ int main()
     printf("Kończenie pracy fryzjerów...\n");
     for (int i = 0; i < liczba_fryzjerow; i++)
     {
-        inicjalizuj_fryzjera(&fryzjerowie[i], &salon, i + 1); // Przekazanie numeru fryzjera zaczynającego się od 1
-        printf("Fryzjer %d zainicjowany.\n", i + 1);          // Numeracja od 1
-    }
-
-    // Kończenie pracy fryzjerów
-    printf("Kończenie pracy fryzjerów...\n");
-    for (int i = 0; i < liczba_fryzjerow; i++)
-    {
         zakoncz_fryzjera(&fryzjerowie[i]);              // Kończymy pracę fryzjerów
         printf("Fryzjer %d zakończył pracę.\n", i + 1); // Numeracja od 1
     }
