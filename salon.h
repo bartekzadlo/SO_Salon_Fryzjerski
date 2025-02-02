@@ -7,13 +7,14 @@
 
 typedef struct
 {
-    int id;
-    int portfel_10;
-    int portfel_20;
-    int portfel_50;
-    pthread_cond_t czekaj_na_zaplate;
-    pthread_mutex_t mutex;
-    pthread_t watek;
+    int id;                           // Id Klienta
+    int portfel_10;                   // Zawartość portfela klienta
+    int portfel_20;                   // Zawartość portfela klienta
+    int portfel_50;                   // Zawartość portfela klienta
+    pthread_cond_t czekaj_na_zaplate; // Warunek dla klienta od fryzjera że ten czeka na zapłate
+    pthread_cond_t wydano_reszte;     // Warunek dla klienta, że fryzjer wydaje resztę
+    pthread_mutex_t mutex_klient;     // Mutex dostępu do klienta
+    pthread_t watek;                  // Wątek klienta
 } Klient;
 
 typedef struct
@@ -33,16 +34,13 @@ typedef struct
 // Struktura Kasa
 typedef struct
 {
-    int banknot_10;
-    int banknot_20;
-    int banknot_50;
-    int wydane_10;
-    int wydane_20;
-    int wydane_50;
-    pthread_mutex_t mutex_kasa;  // Mutex do synchronizacji dostępu do kasy
-    pthread_cond_t uzupelnienie; // Warunek dla uzupełnienia kasy
-    pthread_cond_t zaplata;
-    pthread_cond_t wydano_reszte;
+    int banknot_10;             // ilosc banknotow w kasie
+    int banknot_20;             // ilosc banknotow w kasie
+    int banknot_50;             // ilosc banknotow w kasie
+    int wydane_10;              // uzywane przy zapamiętaniu ile wydajemy
+    int wydane_20;              // uzywane przy zapamiętaniu ile wydajemy
+    int wydane_50;              // uzywane przy zapamiętaniu ile wydajemy
+    pthread_mutex_t mutex_kasa; // Mutex do synchronizacji dostępu do kasy
 } Kasa;
 
 // Struktura Salon
@@ -52,12 +50,12 @@ typedef struct
     pthread_mutex_t mutex_poczekalnia; // Mutex do synchronizacji dostępu do poczekalni
     int klienci_w_poczekalni;          // Liczba klientów w poczekalni
     int max_klientow;
-    Fotel fotel; // Fotel z semaforem i mutexem
-    Kasa kasa;   // Kasa z banknotami i mutexem
-    int zaplacone_10;
-    int zaplacone_20;
-    int zaplacone_50;
-    int zaplacona_kwota;
+    Fotel fotel;         // Fotel z semaforem i mutexem
+    Kasa kasa;           // Kasa z banknotami i mutexem
+    int zaplacone_10;    // uzywane przy placeniu za usluge
+    int zaplacone_20;    // uzywane przy placeniu za usluge
+    int zaplacone_50;    // uzywane przy placeniu za usluge
+    int zaplacona_kwota; // uzywane przy placeniu za usluge
     int reszta;
     KolejkaKlientow kolejka;
 } Salon;

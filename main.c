@@ -130,7 +130,7 @@ int main()
         printf("Klient %d został zainicjowany.\n", i);
     }
 
-    sleep(60);
+    sleep(4);
 
     // Kończenie pracy fryzjerów
     printf("Kończenie pracy fryzjerów...\n");

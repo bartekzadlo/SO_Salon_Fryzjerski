@@ -7,10 +7,12 @@
 
 typedef struct
 {
-    int id;          // ID fryzjera
-    Salon *salon;    // Wskaźnik do salonu
-    Klient *klient;  // Wskaźnik na aktualnego klienta
-    pthread_t watek; // Wątek fryzjera
+    int id;                      // ID fryzjera
+    Salon *salon;                // Wskaźnik do salonu
+    Klient *klient;              // Wskaźnik na aktualnego klienta
+    pthread_t watek;             // Wątek fryzjera
+    pthread_cond_t uzupelnienie; // Sygnał dla fryzjera, że kasa uzupełniona
+    pthread_cond_t zaplata;      // Sygnał dla fryzjera, że klient zapłacił
 } Fryzjer;
 
 // Funkcja reprezentująca pracę fryzjera
