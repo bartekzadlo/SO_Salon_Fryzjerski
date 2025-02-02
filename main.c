@@ -40,8 +40,6 @@ int main()
     // Tworzymy klientów
     Klient klienci[liczba_klientow]; // Tablica przechowująca klientów
     printf("Inicjalizowanie klientów...\n");
-    // Tworzenie klientów
-    printf("Inicjalizowanie klientów...\n");
     for (int i = 0; i < liczba_klientow; i++)
     {
         inicjalizuj_klienta(&klienci[i], i + 1);           // Przekazanie numeru klienta zaczynającego się od 1
