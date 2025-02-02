@@ -3,6 +3,8 @@
 #include <semaphore.h>
 #include <pthread.h>
 
+#define MAX_KLIENCI_W_POCZEKALNI 20
+
 typedef struct
 {
     int id;

@@ -8,10 +8,10 @@
 int main()
 {
     // Parametry wejściowe: liczba fryzjerów, wielkość poczekalni, liczba klientów, liczba foteli
-    int liczba_fryzjerow = 1;     // Liczba fryzjerów w salonie
-    int wielkosc_poczekalni = 20; // Wielkość poczekalni
-    int liczba_klientow = 1;      // Liczba istniejących klientów
-    int liczba_foteli = 3;        // Liczba foteli w salonie
+    int liczba_fryzjerow = 1;                           // Liczba fryzjerów w salonie
+    int wielkosc_poczekalni = MAX_KLIENCI_W_POCZEKALNI; // Wielkość poczekalni
+    int liczba_klientow = 1;                            // Liczba istniejących klientów
+    int liczba_foteli = 3;                              // Liczba foteli w salonie
 
     // Tworzymy salon i inicjalizujemy go
     Salon salon;
