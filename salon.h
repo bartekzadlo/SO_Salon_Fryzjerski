@@ -12,7 +12,6 @@ typedef struct
     int portfel_20;                   // Zawartość portfela klienta
     int portfel_50;                   // Zawartość portfela klienta
     pthread_cond_t czekaj_na_zaplate; // Warunek dla klienta od fryzjera że ten czeka na zapłate
-    pthread_cond_t wydano_reszte;     // Warunek dla klienta, że fryzjer wydaje resztę
     pthread_mutex_t mutex_klient;     // Mutex dostępu do klienta
     pthread_t watek;                  // Wątek klienta
 } Klient;
@@ -34,13 +33,16 @@ typedef struct
 // Struktura Kasa
 typedef struct
 {
-    int banknot_10;             // ilosc banknotow w kasie
-    int banknot_20;             // ilosc banknotow w kasie
-    int banknot_50;             // ilosc banknotow w kasie
-    int wydane_10;              // uzywane przy zapamiętaniu ile wydajemy
-    int wydane_20;              // uzywane przy zapamiętaniu ile wydajemy
-    int wydane_50;              // uzywane przy zapamiętaniu ile wydajemy
-    pthread_mutex_t mutex_kasa; // Mutex do synchronizacji dostępu do kasy
+    int banknot_10;               // ilosc banknotow w kasie
+    int banknot_20;               // ilosc banknotow w kasie
+    int banknot_50;               // ilosc banknotow w kasie
+    int wydane_10;                // uzywane przy zapamiętaniu ile wydajemy
+    int wydane_20;                // uzywane przy zapamiętaniu ile wydajemy
+    int wydane_50;                // uzywane przy zapamiętaniu ile wydajemy
+    pthread_cond_t uzupelnienie;  // Sygnał dla fryzjera, że kasa uzupełniona
+    pthread_cond_t zaplata;       // Sygnał dla fryzjera, że klient zapłacił
+    pthread_cond_t wydano_reszte; // Warunek dla klienta, że fryzjer wydaje resztę
+    pthread_mutex_t mutex_kasa;   // Mutex do synchronizacji dostępu do kasy
 } Kasa;
 
 // Struktura Salon

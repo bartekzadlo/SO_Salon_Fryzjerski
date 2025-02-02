@@ -22,7 +22,7 @@ void inicjalizuj_klienta(Klient *klient, int id)
     }
 
     // Inicjalizacja mutexu
-    if (pthread_mutex_init(&klient->mutex, NULL) != 0)
+    if (pthread_mutex_init(&klient->mutex_klient, NULL) != 0)
     {
         printf("Błąd inicjalizacji mutexu.\n");
         exit(1);
@@ -90,7 +90,7 @@ void klient_przychodzi_do_salon(Salon *salon, Klient *klient)
             pthread_mutex_unlock(&salon->mutex_poczekalnia);
 
             // Czekaj na zapłatę
-            pthread_cond_wait(&klient->czekaj_na_zaplate, &klient->mutex);
+            pthread_cond_wait(&klient->czekaj_na_zaplate, &klient->mutex_klient);
 
             // Zapłać i odbierz resztę
             zaplac_za_usluge(klient, salon);
@@ -110,10 +110,10 @@ void klient_przychodzi_do_salon(Salon *salon, Klient *klient)
 
 void odbierz_reszte(Klient *klient, Kasa *kasa)
 {
-    pthread_mutex_lock(&klient->mutex);
+    pthread_mutex_lock(&klient->mutex_klient);
 
     // Oczekiwanie na sygnał o wydanej reszcie
-    pthread_cond_wait(&kasa->wydano_reszte, &klient->mutex);
+    pthread_cond_wait(&kasa->wydano_reszte, &klient->mutex_klient);
 
     // Dodanie wydanych banknotów do portfela klienta
     klient->portfel_10 += kasa->wydane_10;
@@ -123,7 +123,7 @@ void odbierz_reszte(Klient *klient, Kasa *kasa)
     printf("Klient odebrał resztę: %d x 10z, %d x 20z, %d x 50z.\n",
            kasa->wydane_10, kasa->wydane_20, kasa->wydane_50);
 
-    pthread_mutex_unlock(&klient->mutex);
+    pthread_mutex_unlock(&klient->mutex_klient);
 }
 
 void zakoncz_klienta(Klient *klient)
