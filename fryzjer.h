@@ -5,6 +5,14 @@
 #include "salon.h"
 #include "klient.h"
 
+typedef struct
+{
+    int id;          // ID fryzjera
+    Salon *salon;    // Wskaźnik do salonu
+    Klient *klient;  // Wskaźnik na aktualnego klienta
+    pthread_t watek; // Wątek fryzjera
+} Fryzjer;
+
 // Funkcja reprezentująca pracę fryzjera
 void *fryzjer_praca(void *arg);
 
