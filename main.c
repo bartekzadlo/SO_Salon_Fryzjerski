@@ -33,43 +33,33 @@ int main()
     printf("Inicjalizowanie fryzjerów...\n");
     for (int i = 0; i < liczba_fryzjerow; i++)
     {
-        inicjalizuj_fryzjera(&fryzjerowie[i], &salon, i + 1); // Inicjalizujemy fryzjerów
-        printf("Fryzjer %d został zainicjowany.\n", i + 1);
+        inicjalizuj_fryzjera(&fryzjerowie[i], &salon, i); // Inicjalizujemy fryzjerów, numeracja zaczyna się od 0
+        printf("Fryzjer %d został zainicjowany.\n", i);
     }
 
     // Tworzymy klientów
     Klient klienci[liczba_klientow]; // Tablica przechowująca klientów
     printf("Inicjalizowanie klientów...\n");
-    // Tworzenie klientów
-    printf("Inicjalizowanie klientów...\n");
     for (int i = 0; i < liczba_klientow; i++)
     {
-        inicjalizuj_klienta(&klienci[i], i + 1);           // Przekazanie numeru klienta zaczynającego się od 1
-        printf("Klient %d został zainicjowany.\n", i + 1); // Numeracja od 1
+        inicjalizuj_klienta(&klienci[i], i); // Przekazanie numeru klienta jako ID, numeracja zaczyna się od 0
+        printf("Klient %d został zainicjowany.\n", i);
     }
 
     // Kończenie pracy fryzjerów
     printf("Kończenie pracy fryzjerów...\n");
     for (int i = 0; i < liczba_fryzjerow; i++)
     {
-        inicjalizuj_fryzjera(&fryzjerowie[i], &salon, i + 1); // Przekazanie numeru fryzjera zaczynającego się od 1
-        printf("Fryzjer %d zainicjowany.\n", i + 1);          // Numeracja od 1
-    }
-
-    // Kończenie pracy fryzjerów
-    printf("Kończenie pracy fryzjerów...\n");
-    for (int i = 0; i < liczba_fryzjerow; i++)
-    {
-        zakoncz_fryzjera(&fryzjerowie[i]);              // Kończymy pracę fryzjerów
-        printf("Fryzjer %d zakończył pracę.\n", i + 1); // Numeracja od 1
+        zakoncz_fryzjera(&fryzjerowie[i]); // Kończymy pracę fryzjerów
+        printf("Fryzjer %d zakończył pracę.\n", i);
     }
 
     // Kończenie pracy klientów
     printf("Kończenie pracy klientów...\n");
     for (int i = 0; i < liczba_klientow; i++)
     {
-        zakoncz_klienta(&klienci[i]);                  // Kończymy pracę klientów
-        printf("Klient %d zakończył pracę.\n", i + 1); // Numeracja od 1
+        zakoncz_klienta(&klienci[i]); // Kończymy pracę klientów
+        printf("Klient %d zakończył pracę.\n", i);
     }
 
     // Zamykanie zasobów salonu
