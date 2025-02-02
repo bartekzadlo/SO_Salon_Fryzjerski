@@ -13,27 +13,32 @@ void *fryzjer_praca(void *arg)
 
     while (1)
     {
-        printf("Fryzjer %d czeka na klienta w poczekalni.\n", fryzjer->id); // fryzjer czeka na klienta
-        sem_wait(&salon->poczekalnia);                                      // wywołanie semafora poczekalni
+        printf("Fryzjer %d czeka na klienta w poczekalni.\n", fryzjer->id);
 
-        pthread_mutex_lock(&salon->mutex_poczekalnia); // blokujemy muteks poczekalni
+        // Fryzjer czeka na klienta w poczekalni
+        sem_wait(&salon->poczekalnia);
+
+        pthread_mutex_lock(&salon->mutex_poczekalnia);
         if (salon->klienci_w_poczekalni > 0)
         {
-            salon->klienci_w_poczekalni--; // zmniejszenie liczby klientów w poczekalni
+            salon->klienci_w_poczekalni--;
             fryzjer->klient = pobierz_klienta_z_kolejki(salon);
             printf("Fryzjer %d pobiera klienta %d.\n", fryzjer->id, fryzjer->klient->id);
-            printf("W poczekalni pozostało %d wolnych miejsc.\n", salon->max_klientow - salon->klienci_w_poczekalni); // informacja o liczbie miejsc
+            printf("W poczekalni pozostało %d wolnych miejsc.\n", salon->max_klientow - salon->klienci_w_poczekalni);
         }
-        pthread_mutex_unlock(&salon->mutex_poczekalnia); // Odblokowujemy mutex poczekalni
+        pthread_mutex_unlock(&salon->mutex_poczekalnia);
 
         zajmij_fotel(&salon->fotel);
         printf("Fryzjer %d przygotowuje się do przyjęcia płatności od klienta.\n", fryzjer->id);
-        pthread_cond_signal(&fryzjer->klient->czekaj_na_zaplate); // Wysłanie sygnału
+        pthread_cond_signal(&fryzjer->klient->czekaj_na_zaplate);
+
         dodaj_banknoty_do_kasy(salon);
-        printf("Fryzjer wykonuje obsługę");
+        printf("Fryzjer wykonuje obsługę.\n");
+
         zwolnij_fotel(&salon->fotel);
         wydaj_reszte(&salon->kasa, salon->reszta);
     }
+
     return NULL;
 }
 
