@@ -5,61 +5,54 @@
 #include "klient.h"
 #include "fryzjer.h"
 
-void wyswietl_wartosc_semafora(sem_t *semafor)
-{
-    int semafor_value;
-    if (sem_getvalue(semafor, &semafor_value) == 0)
-    {
-        printf("Wartość semafora: %d\n", semafor_value);
-    }
-    else
-    {
-        perror("Błąd przy pobieraniu wartości semafora");
-    }
-}
-
 int main()
 {
-    int Tp, Tk;                   // Godziny otwarcia i zamknięcia salonu
+    // Parametry wejściowe: liczba fryzjerów, wielkość poczekalni, liczba klientów, liczba foteli
     int liczba_fryzjerow = 1;     // Liczba fryzjerów w salonie
     int wielkosc_poczekalni = 20; // Wielkość poczekalni
     int liczba_klientow = 1;      // Liczba istniejących klientów
-
-    // Prośba o podanie godzin otwarcia i zamknięcia salonu
-    printf("Podaj godzinę otwarcia salonu (Tp): ");
-    scanf("%d", &Tp);
-    printf("Podaj godzinę zamknięcia salonu (Tk): ");
-    scanf("%d", &Tk);
+    int liczba_foteli = 3;        // Liczba foteli w salonie
 
     // Tworzymy salon i inicjalizujemy go
     Salon salon;
-    inicjalizuj_salon(&salon, wielkosc_poczekalni, 3); // Zakładamy 1 fotel
-    int poczekalnia_value;
-    wyswietl_wartosc_semafora(&salon.poczekalnia); // Używamy wskaźnika do semafora
+    inicjalizuj_salon(&salon, wielkosc_poczekalni, liczba_foteli);
+    /*
+        Funkcja inicjalizuje salon, ustawiając maksymalną liczbę klientów w poczekalni,
+        liczby dostępnych foteli i synchronizując dostęp do tych zasobów.
+        Tworzy semafor dla poczekalni (max_klientow) oraz mutexy i semafory dla foteli i poczekalni,
+        aby zapewnić prawidłową synchronizację wątku podczas korzystania z tych zasobów.
+        Dodatkowo inicjalizuje kasę (poprzez funkcję inicjalizuj_kase), aby zapewnić prawidłowe operacje kasowe.
+        Funkcja inicjalizuje kasę w salonie, ustawiając początkowe ilości banknotów (wszystkie na 0).
+        Inicjalizuje również mutex dla kasy oraz zmienną warunkową do synchronizacji operacji uzupełniania kasy.
+    */
 
     // Tworzymy fryzjerów
-    Fryzjer fryzjerowie[liczba_fryzjerow];
+    Fryzjer fryzjerowie[liczba_fryzjerow]; // Tablica przechowująca fryzjerów
     for (int i = 0; i < liczba_fryzjerow; i++)
     {
-        inicjalizuj_fryzjera(&fryzjerowie[i], &salon, i + 1);
+        inicjalizuj_fryzjera(&fryzjerowie[i], &salon, i + 1); // Inicjalizujemy fryzjerów
     }
 
     // Tworzymy klientów
-    Klient klienci[liczba_klientow];
+    Klient klienci[liczba_klientow]; // Tablica przechowująca klientów
     for (int i = 0; i < liczba_klientow; i++)
     {
-        inicjalizuj_klienta(&klienci[i], i); // Przekazanie numeru klienta jako id
-        pthread_t klient_watek;
-        pthread_create(&klient_watek, NULL, (void *)klient_przychodzi_do_salon, &klienci[i]);
+        inicjalizuj_klienta(&klienci[i], i); // Przekazanie numeru klienta jako ID
     }
 
     // Kończenie pracy fryzjerów
     for (int i = 0; i < liczba_fryzjerow; i++)
     {
-        zakoncz_fryzjera(&fryzjerowie[i]);
+        zakoncz_fryzjera(&fryzjerowie[i]); // Kończymy pracę fryzjerów
     }
 
-    // Zamykanie zasobów
-    zamknij_salon(&salon);
+    // Kończenie pracy klientów
+    for (int i = 0; i < liczba_klientow; i++)
+    {
+        zakoncz_klienta(&klienci[i]); // Kończymy pracę klientów
+    }
+
+    // Zamykanie zasobów salonu
+    zamknij_salon(&salon); // Zwalniamy wszystkie zasoby związane z salonem
     return 0;
 }

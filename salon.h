@@ -5,12 +5,21 @@
 
 typedef struct
 {
+    int id;          // ID fryzjera
+    Salon *salon;    // Wskaźnik do salonu
+    Klient *klient;  // Wskaźnik na aktualnego klienta
+    pthread_t watek; // Wątek fryzjera
+} Fryzjer;
+
+typedef struct
+{
     int id;
     int portfel_10;
     int portfel_20;
     int portfel_50;
     pthread_cond_t czekaj_na_zaplate;
     pthread_mutex_t mutex;
+    pthread_t watek;
 } Klient;
 
 typedef struct

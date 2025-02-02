@@ -109,7 +109,6 @@ void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli)
     salon->max_klientow = max_klientow;                  // Przypisanie wartości max_klientow
     sem_init(&salon->poczekalnia, 0, max_klientow);      // Inicjalizowanie semafora
     pthread_mutex_init(&salon->mutex_poczekalnia, NULL); // Mutex dla poczekalni
-    salon->klienci_w_poczekalni = 0;
 
     // Inicjalizacja fotela
     sem_init(&salon->fotel.wolne_fotele, 0, liczba_foteli);
@@ -142,4 +141,6 @@ void zamknij_salon(Salon *salon)
     // Niszczenie zasobów związanych z fotelami
     sem_destroy(&salon->fotel.wolne_fotele);          // Zwalniamy semafor dla foteli
     pthread_mutex_destroy(&salon->fotel.mutex_fotel); // Zwalniamy mutex dla foteli
+
+    zamknij_kase(&salon->kasa);
 }

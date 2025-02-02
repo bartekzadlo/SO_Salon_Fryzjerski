@@ -9,6 +9,7 @@ void zarabiaj_pieniadze(Klient *klient);                                       /
 void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk); // Klient przychodzi do salonu
 void zaplac_za_usluge(Klient *klient, Salon *salon);                           // Klient płaci za usługę
 void odbierz_reszte(Klient *klient, Kasa *kasa);
+void zakoncz_klienta(Klient *klient);
 Klient *pobierz_klienta_z_kolejki(Salon *salon);
 
 #endif

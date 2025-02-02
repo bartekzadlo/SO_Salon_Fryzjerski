@@ -27,6 +27,13 @@ void inicjalizuj_klienta(Klient *klient, int id)
         printf("Błąd inicjalizacji mutexu.\n");
         exit(1);
     }
+
+    // Tworzenie wątku dla klienta
+    if (pthread_create(&klient->watek, NULL, (void *)klient_przychodzi_do_salon, klient) != 0)
+    {
+        printf("Błąd tworzenia wątku dla klienta %d.\n", klient->id);
+        exit(1);
+    }
 }
 
 void zarabiaj_pieniadze(Klient *klient)
@@ -141,4 +148,10 @@ void odbierz_reszte(Klient *klient, Kasa *kasa)
            kasa->wydane_10, kasa->wydane_20, kasa->wydane_50);
 
     pthread_mutex_unlock(&klient->mutex);
+}
+
+void zakoncz_klienta(Klient *klient)
+{
+    pthread_cancel(klient->watek);     // Zakończenie wątku klienta
+    pthread_join(klient->watek, NULL); // Dołączenie wątku
 }
