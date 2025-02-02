@@ -10,9 +10,9 @@ void inicjalizuj_klienta(Klient *klient, int id)
 {
     // Inicjalizacja danych klienta
     klient->id = id;
-    klient->portfel_10 = 0;
-    klient->portfel_20 = 0;
-    klient->portfel_50 = 0;
+    klient->portfel_10 = 5;
+    klient->portfel_20 = 5;
+    klient->portfel_50 = 5;
 
     // Inicjalizacja zmiennej warunkowej (dla synchronizacji)
     if (pthread_cond_init(&klient->czekaj_na_zaplate, NULL) != 0)
@@ -34,31 +34,6 @@ void inicjalizuj_klienta(Klient *klient, int id)
         printf("Błąd tworzenia wątku dla klienta %d.\n", klient->id);
         exit(1);
     }
-}
-
-void zarabiaj_pieniadze(Klient *klient)
-{
-    srand(time(NULL));
-    int liczba_banknotow = rand() % 10 + 1;
-
-    for (int i = 0; i < liczba_banknotow; i++)
-    {
-        int banknot = rand() % 3;
-        if (banknot == 0)
-        {
-            klient->portfel_10 += 1;
-        }
-        else if (banknot == 1)
-        {
-            klient->portfel_20 += 1;
-        }
-        else
-        {
-            klient->portfel_50 += 1;
-        }
-    }
-    printf("Klient zarobił:\n 10z: %d\n 20z: %d\n 50z: %d\n",
-           klient->portfel_10, klient->portfel_20, klient->portfel_50);
 }
 
 void zaplac_za_usluge(Klient *klient, Salon *salon)
@@ -101,11 +76,8 @@ void zaplac_za_usluge(Klient *klient, Salon *salon)
     pthread_cond_signal(&salon->kasa.zaplata);
 }
 
-void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk)
+void klient_przychodzi_do_salon(Salon *salon, Klient *klient)
 {
-    int czas_przyjscia = Tp + rand() % (Tk - Tp + 1);
-    printf("Klient pojawia się o godzinie %d:00.\n", czas_przyjscia);
-
     while (1)
     {
         if (sem_trywait(&salon->poczekalnia) == 0)
@@ -126,8 +98,6 @@ void klient_przychodzi_do_salon(Salon *salon, Klient *klient, int Tp, int Tk)
         {
             usleep(1000000);
             printf("Brak wolnych miejsc w poczekalni. Klient wraca do zarabiania.\n");
-            zarabiaj_pieniadze(klient);
-            void klient_przychodzi_do_salon(Salon * salon, Klient * klient, int Tp, int Tk);
         }
     }
 }
