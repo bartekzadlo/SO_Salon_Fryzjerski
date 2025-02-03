@@ -8,11 +8,18 @@
 
 int main()
 {
+    key_t key;
+    key = ftok("./unikalny_klucz.txt", 'A');
+    if (key == -1)
+    {
+        perror("ftok failed");
+        exit(1);
+    }
     // Parametry wejściowe: liczba fryzjerów, wielkość poczekalni, liczba klientów, liczba foteli
-    int liczba_fryzjerow = 1;                           // Liczba fryzjerów w salonie
+    int liczba_fryzjerow = 3;                           // Liczba fryzjerów w salonie
     int wielkosc_poczekalni = MAX_KLIENCI_W_POCZEKALNI; // Wielkość poczekalni
-    int liczba_klientow = 5;                            // Liczba istniejących klientów
-    int liczba_foteli = 3;                              // Liczba foteli w salonie
+    int liczba_klientow = 20;                           // Liczba istniejących klientów
+    int liczba_foteli = 4;                              // Liczba foteli w salonie
 
     // Tworzymy salon i inicjalizujemy go
     Salon salon;
@@ -30,7 +37,6 @@ int main()
     */
 
     // Tworzymy fryzjerów
-    /*
     Fryzjer fryzjerowie[liczba_fryzjerow]; // Tablica przechowująca fryzjerów
     printf("Inicjalizowanie fryzjerów...\n");
     for (int i = 0; i < liczba_fryzjerow; i++)
@@ -38,7 +44,6 @@ int main()
         inicjalizuj_fryzjera(&fryzjerowie[i], &salon, i); // Inicjalizujemy fryzjerów
         printf("Fryzjer %d został zainicjowany.\n", i);
     }
-    */
     // Tworzymy klientów
     Klient klienci[liczba_klientow]; // Tablica przechowująca klientów
     printf("Inicjalizowanie klientów...\n");
@@ -51,7 +56,6 @@ int main()
     sleep(10);
 
     // Kończenie pracy fryzjerów
-    /*
     printf("Kończenie pracy fryzjerów...\n");
     for (int i = 0; i < liczba_fryzjerow; i++)
     {
@@ -59,7 +63,6 @@ int main()
         printf("Fryzjer %d zakończył pracę.\n", i); // Numeracja od 0
     }
 
-    */
     // Kończenie pracy klientów
     printf("Kończenie pracy klientów...\n");
     for (int i = 0; i < liczba_klientow; i++)

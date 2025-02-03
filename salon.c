@@ -106,6 +106,7 @@ void wydaj_reszte(Kasa *kasa, int reszta)
 
 void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli)
 {
+    salon->klienci_w_poczekalni = 0;
     salon->max_klientow = max_klientow;
 
     // Inicjalizowanie semafora poczekalni
