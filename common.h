@@ -13,11 +13,9 @@
 /* Struktura opisująca klienta */
 typedef struct
 {
-    int id;         // Id Klienta
-    int portfel_10; // Zawartość portfela klienta
-    int portfel_20; // Zawartość portfela klienta
-    int portfel_50; // Zawartość portfela klienta
-    sem_t served;   // semafor, na którym klient czeka na zakończenie obsługi
+    int id;       // Id Klienta
+    int payment;  // kwota przekazywana (20 lub 50 zł)
+    sem_t served; // semafor, na którym klient czeka na zakończenie obsługi
 } Klient;
 
 /* Kolejka poczekalni – implementowana jako tablica cykliczna */
@@ -41,26 +39,5 @@ typedef struct
 int salon_open = 1;        // salon czynny
 int close_all_clients = 0; // sygnał 2: wszyscy klienci natychmiast opuszczają salon
 int barber_stop[F] = {0};  // dla każdego fryzjera – sygnał 1, aby zakończył pracę
-
-// Funkcje operujące na salonie
-void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli);
-void zajmij_fotel(Fotel *fotel);
-void zwolnij_fotel(Fotel *fotel);
-void zamknij_salon(Salon *salon, int shm_id);
-void inicjalizuj_kase(Kasa *kasa);
-void zamknij_kase(Kasa *kasa);
-
-// Funkcje watku klienta
-void klient_przychodzi_do_salon(Salon *salon, Klient *klient); // Klient przychodzi do salonu
-void zaplac_za_usluge(Klient *klient, Salon *salon);           // Klient płaci za usługę
-void odbierz_reszte(Klient *klient, Kasa *kasa);
-void zakoncz_klienta(Klient *klient);
-
-// Funkcja watku klienta
-void *fryzjer_praca(void *arg);
-void inicjalizuj_fryzjera(Fryzjer *fryzjer, Salon *salon, int id);
-void zakoncz_fryzjera(Fryzjer *fryzjer);
-void dodaj_banknoty_do_kasy(Salon *salon);
-void wydaj_reszte(Kasa *kasa, int reszta);
 
 #endif // COMMON_H
