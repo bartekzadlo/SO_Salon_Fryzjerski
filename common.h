@@ -37,6 +37,11 @@ typedef struct
     pthread_mutex_t mutex_kasa;  // Mutex do synchronizacji dostępu do kasy
 } Kasa;
 
+/* Flagi sterujące symulacją */
+int salon_open = 1;        // salon czynny
+int close_all_clients = 0; // sygnał 2: wszyscy klienci natychmiast opuszczają salon
+int barber_stop[F] = {0};  // dla każdego fryzjera – sygnał 1, aby zakończył pracę
+
 // Funkcje operujące na salonie
 void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli);
 void zajmij_fotel(Fotel *fotel);
@@ -46,7 +51,6 @@ void inicjalizuj_kase(Kasa *kasa);
 void zamknij_kase(Kasa *kasa);
 
 // Funkcje watku klienta
-void inicjalizuj_klienta(Klient *klient, int id);              // Inicjalizacja klienta, nadanie mu id
 void klient_przychodzi_do_salon(Salon *salon, Klient *klient); // Klient przychodzi do salonu
 void zaplac_za_usluge(Klient *klient, Salon *salon);           // Klient płaci za usługę
 void odbierz_reszte(Klient *klient, Kasa *kasa);
