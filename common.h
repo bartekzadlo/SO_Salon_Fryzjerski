@@ -40,4 +40,9 @@ int salon_open = 1;        // salon czynny
 int close_all_clients = 0; // sygnał 2: wszyscy klienci natychmiast opuszczają salon
 int barber_stop[F] = {0};  // dla każdego fryzjera – sygnał 1, aby zakończył pracę
 
+/* Prototypy funkcji wątków */
+void *barber_thread(void *arg);
+void *client_thread(void *arg);
+void *manager_thread(void *arg);
+
 #endif // COMMON_H
