@@ -1,7 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <unistd.h>
+#include <stdio.h>     // Dla funkcji printf, perror i innych
+#include <stdlib.h>    // Dla exit() i innych funkcji
+#include <pthread.h>   // Dla operacji na wątkach i mutexach
+#include <unistd.h>    // Dla sleep()
+#include <sys/ipc.h>   // Dla ftok()
+#include <sys/shm.h>   // Dla shmget, shmat i innych funkcji pamięci dzielonej
+#include <semaphore.h> // Dla semaforów
 #include "salon.h"
 #include "klient.h"
 #include "fryzjer.h"
@@ -15,7 +18,7 @@ int main()
         perror("ftok failed");
         exit(1);
     }
-    int shm_id = shmget(klucz, sizeof(Salon), IPC_CREAT | 0666); // Wartość 0666 to prawa dostępu
+    int shm_id = shmget(key, sizeof(Salon), IPC_CREAT | 0666); // Wartość 0666 to prawa dostępu
     if (shm_id == -1)
     {
         perror("Błąd przy tworzeniu segmentu pamięci dzielonej");
