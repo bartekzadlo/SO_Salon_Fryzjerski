@@ -5,7 +5,7 @@
 #include <sys/ipc.h>   // Dla ftok()
 #include <sys/shm.h>   // Dla shmget, shmat i innych funkcji pamięci dzielonej
 #include <semaphore.h> // Dla semaforów
-#include "salon.h"
+#include "common.h"
 
 int main()
 {

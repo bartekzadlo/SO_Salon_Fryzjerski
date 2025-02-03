@@ -1,5 +1,5 @@
-#ifndef SALON_H
-#define SALON_H
+#ifndef COMMON_H
+#define COMMON_H
 #include <semaphore.h>
 #include <pthread.h>
 
@@ -91,4 +91,4 @@ void inicjalizuj_fryzjera(Fryzjer *fryzjer, Salon *salon, int id);
 // Zakończenie pracy fryzjera
 void zakoncz_fryzjera(Fryzjer *fryzjer);
 
-#endif // SALON_H
+#endif // COMMON_H

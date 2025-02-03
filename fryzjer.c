@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include "salon.h"
+#include "common.h"
 
 void *fryzjer_praca(void *arg)
 {
