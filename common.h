@@ -7,10 +7,10 @@
 #include <stdio.h>
 
 /* Parametry symulacji */
-#define F 3           // liczba fryzjerów (F > 1)
-#define N 2           // liczba foteli (N < F)
+#define F 2           // liczba fryzjerów (F > 1)
+#define N 1           // liczba foteli (N < F)
 #define K 1           // maksymalna liczba klientów w poczekalni
-#define P 5           // liczba klientów
+#define P 2           // liczba klientów
 #define MAX_WAITING K // rozmiar kolejki poczekalni
 
 /* Struktura opisująca klienta */
