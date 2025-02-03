@@ -38,7 +38,7 @@ int main()
         exit(EXIT_FAILURE);
     }
     printf("Inicjalizowanie salonu...\n");
-    inicjalizuj_salon(&salon, wielkosc_poczekalni, liczba_foteli);
+    inicjalizuj_salon(salon, wielkosc_poczekalni, liczba_foteli);
     printf("Salon został zainicjowany. Wielkość poczekalni: %d, liczba foteli: %d\n", wielkosc_poczekalni, liczba_foteli);
     /*
         Funkcja inicjalizuje salon, ustawiając maksymalną liczbę klientów w poczekalni,
@@ -55,7 +55,7 @@ int main()
     printf("Inicjalizowanie fryzjerów...\n");
     for (int i = 0; i < liczba_fryzjerow; i++)
     {
-        inicjalizuj_fryzjera(&fryzjerowie[i], &salon, i); // Inicjalizujemy fryzjerów
+        inicjalizuj_fryzjera(&fryzjerowie[i], salon, i); // Inicjalizujemy fryzjerów
         printf("Fryzjer %d został zainicjowany.\n", i);
     }
     // Tworzymy klientów
@@ -87,7 +87,7 @@ int main()
 
     // Zamykanie zasobów salonu
     printf("Zamykanie salonu...\n");
-    zamknij_salon(&salon); // Zwalniamy wszystkie zasoby związane z salonem
+    zamknij_salon(salon, shm_id); // Zwalniamy wszystkie zasoby związane z salonem
     printf("Salon został zamknięty.\n");
 
     return 0;

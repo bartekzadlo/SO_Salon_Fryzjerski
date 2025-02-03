@@ -58,7 +58,7 @@ typedef struct
 void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli);
 void zajmij_fotel(Fotel *fotel);
 void zwolnij_fotel(Fotel *fotel);
-void zamknij_salon(Salon *salon);
+void zamknij_salon(Salon *salon, int shm_id);
 
 // Funkcje operujące na kasie
 void inicjalizuj_kase(Kasa *kasa);

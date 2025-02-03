@@ -1,6 +1,7 @@
 #include "salon.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/shm.h>
 #include <semaphore.h>
 #include <pthread.h>
 
@@ -13,10 +14,10 @@ void inicjalizuj_kase(Kasa *kasa)
     kasa->wydane_20 = 0;
     kasa->wydane_50 = 0;
 
-    // Inicjalizowanie semaforów
-    if (sem_init(&kasa->mutex_kasa, 1, 1) != 0)
-    { // 1 dla semafora binarnego (mutex)
-        perror("Błąd inicjalizacji semafora mutex_kasa");
+    // Inicjalizowanie mutexu
+    if (pthread_mutex_init(&kasa->mutex_kasa, NULL) != 0)
+    {
+        perror("Błąd inicjalizacji mutexu dla kasy");
         exit(EXIT_FAILURE);
     }
 
@@ -185,7 +186,7 @@ void zwolnij_fotel(Fotel *fotel)
     pthread_mutex_unlock(&fotel->mutex_fotel); // Zwolnij mutex
 }
 
-void zamknij_salon(Salon *salon)
+void zamknij_salon(Salon *salon, int shm_id)
 {
     // Zwalnianie zasobów semaforów i mutexów związanych z salonem
     sem_destroy(&salon->poczekalnia);                 // Zwalniamy semafor dla poczekalni
@@ -199,7 +200,7 @@ void zamknij_salon(Salon *salon)
     zamknij_kase(&salon->kasa); // Zwalniamy zasoby związane z kasą
 
     // Zwalnianie pamięci dzielonej
-    if (shmctl(salon->segment_pamieci_id, IPC_RMID, NULL) == -1)
+    if (shmctl(shm_id, IPC_RMID, NULL) == -1)
     {
         perror("Błąd przy usuwaniu segmentu pamięci dzielonej");
         exit(EXIT_FAILURE);
