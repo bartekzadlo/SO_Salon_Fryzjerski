@@ -34,6 +34,7 @@ typedef struct
     pthread_cond_t uzupelnienie; // Sygnał dla fryzjera, że kasa uzupełniona
     pthread_mutex_t mutex_kasa;  // Mutex do synchronizacji dostępu do kasy
 } Kasa;
+Kasa kasa;
 
 sem_t fotele_semafor;
 
