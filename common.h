@@ -3,7 +3,12 @@
 #include <semaphore.h>
 #include <pthread.h>
 
-#define MAX_KLIENCI_W_POCZEKALNI 5
+/* Parametry symulacji */
+#define F 3           // liczba fryzjerów (F > 1)
+#define N 2           // liczba foteli (N < F)
+#define K 5           // maksymalna liczba klientów w poczekalni
+#define P 10          // liczba klientów
+#define MAX_WAITING K // rozmiar kolejki poczekalni
 
 typedef struct
 {

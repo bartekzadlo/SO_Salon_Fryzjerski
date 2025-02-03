@@ -25,43 +25,6 @@ int main()
     int shm_id = shmget(key, sizeof(Salon), IPC_CREAT | 0600);
     sprawdz_blad(shm_id == -1, "Błąd: nie udało się utworzyć segmentu pamięci współdzielonej");
 
-    // Wczytanie parametrów od użytkownika
-    int liczba_fryzjerow, wielkosc_poczekalni, liczba_klientow, liczba_foteli;
-
-    printf("Podaj liczbę fryzjerów (F > 1): ");
-    if (scanf("%d", &liczba_fryzjerow) != 1 || liczba_fryzjerow <= 1)
-    {
-        errno = EINVAL;
-        perror("Błąd: liczba fryzjerów musi być większa niż 1");
-        exit(EXIT_FAILURE);
-    }
-
-    printf("Podaj liczbę foteli (N < F): ");
-    if (scanf("%d", &liczba_foteli) != 1 || liczba_foteli >= liczba_fryzjerow || liczba_foteli <= 0)
-    {
-        errno = EINVAL;
-        perror("Błąd: liczba foteli musi być dodatnia i mniejsza niż liczba fryzjerów");
-        exit(EXIT_FAILURE);
-    }
-
-    printf("Podaj wielkość poczekalni (>= 0): ");
-    if (scanf("%d", &wielkosc_poczekalni) != 1 || wielkosc_poczekalni < 0)
-    {
-        errno = EINVAL;
-        perror("Błąd: wielkość poczekalni nie może być ujemna");
-        exit(EXIT_FAILURE);
-    }
-
-    printf("Podaj liczbę klientów (>= 0): ");
-    if (scanf("%d", &liczba_klientow) != 1 || liczba_klientow < 0)
-    {
-        errno = EINVAL;
-        perror("Błąd: liczba klientów nie może być ujemna");
-        exit(EXIT_FAILURE);
-    }
-
-    printf("Parametry poprawne. Uruchamianie symulacji...\n");
-
     // Tworzymy salon i inicjalizujemy go
     Salon *salon = (Salon *)shmat(shm_id, NULL, 0);
     if (salon == (void *)-1)
@@ -70,8 +33,8 @@ int main()
         exit(EXIT_FAILURE);
     }
     printf("Inicjalizowanie salonu...\n");
-    inicjalizuj_salon(salon, wielkosc_poczekalni, liczba_foteli);
-    printf("Salon został zainicjowany. Wielkość poczekalni: %d, liczba foteli: %d\n", wielkosc_poczekalni, liczba_foteli);
+    inicjalizuj_salon(salon, K, N);
+    printf("Salon został zainicjowany. Wielkość poczekalni: %d, liczba foteli: %d\n", K, N);
     /*
         Funkcja inicjalizuje salon, ustawiając maksymalną liczbę klientów w poczekalni,
         liczby dostępnych foteli i synchronizując dostęp do tych zasobów.
@@ -83,17 +46,17 @@ int main()
     */
 
     // Tworzymy fryzjerów
-    Fryzjer fryzjerowie[liczba_fryzjerow]; // Tablica przechowująca fryzjerów
+    Fryzjer fryzjerowie[F]; // Tablica przechowująca fryzjerów
     printf("Inicjalizowanie fryzjerów...\n");
-    for (int i = 0; i < liczba_fryzjerow; i++)
+    for (int i = 0; i < F; i++)
     {
         inicjalizuj_fryzjera(&fryzjerowie[i], salon, i); // Inicjalizujemy fryzjerów
         printf("Fryzjer %d został zainicjowany.\n", i);
     }
     // Tworzymy klientów
-    Klient klienci[liczba_klientow]; // Tablica przechowująca klientów
+    Klient klienci[P]; // Tablica przechowująca klientów
     printf("Inicjalizowanie klientów...\n");
-    for (int i = 0; i < liczba_klientow; i++)
+    for (int i = 0; i < P; i++)
     {
         inicjalizuj_klienta(&klienci[i], i);           // Przekazanie numeru klienta zaczynającego się od 0
         printf("Klient %d został zainicjowany.\n", i); // Numeracja od 0
@@ -103,7 +66,7 @@ int main()
 
     // Kończenie pracy fryzjerów
     printf("Kończenie pracy fryzjerów...\n");
-    for (int i = 0; i < liczba_fryzjerow; i++)
+    for (int i = 0; i < F; i++)
     {
         zakoncz_fryzjera(&fryzjerowie[i]);          // Kończymy pracę fryzjerów
         printf("Fryzjer %d zakończył pracę.\n", i); // Numeracja od 0
@@ -111,7 +74,7 @@ int main()
 
     // Kończenie pracy klientów
     printf("Kończenie pracy klientów...\n");
-    for (int i = 0; i < liczba_klientow; i++)
+    for (int i = 0; i < P; i++)
     {
         zakoncz_klienta(&klienci[i]);              // Kończymy pracę klientów
         printf("Klient %d zakończył pracę.\n", i); // Numeracja od 0
