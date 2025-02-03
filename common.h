@@ -9,8 +9,8 @@
 /* Parametry symulacji */
 #define F 3           // liczba fryzjerów (F > 1)
 #define N 2           // liczba foteli (N < F)
-#define K 5           // maksymalna liczba klientów w poczekalni
-#define P 10          // liczba klientów
+#define K 1           // maksymalna liczba klientów w poczekalni
+#define P 5           // liczba klientów
 #define MAX_WAITING K // rozmiar kolejki poczekalni
 
 /* Struktura opisująca klienta */
