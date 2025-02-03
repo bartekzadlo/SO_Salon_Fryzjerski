@@ -8,6 +8,29 @@
 #include <errno.h>     // Do obsługi błędów systemowych
 #include "common.h"
 
+Klient *poczekalnia[MAX_WAITING] = {NULL};
+int poczekalniaFront = 0;
+int poczekalniaCount = 0;
+pthread_mutex_t poczekalniaMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t poczekalniaNotEmpty = PTHREAD_COND_INITIALIZER;
+
+Kasa kasa;
+
+sem_t fotele_semafor;
+
+volatile int salon_open = 1;
+volatile int close_all_clients = 0;
+volatile int barber_stop[F] = {0};
+
+void init_kasa()
+{
+    kasa.banknot_10 = 10;
+    kasa.banknot_20 = 5;
+    kasa.banknot_50 = 2;
+    pthread_mutex_init(&kasa.mutex_kasa, NULL);
+    pthread_cond_init(&kasa.uzupelnienie, NULL);
+}
+
 int main()
 {
     srand(time(NULL));

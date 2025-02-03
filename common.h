@@ -22,11 +22,11 @@ typedef struct
 } Klient;
 
 /* Kolejka poczekalni – implementowana jako tablica cykliczna */
-Klient *poczekalnia[MAX_WAITING] = {NULL};
-int poczekalniaFront = 0; // indeks pierwszego oczekującego klienta
-int poczekalniaCount = 0; // liczba klientów w poczekalni
-pthread_mutex_t poczekalniaMutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t poczekalniaNotEmpty = PTHREAD_COND_INITIALIZER;
+extern Klient *poczekalnia[MAX_WAITING];
+extern int poczekalniaFront; // indeks pierwszego oczekującego klienta
+extern int poczekalniaCount; // liczba klientów w poczekalni
+extern pthread_mutex_t poczekalniaMutex;
+extern pthread_cond_t poczekalniaNotEmpty;
 
 // Struktura Kasa
 typedef struct
@@ -37,24 +37,17 @@ typedef struct
     pthread_cond_t uzupelnienie; // Sygnał dla fryzjera, że kasa uzupełniona
     pthread_mutex_t mutex_kasa;  // Mutex do synchronizacji dostępu do kasy
 } Kasa;
-Kasa kasa;
+extern Kasa kasa;
 
-sem_t fotele_semafor;
+extern sem_t fotele_semafor;
 
 /* Flagi sterujące symulacją */
-volatile int salon_open = 1;        // salon czynny
-volatile int close_all_clients = 0; // sygnał 2: wszyscy klienci natychmiast opuszczają salon
-volatile int barber_stop[F] = {0};  // dla każdego fryzjera – sygnał 1, aby zakończył pracę
+extern volatile int salon_open;        // salon czynny
+extern volatile int close_all_clients; // sygnał 2: wszyscy klienci natychmiast opuszczają salon
+extern volatile int barber_stop[F];    // dla każdego fryzjera – sygnał 1, aby zakończył pracę
 
 /* Funkcja inicjalizująca kasę */
-void init_kasa()
-{
-    kasa.banknot_10 = 10;
-    kasa.banknot_20 = 5;
-    kasa.banknot_50 = 2;
-    pthread_mutex_init(&kasa.mutex_kasa, NULL);
-    pthread_cond_init(&kasa.uzupelnienie, NULL);
-}
+void init_kasa();
 
 /* Prototypy funkcji wątków */
 void *barber_thread(void *arg);
