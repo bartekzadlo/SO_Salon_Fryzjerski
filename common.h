@@ -35,6 +35,8 @@ typedef struct
     pthread_mutex_t mutex_kasa;  // Mutex do synchronizacji dostępu do kasy
 } Kasa;
 
+sem_t fotele_semafor;
+
 /* Flagi sterujące symulacją */
 int salon_open = 1;        // salon czynny
 int close_all_clients = 0; // sygnał 2: wszyscy klienci natychmiast opuszczają salon
