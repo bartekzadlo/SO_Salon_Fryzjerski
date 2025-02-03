@@ -1,7 +1,10 @@
 #ifndef COMMON_H
 #define COMMON_H
+
 #include <semaphore.h>
 #include <pthread.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 /* Parametry symulacji */
 #define F 3           // liczba fryzjerów (F > 1)
@@ -19,7 +22,7 @@ typedef struct
 } Klient;
 
 /* Kolejka poczekalni – implementowana jako tablica cykliczna */
-Klient *poczekalnia[MAX_WAITING];
+Klient *poczekalnia[MAX_WAITING] = {NULL};
 int poczekalniaFront = 0; // indeks pierwszego oczekującego klienta
 int poczekalniaCount = 0; // liczba klientów w poczekalni
 pthread_mutex_t poczekalniaMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -28,9 +31,9 @@ pthread_cond_t poczekalniaNotEmpty = PTHREAD_COND_INITIALIZER;
 // Struktura Kasa
 typedef struct
 {
-    int banknot_10;              // ilosc banknotow w kasie
-    int banknot_20;              // ilosc banknotow w kasie
-    int banknot_50;              // ilosc banknotow w kasie
+    int banknot_10;              // ilość banknotów w kasie
+    int banknot_20;              // ilość banknotów w kasie
+    int banknot_50;              // ilość banknotów w kasie
     pthread_cond_t uzupelnienie; // Sygnał dla fryzjera, że kasa uzupełniona
     pthread_mutex_t mutex_kasa;  // Mutex do synchronizacji dostępu do kasy
 } Kasa;
@@ -39,9 +42,19 @@ Kasa kasa;
 sem_t fotele_semafor;
 
 /* Flagi sterujące symulacją */
-int salon_open = 1;        // salon czynny
-int close_all_clients = 0; // sygnał 2: wszyscy klienci natychmiast opuszczają salon
-int barber_stop[F] = {0};  // dla każdego fryzjera – sygnał 1, aby zakończył pracę
+volatile int salon_open = 1;        // salon czynny
+volatile int close_all_clients = 0; // sygnał 2: wszyscy klienci natychmiast opuszczają salon
+volatile int barber_stop[F] = {0};  // dla każdego fryzjera – sygnał 1, aby zakończył pracę
+
+/* Funkcja inicjalizująca kasę */
+void init_kasa()
+{
+    kasa.banknot_10 = 10;
+    kasa.banknot_20 = 5;
+    kasa.banknot_50 = 2;
+    pthread_mutex_init(&kasa.mutex_kasa, NULL);
+    pthread_cond_init(&kasa.uzupelnienie, NULL);
+}
 
 /* Prototypy funkcji wątków */
 void *barber_thread(void *arg);
