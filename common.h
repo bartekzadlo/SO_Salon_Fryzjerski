@@ -54,26 +54,6 @@ typedef struct
     int reszta;
 } Salon;
 
-// Funkcje operujące na salonie
-void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli);
-void zajmij_fotel(Fotel *fotel);
-void zwolnij_fotel(Fotel *fotel);
-void zamknij_salon(Salon *salon, int shm_id);
-
-// Funkcje operujące na kasie
-void inicjalizuj_kase(Kasa *kasa);
-void zamknij_kase(Kasa *kasa);
-void dodaj_banknoty_do_kasy(Salon *salon);
-void wydaj_reszte(Kasa *kasa, int reszta);
-
-// Funkcje klienta
-void inicjalizuj_klienta(Klient *klient, int id);              // Inicjalizacja klienta, nadanie mu id
-void zarabiaj_pieniadze(Klient *klient);                       // Losowanie i dodawanie banknotów do portfela klienta
-void klient_przychodzi_do_salon(Salon *salon, Klient *klient); // Klient przychodzi do salonu
-void zaplac_za_usluge(Klient *klient, Salon *salon);           // Klient płaci za usługę
-void odbierz_reszte(Klient *klient, Kasa *kasa);
-void zakoncz_klienta(Klient *klient);
-
 typedef struct
 {
     int id;          // ID fryzjera
@@ -82,13 +62,26 @@ typedef struct
     pthread_t watek; // Wątek fryzjera
 } Fryzjer;
 
-// Funkcja reprezentująca pracę fryzjera
+// Funkcje operujące na salonie
+void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli);
+void zajmij_fotel(Fotel *fotel);
+void zwolnij_fotel(Fotel *fotel);
+void zamknij_salon(Salon *salon, int shm_id);
+void inicjalizuj_kase(Kasa *kasa);
+void zamknij_kase(Kasa *kasa);
+
+// Funkcje watku klienta
+void inicjalizuj_klienta(Klient *klient, int id);              // Inicjalizacja klienta, nadanie mu id
+void klient_przychodzi_do_salon(Salon *salon, Klient *klient); // Klient przychodzi do salonu
+void zaplac_za_usluge(Klient *klient, Salon *salon);           // Klient płaci za usługę
+void odbierz_reszte(Klient *klient, Kasa *kasa);
+void zakoncz_klienta(Klient *klient);
+
+// Funkcja watku klienta
 void *fryzjer_praca(void *arg);
-
-// Inicjalizacja fryzjera
 void inicjalizuj_fryzjera(Fryzjer *fryzjer, Salon *salon, int id);
-
-// Zakończenie pracy fryzjera
 void zakoncz_fryzjera(Fryzjer *fryzjer);
+void dodaj_banknoty_do_kasy(Salon *salon);
+void wydaj_reszte(Kasa *kasa, int reszta);
 
 #endif // COMMON_H
