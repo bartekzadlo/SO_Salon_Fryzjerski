@@ -66,4 +66,29 @@ void zamknij_kase(Kasa *kasa);
 void dodaj_banknoty_do_kasy(Salon *salon);
 void wydaj_reszte(Kasa *kasa, int reszta);
 
+// Funkcje klienta
+void inicjalizuj_klienta(Klient *klient, int id);              // Inicjalizacja klienta, nadanie mu id
+void zarabiaj_pieniadze(Klient *klient);                       // Losowanie i dodawanie banknotów do portfela klienta
+void klient_przychodzi_do_salon(Salon *salon, Klient *klient); // Klient przychodzi do salonu
+void zaplac_za_usluge(Klient *klient, Salon *salon);           // Klient płaci za usługę
+void odbierz_reszte(Klient *klient, Kasa *kasa);
+void zakoncz_klienta(Klient *klient);
+
+typedef struct
+{
+    int id;          // ID fryzjera
+    Salon *salon;    // Wskaźnik do salonu
+    Klient *klient;  // Wskaźnik na aktualnego klienta
+    pthread_t watek; // Wątek fryzjera
+} Fryzjer;
+
+// Funkcja reprezentująca pracę fryzjera
+void *fryzjer_praca(void *arg);
+
+// Inicjalizacja fryzjera
+void inicjalizuj_fryzjera(Fryzjer *fryzjer, Salon *salon, int id);
+
+// Zakończenie pracy fryzjera
+void zakoncz_fryzjera(Fryzjer *fryzjer);
+
 #endif // SALON_H

@@ -3,7 +3,6 @@
 #include <time.h>
 #include <pthread.h>
 #include <unistd.h>
-#include "klient.h"
 #include "salon.h"
 
 void inicjalizuj_klienta(Klient *klient, int id)

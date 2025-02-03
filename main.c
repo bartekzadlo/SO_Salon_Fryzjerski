@@ -6,8 +6,6 @@
 #include <sys/shm.h>   // Dla shmget, shmat i innych funkcji pamięci dzielonej
 #include <semaphore.h> // Dla semaforów
 #include "salon.h"
-#include "klient.h"
-#include "fryzjer.h"
 
 int main()
 {
@@ -18,7 +16,7 @@ int main()
         perror("ftok failed");
         exit(1);
     }
-    int shm_id = shmget(key, sizeof(Salon), IPC_CREAT | 0666); // Wartość 0666 to prawa dostępu
+    int shm_id = shmget(key, sizeof(Salon), IPC_CREAT | 0600); // Wartość 0600 to prawa dostępu
     if (shm_id == -1)
     {
         perror("Błąd przy tworzeniu segmentu pamięci dzielonej");

@@ -1,10 +1,8 @@
-#include "fryzjer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include "salon.h"
-#include "klient.h"
 
 void *fryzjer_praca(void *arg)
 {
