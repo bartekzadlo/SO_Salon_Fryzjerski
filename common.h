@@ -10,8 +10,18 @@
 #define F 2           // liczba fryzjerów (F > 1)
 #define N 1           // liczba foteli (N < F)
 #define K 1           // maksymalna liczba klientów w poczekalni
-#define P 2           // liczba klientów
+#define P 20          // liczba klientów
 #define MAX_WAITING K // rozmiar kolejki poczekalni
+
+/* Struktura przechowywana w pamięci współdzielonej */
+typedef struct
+{
+    int total_clients_served; // klienci, którzy zostali obsłużeni
+    int total_clients_left;   // klienci, którzy odeszli (np. gdy poczekalnia była pełna)
+    int total_services_done;  // liczba wykonanych usług (strzyżeń)
+} SalonStats;
+
+SalonStats *sharedStats = NULL; // globalny wskaźnik do segmentu pamięci współdzielonej
 
 /* Struktura opisująca klienta */
 typedef struct
