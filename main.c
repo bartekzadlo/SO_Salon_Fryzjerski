@@ -5,24 +5,25 @@
 #include <sys/ipc.h>   // Dla ftok()
 #include <sys/shm.h>   // Dla shmget, shmat i innych funkcji pamięci dzielonej
 #include <semaphore.h> // Dla semaforów
+#include <errno.h>     // Do obsługi błędów systemowych
 #include "common.h"
+
+void sprawdz_blad(int warunek, const char *komunikat)
+{
+    if (warunek)
+    {
+        perror(komunikat);
+        exit(EXIT_FAILURE);
+    }
+}
 
 int main()
 {
-    key_t key;
-    key = ftok("./unikalny_klucz.txt", 'A');
-    if (key == -1)
-    {
-        perror("Błąd: ftok nie powiódł się");
-        exit(EXIT_FAILURE);
-    }
+    key_t key = ftok("./unikalny_klucz.txt", 'A');
+    sprawdz_blad(key == -1, "Błąd: ftok nie powiódł się");
 
     int shm_id = shmget(key, sizeof(Salon), IPC_CREAT | 0600);
-    if (shm_id == -1)
-    {
-        perror("Błąd: nie udało się utworzyć segmentu pamięci współdzielonej");
-        exit(EXIT_FAILURE);
-    }
+    sprawdz_blad(shm_id == -1, "Błąd: nie udało się utworzyć segmentu pamięci współdzielonej");
 
     // Wczytanie parametrów od użytkownika
     int liczba_fryzjerow, wielkosc_poczekalni, liczba_klientow, liczba_foteli;
@@ -30,28 +31,32 @@ int main()
     printf("Podaj liczbę fryzjerów (F > 1): ");
     if (scanf("%d", &liczba_fryzjerow) != 1 || liczba_fryzjerow <= 1)
     {
-        fprintf(stderr, "Błąd: liczba fryzjerów musi być większa niż 1.\n");
+        errno = EINVAL;
+        perror("Błąd: liczba fryzjerów musi być większa niż 1");
         exit(EXIT_FAILURE);
     }
 
     printf("Podaj liczbę foteli (N < F): ");
     if (scanf("%d", &liczba_foteli) != 1 || liczba_foteli >= liczba_fryzjerow || liczba_foteli <= 0)
     {
-        fprintf(stderr, "Błąd: liczba foteli musi być dodatnia i mniejsza niż liczba fryzjerów.\n");
+        errno = EINVAL;
+        perror("Błąd: liczba foteli musi być dodatnia i mniejsza niż liczba fryzjerów");
         exit(EXIT_FAILURE);
     }
 
     printf("Podaj wielkość poczekalni (>= 0): ");
     if (scanf("%d", &wielkosc_poczekalni) != 1 || wielkosc_poczekalni < 0)
     {
-        fprintf(stderr, "Błąd: wielkość poczekalni nie może być ujemna.\n");
+        errno = EINVAL;
+        perror("Błąd: wielkość poczekalni nie może być ujemna");
         exit(EXIT_FAILURE);
     }
 
     printf("Podaj liczbę klientów (>= 0): ");
     if (scanf("%d", &liczba_klientow) != 1 || liczba_klientow < 0)
     {
-        fprintf(stderr, "Błąd: liczba klientów nie może być ujemna.\n");
+        errno = EINVAL;
+        perror("Błąd: liczba klientów nie może być ujemna");
         exit(EXIT_FAILURE);
     }
 
