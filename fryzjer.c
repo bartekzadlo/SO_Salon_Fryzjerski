@@ -23,9 +23,8 @@ void *fryzjer_praca(void *arg)
         // Sprawdzamy, czy są klienci w poczekalni
         if (salon->klienci_w_poczekalni > 0)
         {
-            salon->klienci_w_poczekalni--;                      // Zmniejszamy liczbę klientów w poczekalni
-            fryzjer->klient = pobierz_klienta_z_kolejki(salon); // Pobieramy klienta
-            printf("Fryzjer %d pobiera klienta %d.\n", fryzjer->id, fryzjer->klient->id);
+            salon->klienci_w_poczekalni--; // Zmniejszamy liczbę klientów w poczekalni
+            printf("Fryzjer %d pobiera klienta.\n", fryzjer->id);
             printf("W poczekalni pozostało %d wolnych miejsc.\n", salon->max_klientow - salon->klienci_w_poczekalni);
 
             pthread_mutex_unlock(&salon->mutex_poczekalnia);
@@ -69,11 +68,4 @@ void zakoncz_fryzjera(Fryzjer *fryzjer)
 {
     pthread_cancel(fryzjer->watek);     // Zakończenie wątku fryzjera
     pthread_join(fryzjer->watek, NULL); // Dołączenie wątku
-}
-
-Klient *pobierz_klienta_z_kolejki(Salon *salon)
-{
-    Klient *klient = salon->kolejka.klienci[salon->kolejka.poczatek];
-    salon->kolejka.poczatek = (salon->kolejka.poczatek + 1) % 100; // Obsługa cyklicznej kolejki
-    return klient;
 }

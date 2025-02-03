@@ -80,30 +80,51 @@ void klient_przychodzi_do_salon(Salon *salon, Klient *klient)
 {
     while (1)
     {
+        // Wyświetlamy numer klienta
+        printf("Klient %d próbuje wejść do poczekalni.\n", klient->id);
+
+        // Próba wejścia do poczekalni (sprawdzenie dostępności miejsc)
         if (sem_trywait(&salon->poczekalnia) == 0)
         {
-            printf("Klient wchodzi do poczekalni.\n");
+            printf("Klient %d wchodzi do poczekalni.\n", klient->id);
+
+            // Zabezpieczamy dostęp do zasobów poczekalni (mutex)
             pthread_mutex_lock(&salon->mutex_poczekalnia);
+            printf("Klient %d zablokował mutex poczekalni.\n", klient->id);
+
+            // Zwiększamy liczbę klientów w poczekalni
             salon->klienci_w_poczekalni++;
-            salon->kolejka.klienci[salon->kolejka.koniec] = klient;
-            salon->kolejka.koniec = (salon->kolejka.koniec + 1) % 100;
+            printf("Liczba klientów w poczekalni: %d.\n", salon->klienci_w_poczekalni);
+
+            // Odblokowujemy mutex
             pthread_mutex_unlock(&salon->mutex_poczekalnia);
+            printf("Klient %d zwolnił mutex poczekalni.\n", klient->id);
 
-            // Czekaj na zapłatę
+            // Czekamy na zapłatę (symulacja oczekiwania na zakończenie usług)
             pthread_cond_wait(&klient->czekaj_na_zaplate, &klient->mutex_klient);
+            printf("Klient %d czeka na zapłatę.\n", klient->id);
 
-            // Zapłać i odbierz resztę
+            // Zapłata za usługę
             zaplac_za_usluge(klient, salon);
+            printf("Klient %d zapłacił za usługę.\n", klient->id);
+
+            // Odbieramy resztę
             odbierz_reszte(klient, &salon->kasa);
+            printf("Klient %d odebrał resztę.\n", klient->id);
 
             // Zwalniamy miejsce w poczekalni po zakończeniu
             sem_post(&salon->poczekalnia);
+            printf("Klient %d zwolnił miejsce w poczekalni.\n", klient->id);
+
+            // Klient kończy wizytę
+            printf("Klient %d kończy swoją wizytę.\n", klient->id);
             break;
         }
         else
         {
+            // Jeżeli brak wolnych miejsc, klient wraca do zarabiania
             usleep(1000000); // Czekaj, aż pojawi się miejsce
-            printf("Brak wolnych miejsc w poczekalni. Klient wraca do zarabiania.\n");
+            printf("Brak wolnych miejsc w poczekalni. Klient %d wraca do zarabiania.\n", klient->id);
         }
     }
 }

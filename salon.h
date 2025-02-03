@@ -16,13 +16,6 @@ typedef struct
     pthread_t watek;                  // Wątek klienta
 } Klient;
 
-typedef struct
-{
-    Klient *klienci[100]; // Tablica wskaźników na klientów
-    int poczatek;         // Indeks początku kolejki
-    int koniec;           // Indeks końca kolejki
-} KolejkaKlientow;
-
 // Struktura Fotel
 typedef struct
 {
@@ -59,7 +52,6 @@ typedef struct
     int zaplacone_50;    // uzywane przy placeniu za usluge
     int zaplacona_kwota; // uzywane przy placeniu za usluge
     int reszta;
-    KolejkaKlientow kolejka;
 } Salon;
 
 // Funkcje operujące na salonie

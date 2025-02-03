@@ -106,13 +106,38 @@ void wydaj_reszte(Kasa *kasa, int reszta)
 
 void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli)
 {
-    salon->max_klientow = max_klientow;                  // Przypisanie wartości max_klientow
-    sem_init(&salon->poczekalnia, 0, max_klientow);      // Inicjalizowanie semafora
-    pthread_mutex_init(&salon->mutex_poczekalnia, NULL); // Mutex dla poczekalni
+    salon->max_klientow = max_klientow;
 
-    // Inicjalizacja fotela
-    sem_init(&salon->fotel.wolne_fotele, 0, liczba_foteli);
-    pthread_mutex_init(&salon->fotel.mutex_fotel, NULL);
+    // Inicjalizowanie semafora poczekalni
+    if (sem_init(&salon->poczekalnia, 0, max_klientow) != 0)
+    {
+        perror("Błąd inicjalizacji semafora poczekalni");
+        exit(EXIT_FAILURE); // Zakończ program, jeśli inicjalizacja się nie uda
+    }
+    printf("Semafor poczekalni zainicjowany poprawnie z wartością: %d\n", max_klientow); // Komentarz po poprawnej inicjalizacji
+
+    // Inicjalizacja mutexu dla poczekalni
+    if (pthread_mutex_init(&salon->mutex_poczekalnia, NULL) != 0)
+    {
+        perror("Błąd inicjalizacji mutexu poczekalni");
+        exit(EXIT_FAILURE);
+    }
+
+    // Inicjalizowanie semafora fotela
+    if (sem_init(&salon->fotel.wolne_fotele, 0, liczba_foteli) != 0)
+    {
+        perror("Błąd inicjalizacji semafora foteli");
+        exit(EXIT_FAILURE);
+    }
+    printf("Semafor foteli zainicjowany poprawnie z wartością: %d\n", liczba_foteli); // Komentarz po poprawnej inicjalizacji
+
+    // Inicjalizacja mutexu dla fotela
+    if (pthread_mutex_init(&salon->fotel.mutex_fotel, NULL) != 0)
+    {
+        perror("Błąd inicjalizacji mutexu fotela");
+        exit(EXIT_FAILURE);
+    }
+
     // Inicjalizacja kasy
     inicjalizuj_kase(&salon->kasa);
 }
