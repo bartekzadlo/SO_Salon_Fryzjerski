@@ -13,20 +13,49 @@ int main()
     key = ftok("./unikalny_klucz.txt", 'A');
     if (key == -1)
     {
-        perror("ftok failed");
-        exit(1);
-    }
-    int shm_id = shmget(key, sizeof(Salon), IPC_CREAT | 0600); // Wartość 0600 to prawa dostępu
-    if (shm_id == -1)
-    {
-        perror("Błąd przy tworzeniu segmentu pamięci dzielonej");
+        perror("Błąd: ftok nie powiódł się");
         exit(EXIT_FAILURE);
     }
-    // Parametry wejściowe: liczba fryzjerów, wielkość poczekalni, liczba klientów, liczba foteli
-    int liczba_fryzjerow = 3;                           // Liczba fryzjerów w salonie
-    int wielkosc_poczekalni = MAX_KLIENCI_W_POCZEKALNI; // Wielkość poczekalni
-    int liczba_klientow = 20;                           // Liczba istniejących klientów
-    int liczba_foteli = 4;                              // Liczba foteli w salonie
+
+    int shm_id = shmget(key, sizeof(Salon), IPC_CREAT | 0600);
+    if (shm_id == -1)
+    {
+        perror("Błąd: nie udało się utworzyć segmentu pamięci współdzielonej");
+        exit(EXIT_FAILURE);
+    }
+
+    // Wczytanie parametrów od użytkownika
+    int liczba_fryzjerow, wielkosc_poczekalni, liczba_klientow, liczba_foteli;
+
+    printf("Podaj liczbę fryzjerów (F > 1): ");
+    if (scanf("%d", &liczba_fryzjerow) != 1 || liczba_fryzjerow <= 1)
+    {
+        fprintf(stderr, "Błąd: liczba fryzjerów musi być większa niż 1.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Podaj liczbę foteli (N < F): ");
+    if (scanf("%d", &liczba_foteli) != 1 || liczba_foteli >= liczba_fryzjerow || liczba_foteli <= 0)
+    {
+        fprintf(stderr, "Błąd: liczba foteli musi być dodatnia i mniejsza niż liczba fryzjerów.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Podaj wielkość poczekalni (>= 0): ");
+    if (scanf("%d", &wielkosc_poczekalni) != 1 || wielkosc_poczekalni < 0)
+    {
+        fprintf(stderr, "Błąd: wielkość poczekalni nie może być ujemna.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Podaj liczbę klientów (>= 0): ");
+    if (scanf("%d", &liczba_klientow) != 1 || liczba_klientow < 0)
+    {
+        fprintf(stderr, "Błąd: liczba klientów nie może być ujemna.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Parametry poprawne. Uruchamianie symulacji...\n");
 
     // Tworzymy salon i inicjalizujemy go
     Salon *salon = (Salon *)shmat(shm_id, NULL, 0);
