@@ -15,6 +15,12 @@ int main()
         perror("ftok failed");
         exit(1);
     }
+    int shm_id = shmget(klucz, sizeof(Salon), IPC_CREAT | 0666); // Wartość 0666 to prawa dostępu
+    if (shm_id == -1)
+    {
+        perror("Błąd przy tworzeniu segmentu pamięci dzielonej");
+        exit(EXIT_FAILURE);
+    }
     // Parametry wejściowe: liczba fryzjerów, wielkość poczekalni, liczba klientów, liczba foteli
     int liczba_fryzjerow = 3;                           // Liczba fryzjerów w salonie
     int wielkosc_poczekalni = MAX_KLIENCI_W_POCZEKALNI; // Wielkość poczekalni
@@ -22,7 +28,12 @@ int main()
     int liczba_foteli = 4;                              // Liczba foteli w salonie
 
     // Tworzymy salon i inicjalizujemy go
-    Salon salon;
+    Salon *salon = (Salon *)shmat(shm_id, NULL, 0);
+    if (salon == (void *)-1)
+    {
+        perror("Błąd przy podłączaniu pamięci dzielonej");
+        exit(EXIT_FAILURE);
+    }
     printf("Inicjalizowanie salonu...\n");
     inicjalizuj_salon(&salon, wielkosc_poczekalni, liczba_foteli);
     printf("Salon został zainicjowany. Wielkość poczekalni: %d, liczba foteli: %d\n", wielkosc_poczekalni, liczba_foteli);

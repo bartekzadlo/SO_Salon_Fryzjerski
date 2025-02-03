@@ -9,14 +9,42 @@ void inicjalizuj_kase(Kasa *kasa)
     kasa->banknot_10 = 0;
     kasa->banknot_20 = 0;
     kasa->banknot_50 = 0;
-    pthread_mutex_init(&kasa->mutex_kasa, NULL);
-    pthread_cond_init(&kasa->uzupelnienie, NULL); // Inicjalizacja warunku
+    kasa->wydane_10 = 0;
+    kasa->wydane_20 = 0;
+    kasa->wydane_50 = 0;
+
+    // Inicjalizowanie semaforów
+    if (sem_init(&kasa->mutex_kasa, 1, 1) != 0)
+    { // 1 dla semafora binarnego (mutex)
+        perror("Błąd inicjalizacji semafora mutex_kasa");
+        exit(EXIT_FAILURE);
+    }
+
+    // Inicjalizowanie zmiennych warunkowych
+    // W przypadku pamięci dzielonej musimy zadbać o to, by były współdzielone przez wszystkie procesy
+    if (pthread_cond_init(&kasa->uzupelnienie, NULL) != 0)
+    {
+        perror("Błąd inicjalizacji zmiennej warunkowej uzupelnienie");
+        exit(EXIT_FAILURE);
+    }
+    if (pthread_cond_init(&kasa->zaplata, NULL) != 0)
+    {
+        perror("Błąd inicjalizacji zmiennej warunkowej zaplata");
+        exit(EXIT_FAILURE);
+    }
+    if (pthread_cond_init(&kasa->wydano_reszte, NULL) != 0)
+    {
+        perror("Błąd inicjalizacji zmiennej warunkowej wydano_reszte");
+        exit(EXIT_FAILURE);
+    }
 }
 
 void zamknij_kase(Kasa *kasa)
 {
-    pthread_mutex_destroy(&kasa->mutex_kasa);
-    pthread_cond_destroy(&kasa->uzupelnienie); // Niszczenie warunku
+    pthread_mutex_destroy(&kasa->mutex_kasa);   // Zwalniamy mutex
+    pthread_cond_destroy(&kasa->uzupelnienie);  // Niszczenie zmiennej warunkowej uzupelnienie
+    pthread_cond_destroy(&kasa->zaplata);       // Niszczenie zmiennej warunkowej zaplata
+    pthread_cond_destroy(&kasa->wydano_reszte); // Niszczenie zmiennej warunkowej wydano_reszte
 }
 
 void dodaj_banknoty_do_kasy(Salon *salon)
@@ -110,12 +138,11 @@ void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli)
     salon->max_klientow = max_klientow;
 
     // Inicjalizowanie semafora poczekalni
-    if (sem_init(&salon->poczekalnia, 0, max_klientow) != 0)
+    if (sem_init(&salon->poczekalnia, 1, max_klientow) != 0)
     {
         perror("Błąd inicjalizacji semafora poczekalni");
-        exit(EXIT_FAILURE); // Zakończ program, jeśli inicjalizacja się nie uda
+        exit(EXIT_FAILURE);
     }
-    printf("Semafor poczekalni zainicjowany poprawnie z wartością: %d\n", max_klientow); // Komentarz po poprawnej inicjalizacji
 
     // Inicjalizacja mutexu dla poczekalni
     if (pthread_mutex_init(&salon->mutex_poczekalnia, NULL) != 0)
@@ -125,12 +152,11 @@ void inicjalizuj_salon(Salon *salon, int max_klientow, int liczba_foteli)
     }
 
     // Inicjalizowanie semafora fotela
-    if (sem_init(&salon->fotel.wolne_fotele, 0, liczba_foteli) != 0)
+    if (sem_init(&salon->fotel.wolne_fotele, 1, liczba_foteli) != 0)
     {
         perror("Błąd inicjalizacji semafora foteli");
         exit(EXIT_FAILURE);
     }
-    printf("Semafor foteli zainicjowany poprawnie z wartością: %d\n", liczba_foteli); // Komentarz po poprawnej inicjalizacji
 
     // Inicjalizacja mutexu dla fotela
     if (pthread_mutex_init(&salon->fotel.mutex_fotel, NULL) != 0)
@@ -161,12 +187,23 @@ void zwolnij_fotel(Fotel *fotel)
 
 void zamknij_salon(Salon *salon)
 {
+    // Zwalnianie zasobów semaforów i mutexów związanych z salonem
     sem_destroy(&salon->poczekalnia);                 // Zwalniamy semafor dla poczekalni
     pthread_mutex_destroy(&salon->mutex_poczekalnia); // Zwalniamy mutex dla poczekalni
 
-    // Niszczenie zasobów związanych z fotelami
+    // Zwalnianie zasobów związanych z fotelami
     sem_destroy(&salon->fotel.wolne_fotele);          // Zwalniamy semafor dla foteli
     pthread_mutex_destroy(&salon->fotel.mutex_fotel); // Zwalniamy mutex dla foteli
 
-    zamknij_kase(&salon->kasa);
+    // Zwalnianie zasobów kasy
+    zamknij_kase(&salon->kasa); // Zwalniamy zasoby związane z kasą
+
+    // Zwalnianie pamięci dzielonej
+    if (shmctl(salon->segment_pamieci_id, IPC_RMID, NULL) == -1)
+    {
+        perror("Błąd przy usuwaniu segmentu pamięci dzielonej");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Pamięć dzielona została pomyślnie usunięta.\n");
 }
