@@ -70,6 +70,9 @@ void *barber_thread(void *arg)
         snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: zakończyłem strzyżenie klienta %d (czas usługi: %d s).", id, klient->id, service_time);
         send_message(log_buffer);
 
+        /* Aktualizacja statystyk w pamięci współdzielonej */
+        __sync_fetch_and_add(&sharedStats->total_services_done, 1);
+
         /* Zwalniamy fotel */
         sem_post(&fotele_semafor);
 
