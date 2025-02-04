@@ -11,7 +11,7 @@ void *client_thread(void *arg)
 {
     int id = *((int *)arg);
     free(arg);
-
+    char log_buffer[MSG_SIZE];
     while (salon_open && !close_all_clients)
     {
         /* Symulacja „zarabiania pieniędzy” – oczekiwanie 1–5 s */
@@ -32,7 +32,7 @@ void *client_thread(void *arg)
         else
             klient->payment = 50;
 
-        /* Inicjalizacja semafora POSIX z wartością 0 */
+        /* Inicjalizacja semafora z wartością 0 */
         if (sem_init(&klient->served, 0, 0) != 0)
         {
             perror("sem_init");
@@ -44,7 +44,8 @@ void *client_thread(void *arg)
         if (poczekalniaCount >= MAX_WAITING)
         {
             pthread_mutex_unlock(&poczekalniaMutex);
-            printf("Klient %d: poczekalnia pełna, opuszczam salon.\n", id);
+            snprintf(log_buffer, MSG_SIZE, "Klient %d: poczekalnia pełna, opuszczam salon.", id);
+            send_message(log_buffer);
             sem_destroy(&klient->served); // Zwalniamy semafor
             free(klient);                 // Zwalniamy pamięć
             continue;                     // klient wraca „zarabiać pieniądze”
@@ -52,25 +53,29 @@ void *client_thread(void *arg)
         int index = (poczekalniaFront + poczekalniaCount) % MAX_WAITING;
         poczekalnia[index] = klient;
         poczekalniaCount++;
-        printf("Klient %d: wchodzę do poczekalni. Liczba oczekujących: %d.\n", id, poczekalniaCount);
         pthread_cond_signal(&poczekalniaNotEmpty);
         pthread_mutex_unlock(&poczekalniaMutex);
+        snprintf(log_buffer, MSG_SIZE, "Klient %d: wchodzę do poczekalni. Liczba oczekujących: %d.", id, poczekalniaCount);
+        send_message(log_buffer);
 
         /* Klient czeka na zakończenie obsługi */
         sem_wait(&klient->served);
 
         if (close_all_clients)
         {
-            printf("Klient %d: salon zamknięty – opuszczam salon.\n", id);
+            snprintf(log_buffer, MSG_SIZE, "Klient %d: salon zamknięty – opuszczam salon.", id);
+            send_message(log_buffer);
             sem_destroy(&klient->served); // Zwalniamy semafor
             free(klient);                 // Zwalniamy pamięć
             break;
         }
 
-        printf("Klient %d: zostałem obsłużony i opuszczam salon.\n", id);
+        snprintf(log_buffer, MSG_SIZE, "Klient %d: zostałem obsłużony i opuszczam salon.", id);
+        send_message(log_buffer);
         sem_destroy(&klient->served); // Zwalniamy semafor
         free(klient);                 // Zwalniamy pamięć
     }
-    printf("Klient %d: kończę pracę w symulacji salonu.\n", id);
+    snprintf(log_buffer, MSG_SIZE, "Klient %d: kończę pracę w symulacji salonu.", id);
+    send_message(log_buffer);
     return NULL;
 }
