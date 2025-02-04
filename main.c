@@ -74,6 +74,25 @@ void logger_process()
 int main()
 {
     srand(time(NULL));
+
+    /* Utworzenie segmentu pamięci współdzielonej */
+    key_t shm_key = ftok(".", 'S');
+    int shm_id = shmget(shm_key, sizeof(SalonStats), IPC_CREAT | 0666);
+    if (shm_id < 0)
+    {
+        perror("shmget");
+        exit(1);
+    }
+    sharedStats = (SalonStats *)shmat(shm_id, NULL, 0);
+    if (sharedStats == (void *)-1)
+    {
+        perror("shmat");
+        exit(1);
+    }
+    sharedStats->total_clients_served = 0;
+    sharedStats->total_clients_left = 0;
+    sharedStats->total_services_done = 0;
+
     /* Utworzenie kolejki komunikatów */
     key_t msg_key = ftok(".", 'M');
     msgqid = msgget(msg_key, IPC_CREAT | 0666);
