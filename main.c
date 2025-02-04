@@ -153,6 +153,19 @@ int main()
         pthread_join(klienci[i], NULL);
     }
 
+    /* Wysyłamy komunikat zakończenia do loggera */
+    Message exit_msg;
+    exit_msg.mtype = MSG_TYPE_EXIT;
+    strncpy(exit_msg.mtext, "EXIT", MSG_SIZE - 1);
+    exit_msg.mtext[MSG_SIZE - 1] = '\0';
+    if (msgsnd(msgqid, &exit_msg, sizeof(exit_msg.mtext), 0) == -1)
+    {
+        perror("msgsnd exit message");
+    }
+
+    /* Czekamy na zakończenie procesu loggera */
+    wait(NULL);
+
     /* Sprzątanie – niszczenie mutexów i zmiennych warunkowych */
     pthread_mutex_destroy(&poczekalniaMutex);
     pthread_cond_destroy(&poczekalniaNotEmpty);
