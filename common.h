@@ -3,8 +3,6 @@
 
 #include <semaphore.h>
 #include <pthread.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 /* Parametry symulacji */
 #define F 3           // liczba fryzjerów (F > 1)

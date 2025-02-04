@@ -34,10 +34,12 @@ void init_kasa()
 int main()
 {
     srand(time(NULL));
-    /* Inicjalizacja semaforu foteli */
     sem_init(&fotele_semafor, 0, N);
-    /* Inicjalizacja kasy – przykładowe wartości początkowe */
-    init_kasa();
+    kasa.banknot_10 = 1;
+    kasa.banknot_20 = 1;
+    kasa.banknot_50 = 0;
+    pthread_mutex_init(&kasa.mutex_kasa, NULL);
+    pthread_cond_init(&kasa.uzupelnienie, NULL);
     /* Tworzenie wątków fryzjerów */
     pthread_t fryzjerzy[F];
     for (int i = 0; i < F; i++)
@@ -56,7 +58,7 @@ int main()
         }
     }
 
-    /* Tworzenie wątków klientów – przykładowo 10 klientów */
+    /* Tworzenie wątków klientów */
     pthread_t klienci[P];
     for (int i = 0; i < P; i++)
     {
