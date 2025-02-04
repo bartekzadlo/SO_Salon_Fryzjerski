@@ -46,6 +46,7 @@ void *client_thread(void *arg)
             pthread_mutex_unlock(&poczekalniaMutex);
             snprintf(log_buffer, MSG_SIZE, "Klient %d: poczekalnia pełna, opuszczam salon.", id);
             send_message(log_buffer);
+            __sync_fetch_and_add(&sharedStats->total_clients_left, 1);
             sem_destroy(&klient->served); // Zwalniamy semafor
             free(klient);                 // Zwalniamy pamięć
             continue;                     // klient wraca „zarabiać pieniądze”
@@ -66,12 +67,14 @@ void *client_thread(void *arg)
             snprintf(log_buffer, MSG_SIZE, "Klient %d: salon zamknięty – opuszczam salon.", id);
             send_message(log_buffer);
             sem_destroy(&klient->served); // Zwalniamy semafor
-            free(klient);                 // Zwalniamy pamięć
+            __sync_fetch_and_add(&sharedStats->total_clients_left, 1);
+            free(klient); // Zwalniamy pamięć
             break;
         }
 
         snprintf(log_buffer, MSG_SIZE, "Klient %d: zostałem obsłużony i opuszczam salon.", id);
         send_message(log_buffer);
+        __sync_fetch_and_add(&sharedStats->total_clients_served, 1);
         sem_destroy(&klient->served); // Zwalniamy semafor
         free(klient);                 // Zwalniamy pamięć
     }
