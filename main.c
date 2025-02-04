@@ -16,6 +16,7 @@ int poczekalniaCount = 0;
 pthread_mutex_t poczekalniaMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t poczekalniaNotEmpty = PTHREAD_COND_INITIALIZER;
 
+SalonStats *sharedStats = NULL;
 Kasa kasa;
 
 sem_t fotele_semafor;
