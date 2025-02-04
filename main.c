@@ -69,6 +69,26 @@ void logger_process()
 int main()
 {
     srand(time(NULL));
+    /* Utworzenie kolejki komunikatów */
+    key_t msg_key = ftok(".", 'M');
+    msgqid = msgget(msg_key, IPC_CREAT | 0666);
+    if (msgqid < 0)
+    {
+        perror("msgget");
+        exit(1);
+    }
+    /* Fork – tworzymy oddzielny proces loggera */
+    pid_t logger_pid = fork();
+    if (logger_pid < 0)
+    {
+        perror("fork");
+        exit(1);
+    }
+    else if (logger_pid == 0)
+    {
+        /* Proces dziecka: logger */
+        logger_process();
+    }
     sem_init(&fotele_semafor, 0, N);
     init_kasa();
     /* Tworzenie wątków fryzjerów */
