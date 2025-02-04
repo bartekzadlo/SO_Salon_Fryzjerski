@@ -18,9 +18,9 @@ Kasa kasa;
 
 sem_t fotele_semafor;
 
-volatile int salon_open = 1;
-volatile int close_all_clients = 0;
-volatile int barber_stop[F] = {0};
+int salon_open = 1;
+int close_all_clients = 0;
+int barber_stop[F] = {0};
 
 void init_kasa()
 {

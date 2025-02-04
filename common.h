@@ -7,21 +7,11 @@
 #include <stdio.h>
 
 /* Parametry symulacji */
-#define F 2           // liczba fryzjerów (F > 1)
-#define N 1           // liczba foteli (N < F)
-#define K 1           // maksymalna liczba klientów w poczekalni
-#define P 20          // liczba klientów
+#define F 3           // liczba fryzjerów (F > 1)
+#define N 2           // liczba foteli (N < F)
+#define K 5           // maksymalna liczba klientów w poczekalni
+#define P 10          // liczba klientów
 #define MAX_WAITING K // rozmiar kolejki poczekalni
-
-/* Struktura przechowywana w pamięci współdzielonej */
-typedef struct
-{
-    int total_clients_served; // klienci, którzy zostali obsłużeni
-    int total_clients_left;   // klienci, którzy odeszli (np. gdy poczekalnia była pełna)
-    int total_services_done;  // liczba wykonanych usług (strzyżeń)
-} SalonStats;
-
-SalonStats *sharedStats = NULL; // globalny wskaźnik do segmentu pamięci współdzielonej
 
 /* Struktura opisująca klienta */
 typedef struct
@@ -38,6 +28,8 @@ extern int poczekalniaCount; // liczba klientów w poczekalni
 extern pthread_mutex_t poczekalniaMutex;
 extern pthread_cond_t poczekalniaNotEmpty;
 
+extern sem_t fotele_semafor;
+
 // Struktura Kasa
 typedef struct
 {
@@ -49,12 +41,10 @@ typedef struct
 } Kasa;
 extern Kasa kasa;
 
-extern sem_t fotele_semafor;
-
 /* Flagi sterujące symulacją */
-extern volatile int salon_open;        // salon czynny
-extern volatile int close_all_clients; // sygnał 2: wszyscy klienci natychmiast opuszczają salon
-extern volatile int barber_stop[F];    // dla każdego fryzjera – sygnał 1, aby zakończył pracę
+extern int salon_open;        // salon czynny
+extern int close_all_clients; // sygnał 2: wszyscy klienci natychmiast opuszczają salon
+extern int barber_stop[F];    // dla każdego fryzjera – sygnał 1, aby zakończył pracę
 
 /* Funkcja inicjalizująca kasę */
 void init_kasa();
