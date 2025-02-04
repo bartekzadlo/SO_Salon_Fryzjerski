@@ -1,62 +1,79 @@
-#include <stdio.h>     // Dla funkcji printf, perror i innych
-#include <stdlib.h>    // Dla exit() i innych funkcji
-#include <pthread.h>   // Dla operacji na wątkach i mutexach
-#include <unistd.h>    // Dla sleep()
-#include <sys/ipc.h>   // Dla ftok()
-#include <sys/shm.h>   // Dla shmget, shmat i innych funkcji pamięci dzielonej
-#include <sys/msg.h>   // Dla msgsnd, msgrcv i innych funkcji kolejki komunikatów
-#include <sys/wait.h>  // Dla wait
-#include <semaphore.h> // Dla semaforów
-#include <string.h>    // Dla strncpy
-#include "common.h"    // Dodanie pliku nagłówkowego
+#include <stdio.h>     // Standardowa biblioteka wejścia/wyjścia – umożliwia korzystanie z funkcji takich jak printf oraz perror
+#include <stdlib.h>    // Biblioteka standardowa – dostarcza funkcje zarządzania pamięcią, takie jak exit() oraz malloc()
+#include <pthread.h>   // Biblioteka do obsługi wątków POSIX – zawiera funkcje do tworzenia i synchronizacji wątków (pthread_create, pthread_join, mutexy, zmienne warunkowe)
+#include <unistd.h>    // Biblioteka unistd – zapewnia dostęp do funkcji systemowych takich jak sleep()
+#include <sys/ipc.h>   // Biblioteka do obsługi kluczy IPC – umożliwia korzystanie z funkcji ftok() do generowania unikalnych kluczy
+#include <sys/shm.h>   // Biblioteka do operacji na pamięci współdzielonej – pozwala na tworzenie i zarządzanie segmentami pamięci współdzielonej (shmget, shmat)
+#include <sys/msg.h>   // Biblioteka do obsługi kolejek komunikatów – zawiera funkcje msgsnd oraz msgrcv, służące do wysyłania i odbierania komunikatów
+#include <sys/wait.h>  // Biblioteka do obsługi funkcji wait – umożliwia oczekiwanie na zakończenie procesów potomnych (wait)
+#include <semaphore.h> // Biblioteka do obsługi semaforów – dostarcza funkcje inicjalizacji oraz operacji na semaforach (sem_init)
+#include <string.h>    // Biblioteka do operacji na ciągach znakowych – umożliwia korzystanie z funkcji takich jak strncpy
+#include "common.h"    // Plik nagłówkowy "common.h" – zawiera definicje stałych, struktur oraz prototypów funkcji wykorzystywanych w aplikacji
 
-Klient *poczekalnia[MAX_WAITING] = {NULL};
-int poczekalniaFront = 0;
-int poczekalniaCount = 0;
-pthread_mutex_t poczekalniaMutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t poczekalniaNotEmpty = PTHREAD_COND_INITIALIZER;
+// Globalne zmienne do zarządzania poczekalnią klientów
 
-SalonStats *sharedStats = NULL;
+Klient *poczekalnia[MAX_WAITING] = {NULL};                     // Tablica wskaźników na klientów, reprezentująca poczekalnię salonu
+int poczekalniaFront = 0;                                      // Indeks pierwszego elementu w kolejce poczekalni
+int poczekalniaCount = 0;                                      // Aktualna liczba klientów oczekujących w poczekalni
+pthread_mutex_t poczekalniaMutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex zabezpieczający dostęp do zmiennych poczekalni
+pthread_cond_t poczekalniaNotEmpty = PTHREAD_COND_INITIALIZER; // Zmienna warunkowa sygnalizująca, że poczekalnia nie jest pusta
 
-Kasa kasa;
+SalonStats *sharedStats = NULL; // Wskaźnik na strukturę statystyk salonu przechowywanych w pamięci współdzielonej
+Kasa kasa;                      // Struktura reprezentująca kasę salonu, zawiera liczbę dostępnych banknotów
+sem_t fotele_semafor;           // Semafor ograniczający dostęp do foteli w salonie – określa maksymalną liczbę klientów, którzy mogą jednocześnie zajmować fotele
 
-sem_t fotele_semafor;
+// Flagi kontrolujące stan salonu i zakończenie symulacji
+int salon_open = 1;        // Flaga informująca, czy salon jest nadal otwarty
+int close_all_clients = 0; // Flaga sygnalizująca konieczność zakończenia obsługi klientów
+int barber_stop[F] = {0};  // Tablica flag określających, kiedy poszczególni fryzjerzy mają zakończyć pracę
 
-int salon_open = 1;
-int close_all_clients = 0;
-int barber_stop[F] = {0};
+int msgqid; // Globalny identyfikator kolejki komunikatów, używany przez loggera oraz inne funkcje komunikacji międzyprocesowej
 
-int msgqid; // Definicja zmiennej globalnej
-
+/*
+ * Funkcja init_kasa()
+ * -------------------
+ * Inicjalizuje kasę salonu poprzez ustawienie początkowej liczby banknotów oraz
+ * inicjalizację mutexa i zmiennej warunkowej używanych do synchronizacji operacji na kase.
+ */
 void init_kasa()
 {
-    kasa.banknot_10 = 50;
-    kasa.banknot_20 = 50;
-    kasa.banknot_50 = 50;
-    pthread_mutex_init(&kasa.mutex_kasa, NULL);
-    pthread_cond_init(&kasa.uzupelnienie, NULL);
+    kasa.banknot_10 = 50;                        // Ustawienie początkowej liczby banknotów o nominale 10
+    kasa.banknot_20 = 50;                        // Ustawienie początkowej liczby banknotów o nominale 20
+    kasa.banknot_50 = 50;                        // Ustawienie początkowej liczby banknotów o nominale 50
+    pthread_mutex_init(&kasa.mutex_kasa, NULL);  // Inicjalizacja mutexa chroniącego operacje na kase
+    pthread_cond_init(&kasa.uzupelnienie, NULL); // Inicjalizacja zmiennej warunkowej do sygnalizacji uzupełnienia kasy
 }
 
-/* Funkcja pomocnicza wysyłająca komunikat do kolejki */
+/*
+ * Funkcja send_message()
+ * ----------------------
+ * Wysyła komunikat do kolejki komunikatów.
+ * Parametr 'text' – tekst komunikatu, który ma zostać wysłany.
+ */
 void send_message(const char *text)
 {
     Message msg;
-    msg.mtype = MSG_TYPE_EVENT;
-    strncpy(msg.mtext, text, MSG_SIZE - 1);
-    msg.mtext[MSG_SIZE - 1] = '\0';
-    if (msgsnd(msgqid, &msg, sizeof(msg.mtext), 0) == -1)
+    msg.mtype = MSG_TYPE_EVENT;                           // Ustawienie typu komunikatu jako zdarzenie (event)
+    strncpy(msg.mtext, text, MSG_SIZE - 1);               // Kopiowanie tekstu do pola wiadomości, zapewniając, że nie przekroczymy rozmiaru
+    msg.mtext[MSG_SIZE - 1] = '\0';                       // Gwarancja zakończenia ciągu znakowego null-em
+    if (msgsnd(msgqid, &msg, sizeof(msg.mtext), 0) == -1) // Wysłanie komunikatu do kolejki
     {
-        perror("msgsnd");
+        perror("msgsnd"); // Wypisanie błędu w przypadku niepowodzenia
     }
 }
 
-/* Proces loggera – odbiera komunikaty z kolejki i wypisuje je */
+/*
+ * Funkcja logger_process()
+ * ------------------------
+ * Proces loggera – odbiera komunikaty z kolejki komunikatów i wypisuje je na standardowe wyjście.
+ * Działa w nieskończonej pętli do momentu otrzymania komunikatu zakończenia (MSG_TYPE_EXIT).
+ */
 void logger_process()
 {
     while (1)
     {
         Message msg;
-        ssize_t ret = msgrcv(msgqid, &msg, sizeof(msg.mtext), 0, 0);
+        ssize_t ret = msgrcv(msgqid, &msg, sizeof(msg.mtext), 0, 0); // Odbiór komunikatu z kolejki
         if (ret == -1)
         {
             perror("msgrcv in logger");
@@ -67,36 +84,45 @@ void logger_process()
             printf("LOGGER: Otrzymano komunikat zakończenia.\n");
             break;
         }
+        // Wypisanie odebranego komunikatu
         printf("LOGGER: %s\n", msg.mtext);
     }
-    exit(0);
+    exit(0); // Zakończenie procesu loggera
 }
+
+/*
+ * Funkcja main()
+ * --------------
+ * Główna funkcja programu, która inicjalizuje zasoby, tworzy wątki i procesy,
+ * uruchamia symulację salonu fryzjerskiego, a następnie dokonuje sprzątania.
+ */
 
 int main()
 {
-    srand(time(NULL));
+    srand(time(NULL)); // Inicjalizacja generatora liczb losowych, wykorzystywana przy symulacji zdarzeń
 
-    /* Utworzenie segmentu pamięci współdzielonej */
-    key_t shm_key = ftok(".", 'S');
-    int shm_id = shmget(shm_key, sizeof(SalonStats), IPC_CREAT | 0666);
+    /* ----------------- Pamięć współdzielona ----------------- */
+    key_t shm_key = ftok(".", 'S');                                     // Utworzenie klucza dla segmentu pamięci współdzielonej za pomocą ftok()
+    int shm_id = shmget(shm_key, sizeof(SalonStats), IPC_CREAT | 0666); // Utworzenie segmentu pamięci współdzielonej dla struktury SalonStats
     if (shm_id < 0)
     {
         perror("shmget");
         exit(1);
     }
 
-    sharedStats = (SalonStats *)shmat(shm_id, NULL, 0);
+    sharedStats = (SalonStats *)shmat(shm_id, NULL, 0); // Przypięcie segmentu pamięci do przestrzeni adresowej procesu
     if (sharedStats == (void *)-1)
     {
         perror("shmat");
         exit(1);
     }
+    // Inicjalizacja statystyk salonu
     sharedStats->total_clients_served = 0;
     sharedStats->total_clients_left = 0;
     sharedStats->total_services_done = 0;
 
-    /* Utworzenie kolejki komunikatów */
-    key_t msg_key = ftok(".", 'M');
+    /* ----------------- Kolejka komunikatów ----------------- */
+    key_t msg_key = ftok(".", 'M'); // Utworzenie klucza dla kolejki komunikatów
     msgqid = msgget(msg_key, IPC_CREAT | 0666);
     if (msgqid < 0)
     {
@@ -104,8 +130,8 @@ int main()
         exit(1);
     }
 
-    /* Fork – tworzymy oddzielny proces loggera */
-    pid_t logger_pid = fork();
+    /* ----------------- Proces Loggera ----------------- */
+    pid_t logger_pid = fork(); // Utworzenie nowego procesu przy użyciu fork() w celu uruchomienia loggera
     if (logger_pid < 0)
     {
         perror("fork");
@@ -113,25 +139,26 @@ int main()
     }
     else if (logger_pid == 0)
     {
-        /* Proces dziecka: logger */
-        logger_process();
+        logger_process(); // Proces potomny – uruchomienie loggera, który będzie odbierał i wypisywał komunikaty
     }
 
-    sem_init(&fotele_semafor, 0, N);
+    sem_init(&fotele_semafor, 0, N); // Inicjalizacja semafora dla foteli, ograniczającego liczbę jednocześnie obsługiwanych klientów
 
-    init_kasa();
+    init_kasa(); // Ustawienie początkowych wartości banknotów i inicjalizacja synchronizacji dla operacji na kasie
 
-    /* Tworzenie wątków fryzjerów */
-    pthread_t fryzjerzy[F];
+    /* ----------------- Tworzenie wątków fryzjerów ----------------- */
+    pthread_t fryzjerzy[F]; // Tablica identyfikatorów wątków fryzjerów
     for (int i = 0; i < F; i++)
     {
-        int *arg = malloc(sizeof(*arg));
+        int *arg = malloc(sizeof(*arg)); // Alokacja pamięci dla argumentu przekazywanego do wątku
         if (!arg)
-        {
-            perror("malloc");
-            exit(1);
-        }
-        *arg = i;
+            if (!arg)
+            {
+                perror("malloc");
+                exit(1);
+            }
+        *arg = i; // Przekazanie numeru fryzjera jako argument
+        // Utworzenie wątku fryzjera, który będzie wykonywał funkcję barber_thread
         if (pthread_create(&fryzjerzy[i], NULL, barber_thread, arg) != 0)
         {
             perror("pthread_create barber");
@@ -139,17 +166,18 @@ int main()
         }
     }
 
-    /* Tworzenie wątków klientów */
-    pthread_t klienci[P];
+    /* ----------------- Tworzenie wątków klientów ----------------- */
+    pthread_t klienci[P]; // Tablica identyfikatorów wątków klientów
     for (int i = 0; i < P; i++)
     {
-        int *arg = malloc(sizeof(*arg));
+        int *arg = malloc(sizeof(*arg)); // Alokacja pamięci dla argumentu przekazywanego do wątku klienta
         if (!arg)
         {
             perror("malloc");
             exit(1);
         }
-        *arg = i + 1;
+        *arg = i + 1; // Przekazanie numeru klienta jako argument (numeracja od 1)
+        // Utworzenie wątku klienta, który będzie wykonywał funkcję client_thread
         if (pthread_create(&klienci[i], NULL, client_thread, arg) != 0)
         {
             perror("pthread_create client");
@@ -157,7 +185,8 @@ int main()
         }
     }
 
-    /* Tworzenie wątku managera */
+    /* ----------------- Tworzenie wątku kierownika ----------------- */
+    // Kierownik kontroluje przebieg symulacji, np. otwieranie i zamykanie salonu
     pthread_t manager;
     if (pthread_create(&manager, NULL, manager_thread, NULL) != 0)
     {
@@ -165,27 +194,28 @@ int main()
         exit(1);
     }
 
-    /* Czekamy na zakończenie pracy managera */
+    // Oczekiwanie na zakończenie działania wątku managera (synchronizacja)
     pthread_join(manager, NULL);
 
-    /* Dajemy chwilę na zakończenie bieżących obsług */
+    // Po zakończeniu managera dajemy chwilę na obsłużenie bieżących operacji
     sleep(5);
 
-    /* Łączenie (join) wątków fryzjerów */
+    /* ----------------- Łączenie wątków fryzjerów ----------------- */
     for (int i = 0; i < F; i++)
     {
-        pthread_join(fryzjerzy[i], NULL);
+        pthread_join(fryzjerzy[i], NULL); // Oczekiwanie na zakończenie każdego wątku fryzjera
     }
 
-    /* Łączenie (join) wątków klientów */
+    /* ----------------- Łączenie wątków klientów ----------------- */
     for (int i = 0; i < P; i++)
     {
-        pthread_join(klienci[i], NULL);
+        pthread_join(klienci[i], NULL); // Oczekiwanie na zakończenie każdego wątku klienta
     }
 
-    /* Wysyłamy komunikat zakończenia do loggera */
+    /* ----------------- Wysłanie komunikatu zakończenia do loggera ----------------- */
+    // Przygotowanie komunikatu kończącego działanie loggera
     Message exit_msg;
-    exit_msg.mtype = MSG_TYPE_EXIT;
+    exit_msg.mtype = MSG_TYPE_EXIT; // Typ komunikatu ustawiony na zakończenie
     strncpy(exit_msg.mtext, "EXIT", MSG_SIZE - 1);
     exit_msg.mtext[MSG_SIZE - 1] = '\0';
     if (msgsnd(msgqid, &exit_msg, sizeof(exit_msg.mtext), 0) == -1)
@@ -193,15 +223,17 @@ int main()
         perror("msgsnd exit message");
     }
 
-    /* Czekamy na zakończenie procesu loggera */
+    /* ----------------- Oczekiwanie na zakończenie procesu loggera ----------------- */
     wait(NULL);
 
-    /* Sprzątanie – niszczenie mutexów i zmiennych warunkowych */
+    /* ----------------- Sprzątanie zasobów ----------------- */
+    // Niszczenie mutexów oraz zmiennych warunkowych używanych w programie
     pthread_mutex_destroy(&poczekalniaMutex);
     pthread_cond_destroy(&poczekalniaNotEmpty);
     pthread_mutex_destroy(&kasa.mutex_kasa);
     pthread_cond_destroy(&kasa.uzupelnienie);
 
+    // Wypisanie komunikatu informującego o zakończeniu symulacji
     printf("Symulacja salonu fryzjerskiego zakończona.\n");
     return 0;
 }
