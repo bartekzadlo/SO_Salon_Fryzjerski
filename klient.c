@@ -46,8 +46,8 @@ void *client_thread(void *arg)
             pthread_mutex_unlock(&poczekalniaMutex);
             printf("Klient %d: poczekalnia pełna, opuszczam salon.\n", id);
             sem_destroy(&klient->served); // Zwalniamy semafor
-            free(klient);
-            continue; // klient wraca „zarabiać pieniądze”
+            free(klient);                 // Zwalniamy pamięć
+            continue;                     // klient wraca „zarabiać pieniądze”
         }
         int index = (poczekalniaFront + poczekalniaCount) % MAX_WAITING;
         poczekalnia[index] = klient;
@@ -63,13 +63,13 @@ void *client_thread(void *arg)
         {
             printf("Klient %d: salon zamknięty – opuszczam salon.\n", id);
             sem_destroy(&klient->served); // Zwalniamy semafor
-            free(klient);
+            free(klient);                 // Zwalniamy pamięć
             break;
         }
 
         printf("Klient %d: zostałem obsłużony i opuszczam salon.\n", id);
         sem_destroy(&klient->served); // Zwalniamy semafor
-        free(klient);
+        free(klient);                 // Zwalniamy pamięć
     }
     printf("Klient %d: kończę pracę w symulacji salonu.\n", id);
     return NULL;
