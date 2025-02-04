@@ -6,6 +6,7 @@
 #include <sys/shm.h>   // Dla shmget, shmat i innych funkcji pamięci dzielonej
 #include <semaphore.h> // Dla semaforów
 #include <errno.h>     // Do obsługi błędów systemowych
+#include <string.h>    // Dla strncpy
 #include "common.h"
 
 Klient *poczekalnia[MAX_WAITING] = {NULL};
