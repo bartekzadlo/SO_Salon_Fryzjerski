@@ -7,7 +7,6 @@
 #include <sys/msg.h>   // Dla msgsnd, msgrcv i innych funkcji kolejki komunikatów
 #include <sys/wait.h>  // Dla wait
 #include <semaphore.h> // Dla semaforów
-#include <errno.h>     // Do obsługi błędów systemowych
 #include <string.h>    // Dla strncpy
 #include "common.h"
 
