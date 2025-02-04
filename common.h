@@ -11,6 +11,17 @@
 #define P 10          // liczba klientów
 #define MAX_WAITING K // rozmiar kolejki poczekalni
 
+/* Definicja struktury wiadomości */
+#define MSG_SIZE 128
+#define MSG_TYPE_EVENT 1
+#define MSG_TYPE_EXIT 999
+
+typedef struct
+{
+    long mtype;
+    char mtext[MSG_SIZE];
+} Message;
+
 /* Struktura opisująca klienta */
 typedef struct
 {
@@ -44,6 +55,9 @@ extern int salon_open;        // salon czynny
 extern int close_all_clients; // sygnał 2: wszyscy klienci natychmiast opuszczają salon
 extern int barber_stop[F];    // dla każdego fryzjera – sygnał 1, aby zakończył pracę
 
+/* Globalny identyfikator kolejki komunikatów */
+extern int msgqid;
+
 /* Funkcja inicjalizująca kasę */
 void init_kasa();
 
@@ -51,5 +65,11 @@ void init_kasa();
 void *barber_thread(void *arg);
 void *client_thread(void *arg);
 void *manager_thread(void *arg);
+
+/* Funkcja pomocnicza wysyłająca komunikat do kolejki */
+void send_message(const char *text);
+
+/* Proces loggera – odbiera komunikaty z kolejki i wypisuje je */
+void logger_process();
 
 #endif // COMMON_H

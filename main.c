@@ -24,22 +24,53 @@ int barber_stop[F] = {0};
 
 void init_kasa()
 {
-    kasa.banknot_10 = 10;
-    kasa.banknot_20 = 5;
-    kasa.banknot_50 = 2;
+    kasa.banknot_10 = 50;
+    kasa.banknot_20 = 50;
+    kasa.banknot_50 = 50;
     pthread_mutex_init(&kasa.mutex_kasa, NULL);
     pthread_cond_init(&kasa.uzupelnienie, NULL);
+}
+
+/* Funkcja pomocnicza wysyłająca komunikat do kolejki */
+void send_message(const char *text)
+{
+    Message msg;
+    msg.mtype = MSG_TYPE_EVENT;
+    strncpy(msg.mtext, text, MSG_SIZE - 1);
+    msg.mtext[MSG_SIZE - 1] = '\0';
+    if (msgsnd(msgqid, &msg, sizeof(msg.mtext), 0) == -1)
+    {
+        perror("msgsnd");
+    }
+}
+
+/* Proces loggera – odbiera komunikaty z kolejki i wypisuje je */
+void logger_process()
+{
+    while (1)
+    {
+        Message msg;
+        ssize_t ret = msgrcv(msgqid, &msg, sizeof(msg.mtext), 0, 0);
+        if (ret == -1)
+        {
+            perror("msgrcv in logger");
+            break;
+        }
+        if (msg.mtype == MSG_TYPE_EXIT)
+        {
+            printf("LOGGER: Otrzymano komunikat zakończenia.\n");
+            break;
+        }
+        printf("LOGGER: %s\n", msg.mtext);
+    }
+    exit(0);
 }
 
 int main()
 {
     srand(time(NULL));
     sem_init(&fotele_semafor, 0, N);
-    kasa.banknot_10 = 1;
-    kasa.banknot_20 = 1;
-    kasa.banknot_50 = 0;
-    pthread_mutex_init(&kasa.mutex_kasa, NULL);
-    pthread_cond_init(&kasa.uzupelnienie, NULL);
+    init_kasa();
     /* Tworzenie wątków fryzjerów */
     pthread_t fryzjerzy[F];
     for (int i = 0; i < F; i++)
