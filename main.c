@@ -25,7 +25,7 @@ int salon_open = 1;
 int close_all_clients = 0;
 int barber_stop[F] = {0};
 
-int msgid; // Definicja zmiennej globalnej
+int msgqid; // Definicja zmiennej globalnej
 
 void init_kasa()
 {
