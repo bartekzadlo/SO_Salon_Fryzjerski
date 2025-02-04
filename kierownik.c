@@ -10,7 +10,9 @@
 void *manager_thread(void *arg)
 {
     (void)arg; // nieużywany parametr
+
     char log_buffer[MSG_SIZE];
+
     /* Po 30 sekundach wysyłamy sygnał 1 do fryzjera 0 */
     sleep(30);
     barber_stop[0] = 1;

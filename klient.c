@@ -11,7 +11,9 @@ void *client_thread(void *arg)
 {
     int id = *((int *)arg);
     free(arg);
+
     char log_buffer[MSG_SIZE];
+
     while (salon_open && !close_all_clients)
     {
         /* Symulacja „zarabiania pieniędzy” – oczekiwanie 1–5 s */
@@ -26,6 +28,7 @@ void *client_thread(void *arg)
             exit(1);
         }
         klient->id = id;
+
         /* Losujemy sposób płatności – 50% szans na 20 zł, 50% na 50 zł */
         if (rand() % 2 == 0)
             klient->payment = 20;
@@ -74,10 +77,13 @@ void *client_thread(void *arg)
 
         snprintf(log_buffer, MSG_SIZE, "Klient %d: zostałem obsłużony i opuszczam salon.", id);
         send_message(log_buffer);
+
         __sync_fetch_and_add(&sharedStats->total_clients_served, 1);
+
         sem_destroy(&klient->served); // Zwalniamy semafor
         free(klient);                 // Zwalniamy pamięć
     }
+
     snprintf(log_buffer, MSG_SIZE, "Klient %d: kończę pracę w symulacji salonu.", id);
     send_message(log_buffer);
     return NULL;

@@ -8,7 +8,7 @@
 #include <sys/wait.h>  // Dla wait
 #include <semaphore.h> // Dla semaforów
 #include <string.h>    // Dla strncpy
-#include "common.h"
+#include "common.h"    // Dodanie pliku nagłówkowego
 
 Klient *poczekalnia[MAX_WAITING] = {NULL};
 int poczekalniaFront = 0;
@@ -17,6 +17,7 @@ pthread_mutex_t poczekalniaMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t poczekalniaNotEmpty = PTHREAD_COND_INITIALIZER;
 
 SalonStats *sharedStats = NULL;
+
 Kasa kasa;
 
 sem_t fotele_semafor;
@@ -83,6 +84,7 @@ int main()
         perror("shmget");
         exit(1);
     }
+
     sharedStats = (SalonStats *)shmat(shm_id, NULL, 0);
     if (sharedStats == (void *)-1)
     {
@@ -101,6 +103,7 @@ int main()
         perror("msgget");
         exit(1);
     }
+
     /* Fork – tworzymy oddzielny proces loggera */
     pid_t logger_pid = fork();
     if (logger_pid < 0)
@@ -113,8 +116,11 @@ int main()
         /* Proces dziecka: logger */
         logger_process();
     }
+
     sem_init(&fotele_semafor, 0, N);
+
     init_kasa();
+
     /* Tworzenie wątków fryzjerów */
     pthread_t fryzjerzy[F];
     for (int i = 0; i < F; i++)

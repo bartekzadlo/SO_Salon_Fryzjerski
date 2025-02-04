@@ -35,6 +35,7 @@ void *barber_thread(void *arg)
             pthread_mutex_unlock(&poczekalniaMutex);
             break;
         }
+
         /* Pobierz klienta z kolejki */
         Klient *klient = poczekalnia[poczekalniaFront];
         poczekalniaFront = (poczekalniaFront + 1) % MAX_WAITING;
@@ -43,6 +44,7 @@ void *barber_thread(void *arg)
 
         snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: rozpoczynam obsługę klienta %d (płatność: %d zł).", id, klient->id, klient->payment);
         send_message(log_buffer);
+
         /* Rezerwacja fotela (czekamy, aż fotel będzie wolny) */
         sem_wait(&fotele_semafor);
 
@@ -103,6 +105,7 @@ void *barber_thread(void *arg)
         /* Powiadomienie klienta o zakończeniu obsługi */
         sem_post(&klient->served);
     }
+
     snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: wychodzę z pracy.", id);
     send_message(log_buffer);
     return NULL;
