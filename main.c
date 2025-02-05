@@ -35,6 +35,12 @@ int sim_duration = 0; // TK - TP
 
 int msgqid; // Globalny identyfikator kolejki komunikatów, używany przez loggera oraz inne funkcje komunikacji międzyprocesowej
 
+/* Funkcja do obsługi błędów – wypisuje komunikat i kończy program */
+void error_exit(const char *msg)
+{
+    perror(msg);
+    exit(EXIT_FAILURE);
+}
 /*
  * Funkcja init_kasa()
  * -------------------
@@ -43,11 +49,17 @@ int msgqid; // Globalny identyfikator kolejki komunikatów, używany przez logge
  */
 void init_kasa()
 {
-    kasa.banknot_10 = 50;                        // Ustawienie początkowej liczby banknotów o nominale 10
-    kasa.banknot_20 = 50;                        // Ustawienie początkowej liczby banknotów o nominale 20
-    kasa.banknot_50 = 50;                        // Ustawienie początkowej liczby banknotów o nominale 50
-    pthread_mutex_init(&kasa.mutex_kasa, NULL);  // Inicjalizacja mutexa chroniącego operacje na kase
-    pthread_cond_init(&kasa.uzupelnienie, NULL); // Inicjalizacja zmiennej warunkowej do sygnalizacji uzupełnienia kasy
+    kasa.banknot_10 = 50; // Ustawienie początkowej liczby banknotów o nominale 10
+    kasa.banknot_20 = 50; // Ustawienie początkowej liczby banknotów o nominale 20
+    kasa.banknot_50 = 50; // Ustawienie początkowej liczby banknotów o nominale 50
+    if (pthread_mutex_init(&kasa.mutex_kasa, NULL) != 0)
+    {
+        error_exit("pthread_mutex_init kasy");
+    }
+    if (pthread_cond_init(&kasa.uzupelnienie, NULL) != 0)
+    {
+        error_exit("pthread_cond_init kasy");
+    }
 }
 
 /*
@@ -66,13 +78,6 @@ void send_message(const char *text)
     {
         perror("msgsnd"); // Wypisanie błędu w przypadku niepowodzenia
     }
-}
-
-/* Funkcja do obsługi błędów – wypisuje komunikat i kończy program */
-void error_exit(const char *msg)
-{
-    perror(msg);
-    exit(EXIT_FAILURE);
 }
 
 /* Funkcja ustawiająca limit procesów na MAX_PROCESSES */
@@ -185,8 +190,7 @@ int main()
     sharedStats = (SalonStats *)shmat(shm_id, NULL, 0); // Przypięcie segmentu pamięci do przestrzeni adresowej procesu
     if (sharedStats == (void *)-1)
     {
-        perror("shmat");
-        exit(1);
+        error_exit("shmat");
     }
     // Inicjalizacja statystyk salonu
     sharedStats->total_clients_served = 0;
@@ -195,19 +199,17 @@ int main()
 
     /* ----------------- Kolejka komunikatów ----------------- */
     key_t msg_key = ftok(".", 'M'); // Utworzenie klucza dla kolejki komunikatów
-    msgqid = msgget(msg_key, IPC_CREAT | 0666);
+    msgqid = msgget(msg_key, IPC_CREAT | 0600);
     if (msgqid < 0)
     {
-        perror("msgget");
-        exit(1);
+        error_exit("msgget");
     }
 
     /* ----------------- Proces Loggera ----------------- */
     pid_t logger_pid = fork(); // Utworzenie nowego procesu przy użyciu fork() w celu uruchomienia loggera
     if (logger_pid < 0)
     {
-        perror("fork");
-        exit(1);
+        error_exit("fork loggera");
     }
     else if (logger_pid == 0)
     {
@@ -218,6 +220,17 @@ int main()
 
     init_kasa(); // Ustawienie początkowych wartości banknotów i inicjalizacja synchronizacji dla operacji na kasie
 
+    pthread_t manager_thread;
+    if (pthread_create(&manager_thread, NULL, manager_input_thread, NULL) != 0)
+    {
+        error_exit("pthread_create wątku managera");
+    }
+
+    pthread_t starter_thread;
+    if (pthread_create(&starter_thread, NULL, simulation_starter_thread, NULL) != 0)
+    {
+        error_exit("pthread_create wątku startującego symulację");
+    }
     /* ----------------- Wysłanie komunikatu zakończenia do loggera ----------------- */
     // Przygotowanie komunikatu kończącego działanie loggera
     Message exit_msg;
