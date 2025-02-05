@@ -3,7 +3,24 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <unistd.h>
+#include <string.h>
+#include <ctype.h>
 #include "common.h"
+
+/* Funkcja pomocnicza usuwająca białe znaki z początku i końca łańcucha */
+char *trim_whitespace(char *str)
+{
+    char *end;
+    while (*str && isspace((unsigned char)*str))
+        str++;
+    if (*str == 0)
+        return str;
+    end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end))
+        end--;
+    *(end + 1) = '\0';
+    return str;
+}
 
 void *manager_input_thread(void *arg)
 {
@@ -42,6 +59,23 @@ void *manager_input_thread(void *arg)
                         send_message("Manager: Odczytano sygnał 1. Fryzjer 0 kończy pracę przed zamknięciem salonu.");
                     }
                 }
+                else if (strcmp(trimmed, "2") == 0)
+                {
+                    close_all_clients = 1;
+                    salon_open = 0;
+                    pthread_mutex_lock(&poczekalniaMutex);
+                    pthread_cond_broadcast(&poczekalniaNotEmpty);
+                    while (poczekalniaCount > 0)
+                    {
+                        Klient *klient = poczekalnia[poczekalniaFront];
+                        poczekalniaFront = (poczekalniaFront + 1) % K;
+                        poczekalniaCount--;
+                        sem_post(&klient->served);
+                    }
+                    pthread_mutex_unlock(&poczekalniaMutex);
+                    send_message("Manager: Odczytano sygnał 2. Wszyscy klienci opuszczają salon, salon zamykany.");
+                }
             }
         }
     }
+}
