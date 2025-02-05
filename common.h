@@ -15,6 +15,7 @@
 #define GREEN "\033[32m"
 #define YELLOW "\033[33m"
 #define CYAN "\033[36m"
+#define RESET "\033[0m"
 
 /* Definicja struktury wiadomości */
 #define MSG_SIZE 128      // Maksymalny rozmiar tekstu w komunikacie
