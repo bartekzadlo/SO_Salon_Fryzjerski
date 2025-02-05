@@ -27,6 +27,11 @@ int salon_open = 1;        // Flaga informująca, czy salon jest nadal otwarty
 int close_all_clients = 0; // Flaga sygnalizująca konieczność zakończenia obsługi klientów
 int barber_stop[F] = {0};  // Tablica flag określających, kiedy poszczególni fryzjerzy mają zakończyć pracę
 
+/* Godziny – podawane w sekundach od startu symulacji */
+int TP = 0;                 // początek (przed otwarciem salonu)
+int TK = 0;                 // koniec
+int sim_duration = TK - TP; // TK - TP
+
 int msgqid; // Globalny identyfikator kolejki komunikatów, używany przez loggera oraz inne funkcje komunikacji międzyprocesowej
 
 /*

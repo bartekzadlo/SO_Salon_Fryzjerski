@@ -4,13 +4,14 @@
 #include <semaphore.h>
 #include <pthread.h>
 
-/* Parametry symulacji            */
+/* Parametry symulacji */
 #define F 3           // Liczba fryzjerów (F > 1) – ilość wątków reprezentujących fryzjerów
 #define N 2           // Liczba foteli (N < F) – ograniczenie liczby jednocześnie obsługiwanych klientów
 #define K 5           // Maksymalna liczba klientów w poczekalni
 #define P 10          // Liczba klientów – ilość wątków reprezentujących klientów
 #define MAX_WAITING K // Rozmiar kolejki poczekalni – wykorzystujemy K jako maksymalną liczbę oczekujących klientów
 
+/* Kolory ANSI dla logowania w konsoli */
 #define RED "\033[31m"
 #define GREEN "\033[32m"
 #define YELLOW "\033[33m"
@@ -76,6 +77,11 @@ extern Kasa kasa; // Globalna struktura kasy salonu
 extern int salon_open;        // Flaga informująca, czy salon jest czynny (1 – otwarty, 0 – zamknięty)
 extern int close_all_clients; // Flaga sygnalizująca, że wszyscy klienci muszą natychmiast opuścić salon (sygnał 2)
 extern int barber_stop[F];    // Tablica flag dla fryzjerów – dla każdego fryzjera sygnał (1), aby zakończył pracę
+
+/* Godziny – podawane w sekundach od startu symulacji */
+int TP;           // początek (przed otwarciem salonu)
+int TK;           // koniec
+int sim_duration; // TK - TP
 
 /* Globalny identyfikator kolejki komunikatów */
 extern int msgqid; // Identyfikator kolejki komunikatów używanej do logowania zdarzeń
