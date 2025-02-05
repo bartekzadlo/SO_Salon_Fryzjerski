@@ -13,11 +13,11 @@
 #define MAX_PROCESSES 1024
 
 /* Kolory ANSI dla logowania w konsoli */
+#define RESET "\033[0m"
 #define RED "\033[31m"
 #define GREEN "\033[32m"
 #define YELLOW "\033[33m"
 #define CYAN "\033[36m"
-#define RESET "\033[0m"
 
 /* Definicja struktury wiadomości */
 #define MSG_SIZE 128      // Maksymalny rozmiar tekstu w komunikacie
