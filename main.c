@@ -153,6 +153,23 @@ int main()
 
     set_process_limit();
 
+    printf("Podaj czas otwarcia (TP) w sekundach: ");
+    if (scanf("%d", &TP) != 1)
+    {
+        error_exit("Błąd odczytu TP");
+    }
+    printf("Podaj czas zamknięcia (TK) w sekundach: ");
+    if (scanf("%d", &TK) != 1)
+    {
+        error_exit("Błąd odczytu TK");
+    }
+    if (TK <= TP)
+    {
+        fprintf(stderr, RED "Błąd: TK musi być większe od TP.\n" RESET);
+        exit(EXIT_FAILURE);
+    }
+    sim_duration = TK - TP;
+
     /* ----------------- Pamięć współdzielona ----------------- */
     key_t shm_key = ftok(".", 'S');                                     // Utworzenie klucza dla segmentu pamięci współdzielonej za pomocą ftok()
     int shm_id = shmget(shm_key, sizeof(SalonStats), IPC_CREAT | 0666); // Utworzenie segmentu pamięci współdzielonej dla struktury SalonStats
