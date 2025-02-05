@@ -74,6 +74,24 @@ void error_exit(const char *msg)
     exit(EXIT_FAILURE);
 }
 
+/* Funkcja ustawiająca limit procesów na MAX_PROCESSES */
+void set_process_limit()
+{
+    struct rlimit rl;
+    if (getrlimit(RLIMIT_NPROC, &rl) != 0)
+    {
+        error_exit("getrlimit");
+    }
+    if (rl.rlim_cur < MAX_PROCESSES)
+    {
+        rl.rlim_cur = MAX_PROCESSES;
+        if (setrlimit(RLIMIT_NPROC, &rl) != 0)
+        {
+            error_exit("setrlimit");
+        }
+    }
+}
+
 /*
  * Funkcja logger_process()
  * ------------------------
