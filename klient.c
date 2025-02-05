@@ -111,8 +111,6 @@ void *client_thread(void *arg)
         snprintf(log_buffer, MSG_SIZE, "Klient %d: zostałem obsłużony i opuszczam salon.", id);
         send_message(log_buffer);
 
-        __sync_fetch_and_add(&sharedStats->total_clients_served, 1); // Aktualizacja statystyk
-
         // Zwalniamy zasoby klienta: niszczymy semafor i zwalniamy pamięć
         sem_destroy(&klient->served); // Zwalniamy semafor
         free(klient);                 // Zwalniamy pamięć

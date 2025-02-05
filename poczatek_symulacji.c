@@ -62,8 +62,8 @@ void *simulation_starter_thread(void *arg)
         pthread_join(klienci[i], NULL);
     }
     pthread_join(timer_thread, NULL);
-    snprintf(log_buffer, MSG_SIZE, "Symulacja zakończona. Statystyki: Klienci obsłużeni: %d, Klienci odeszli: %d, Usługi wykonane: %d",
-             sharedStats->total_clients_served, sharedStats->total_clients_left, sharedStats->total_services_done);
+    snprintf(log_buffer, MSG_SIZE, "Symulacja zakończona. Statystyki: Klienci odeszli: %d, Usługi wykonane: %d",
+             sharedStats->total_clients_left, sharedStats->total_services_done);
     send_message(log_buffer);
     return NULL;
 }

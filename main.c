@@ -193,7 +193,6 @@ int main()
         error_exit("shmat");
     }
     // Inicjalizacja statystyk salonu
-    sharedStats->total_clients_served = 0;
     sharedStats->total_clients_left = 0;
     sharedStats->total_services_done = 0;
 
@@ -266,7 +265,7 @@ int main()
 
     // Wypisanie komunikatu informującego o zakończeniu symulacji
     printf(GREEN "Symulacja zakończona.\n" RESET);
-    printf(GREEN "Statystyki: Obsłużonych klientów: %d, Odeszło: %d, Wykonanych usług: %d\n" RESET,
-           sharedStats->total_clients_served, sharedStats->total_clients_left, sharedStats->total_services_done);
+    printf(GREEN "Statystyki: Odeszło: %d, Wykonanych usług: %d\n" RESET,
+           sharedStats->total_clients_left, sharedStats->total_services_done);
     shmdt(sharedStats);
 }
