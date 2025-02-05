@@ -11,6 +11,11 @@
 #define P 10          // Liczba klientów – ilość wątków reprezentujących klientów
 #define MAX_WAITING K // Rozmiar kolejki poczekalni – wykorzystujemy K jako maksymalną liczbę oczekujących klientów
 
+#define RED "\033[31m"
+#define GREEN "\033[32m"
+#define YELLOW "\033[33m"
+#define CYAN "\033[36m"
+
 /* Definicja struktury wiadomości */
 #define MSG_SIZE 128      // Maksymalny rozmiar tekstu w komunikacie
 #define MSG_TYPE_EVENT 1  // Typ komunikatu: zdarzenie (np. log zdarzeń)
