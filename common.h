@@ -79,9 +79,9 @@ extern int close_all_clients; // Flaga sygnalizująca, że wszyscy klienci musz�
 extern int barber_stop[F];    // Tablica flag dla fryzjerów – dla każdego fryzjera sygnał (1), aby zakończył pracę
 
 /* Godziny – podawane w sekundach od startu symulacji */
-int TP;           // początek (przed otwarciem salonu)
-int TK;           // koniec
-int sim_duration; // TK - TP
+extern int TP;           // początek (przed otwarciem salonu)
+extern int TK;           // koniec
+extern int sim_duration; // TK - TP
 
 /* Globalny identyfikator kolejki komunikatów */
 extern int msgqid; // Identyfikator kolejki komunikatów używanej do logowania zdarzeń
