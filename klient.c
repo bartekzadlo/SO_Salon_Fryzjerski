@@ -66,6 +66,12 @@ void *client_thread(void *arg)
          * Blokujemy mutex poczekalni, aby bezpiecznie sprawdzić, czy jest dostępne miejsce.
          */
         pthread_mutex_lock(&poczekalniaMutex);
+        if (!salon_open || close_all_clients)
+        {
+            pthread_mutex_unlock(&poczekalniaMutex);
+            free(klient);
+            break;
+        }
         if (poczekalniaCount >= K) // Jeśli poczekalnia jest pełna, klient odpuszcza i opuszcza salon
         {
             pthread_mutex_unlock(&poczekalniaMutex);
