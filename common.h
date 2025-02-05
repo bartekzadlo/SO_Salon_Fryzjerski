@@ -17,6 +17,7 @@
 #define RED "\033[31m"
 #define GREEN "\033[32m"
 #define YELLOW "\033[33m"
+#define BLUE "\033[34m"
 #define CYAN "\033[36m"
 
 /* Definicja struktury wiadomości */
@@ -39,9 +40,8 @@ typedef struct
 /* Struktura przechowywana w pamięci współdzielonej */
 typedef struct
 {
-    int total_clients_served; // Liczba klientów, którzy zostali obsłużeni
-    int total_clients_left;   // Liczba klientów, którzy opuścili salon (np. gdy poczekalnia była pełna)
-    int total_services_done;  // Liczba wykonanych usług (np. ilość przeprowadzonych strzyżeń)
+    int total_clients_left;  // Liczba klientów, którzy opuścili salon (np. gdy poczekalnia była pełna)
+    int total_services_done; // Liczba wykonanych usług (np. ilość przeprowadzonych strzyżeń)
 } SalonStats;
 extern SalonStats *sharedStats; // Wskaźnik do struktury statystyk salonu (przechowywanych w pamięci współdzielonej)
 
