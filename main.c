@@ -272,9 +272,5 @@ int main()
     pthread_mutex_destroy(&kasa.mutex_kasa);
     pthread_cond_destroy(&kasa.uzupelnienie);
 
-    // Wypisanie komunikatu informującego o zakończeniu symulacji
-    printf(GREEN "Symulacja zakończona.\n" RESET);
-    printf(GREEN "Statystyki: Odeszło: %d, Wykonanych usług: %d\n" RESET,
-           sharedStats->total_clients_left, sharedStats->total_services_done);
     shmdt(sharedStats);
 }
