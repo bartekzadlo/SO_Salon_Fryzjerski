@@ -22,13 +22,13 @@ void *simulation_starter_thread(void *arg)
         if (!arg)
         {
             perror("malloc");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         *arg = i;
         if (pthread_create(&fryzjerzy[i], NULL, barber_thread, arg) != 0)
         {
             perror("pthread_create barber");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
     pthread_t klienci[P];
@@ -38,20 +38,20 @@ void *simulation_starter_thread(void *arg)
         if (!arg)
         {
             perror("malloc");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         *arg = i + 1;
         if (pthread_create(&klienci[i], NULL, client_thread, arg) != 0)
         {
             perror("pthread_create client");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
     pthread_t timer_thread;
     if (pthread_create(&timer_thread, NULL, simulation_timer_thread, NULL) != 0)
     {
         perror("pthread_create timer");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     for (int i = 0; i < F; i++)
     {
