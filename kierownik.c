@@ -59,7 +59,7 @@ void *manager_input_thread(void *arg)
                     else
                     {
                         barber_stop[0] = 1;
-                        send_message("Manager: Odczytano sygnał 1. Fryzjer 0 kończy pracę przed zamknięciem salonu.");
+                        send_message("Manager: Odczytano sygnał 1 - fryzjer 0 kończy pracę przed zamknięciem salonu.");
                     }
                 }
                 else if (strcmp(trimmed, "2") == 0)
