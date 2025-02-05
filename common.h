@@ -5,11 +5,12 @@
 #include <pthread.h>
 
 /* Parametry symulacji */
-#define F 3           // Liczba fryzjerów (F > 1) – ilość wątków reprezentujących fryzjerów
-#define N 2           // Liczba foteli (N < F) – ograniczenie liczby jednocześnie obsługiwanych klientów
-#define K 5           // Maksymalna liczba klientów w poczekalni
-#define P 10          // Liczba klientów – ilość wątków reprezentujących klientów
-#define MAX_WAITING K // Rozmiar kolejki poczekalni – wykorzystujemy K jako maksymalną liczbę oczekujących klientów
+#define F 3  // Liczba fryzjerów (F > 1) – ilość wątków reprezentujących fryzjerów
+#define N 2  // Liczba foteli (N < F) – ograniczenie liczby jednocześnie obsługiwanych klientów
+#define K 5  // Maksymalna liczba klientów w poczekalni
+#define P 10 // Liczba klientów – ilość wątków reprezentujących klientów
+
+#define MAX_PROCESSES 1024
 
 /* Kolory ANSI dla logowania w konsoli */
 #define RED "\033[31m"
@@ -53,7 +54,7 @@ typedef struct
 } Klient;
 
 /* Kolejka poczekalni – implementowana jako tablica cykliczna */
-extern Klient *poczekalnia[MAX_WAITING];   // Tablica wskaźników na klientów reprezentująca poczekalnię
+extern Klient *poczekalnia[K];             // Tablica wskaźników na klientów reprezentująca poczekalnię
 extern int poczekalniaFront;               // Indeks pierwszego oczekującego klienta (początek kolejki)
 extern int poczekalniaCount;               // Liczba klientów aktualnie oczekujących w poczekalni
 extern pthread_mutex_t poczekalniaMutex;   // Mutex służący do synchronizacji dostępu do kolejki poczekalni
