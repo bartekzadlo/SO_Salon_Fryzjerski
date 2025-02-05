@@ -12,7 +12,7 @@
 
 // Globalne zmienne do zarządzania poczekalnią klientów
 
-Klient *poczekalnia[MAX_WAITING] = {NULL};                     // Tablica wskaźników na klientów, reprezentująca poczekalnię salonu
+Klient *poczekalnia[K] = {NULL};                               // Tablica wskaźników na klientów, reprezentująca poczekalnię salonu
 int poczekalniaFront = 0;                                      // Indeks pierwszego elementu w kolejce poczekalni
 int poczekalniaCount = 0;                                      // Aktualna liczba klientów oczekujących w poczekalni
 pthread_mutex_t poczekalniaMutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex zabezpieczający dostęp do zmiennych poczekalni
