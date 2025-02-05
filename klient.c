@@ -36,7 +36,7 @@ void *client_thread(void *arg)
          * Klient czeka losowo od 1 do 5 sekund, aby zasymulować okres, w którym "zarabia" pieniądze.
          */
         int earning_time = rand() % 5 + 1;
-        sleep(earning_time); // earning_time
+        sleep(0); // earning_time
 
         if (!salon_open || close_all_clients)
             break;

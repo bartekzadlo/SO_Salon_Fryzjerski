@@ -100,7 +100,7 @@ void *barber_thread(void *arg)
         {
             if (close_all_clients)
                 break;
-            sleep(1);
+            sleep(0);
             elapsed++;
         }
         if (close_all_clients)

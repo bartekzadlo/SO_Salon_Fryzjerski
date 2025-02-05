@@ -10,7 +10,7 @@ void *simulation_starter_thread(void *arg)
 
     if (TP > 0)
     {
-        sleep(TP); // TP
+        sleep(0); // TP
     }
     salon_open = 1;
     send_message("Salon otwarty.");
