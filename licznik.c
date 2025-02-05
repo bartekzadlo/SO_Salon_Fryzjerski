@@ -15,14 +15,16 @@ void *simulation_timer_thread(void *arg)
     while (remaining > 0 && !close_all_clients)
     {
         snprintf(buf, sizeof(buf), "Czas pozostały: %d s", remaining);
-        char *text = strdup(buf);
+        printf(GREEN "%s\n" RESET, buf);
         sleep(1);
         remaining--;
     }
     if (!close_all_clients)
     {
         close_all_clients = 1;
+        salon_open = 0; // Zamykamy salon, aby nowe wejścia nie były przyjmowane
         pthread_mutex_lock(&poczekalniaMutex);
+        pthread_cond_broadcast(&poczekalniaNotEmpty); // budzimy fryzjerów
         while (poczekalniaCount > 0)
         {
             Klient *klient = poczekalnia[poczekalniaFront];
