@@ -18,5 +18,10 @@ void *manager_input_thread(void *arg)
 
     while (!close_all_clients)
     {
+        FD_ZERO(&read_fds);
+        FD_SET(STDIN_FILENO, &read_fds);
+        timeout.tv_sec = 1;
+        timeout.tv_usec = 0;
+        int ret = select(STDIN_FILENO + 1, &read_fds, NULL, NULL, &timeout);
     }
 }
