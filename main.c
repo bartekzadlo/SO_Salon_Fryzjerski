@@ -242,11 +242,20 @@ int main()
     exit_msg.mtext[MSG_SIZE - 1] = '\0';
     if (msgsnd(msgqid, &exit_msg, sizeof(exit_msg.mtext), 0) == -1)
     {
-        perror("msgsnd exit message");
+        error_exit("msgsnd komunikatu zakończenia");
     }
 
     /* ----------------- Oczekiwanie na zakończenie procesu loggera ----------------- */
     wait(NULL);
+
+    if (shmctl(shm_id, IPC_RMID, NULL) == -1)
+    {
+        error_exit("shmctl");
+    }
+    if (msgctl(msgqid, IPC_RMID, NULL) == -1)
+    {
+        error_exit("msgctl");
+    }
 
     /* ----------------- Sprzątanie zasobów ----------------- */
     // Niszczenie mutexów oraz zmiennych warunkowych używanych w programie
@@ -256,6 +265,8 @@ int main()
     pthread_cond_destroy(&kasa.uzupelnienie);
 
     // Wypisanie komunikatu informującego o zakończeniu symulacji
-    printf("Symulacja salonu fryzjerskiego zakończona.\n");
-    return 0;
+    printf(GREEN "Symulacja zakończona.\n" RESET);
+    printf(GREEN "Statystyki: Obsłużonych klientów: %d, Odeszło: %d, Wykonanych usług: %d\n" RESET,
+           sharedStats->total_clients_served, sharedStats->total_clients_left, sharedStats->total_services_done);
+    shmdt(sharedStats);
 }
