@@ -36,9 +36,9 @@ void *client_thread(void *arg)
          * Klient czeka losowo od 1 do 5 sekund, aby zasymulować okres, w którym "zarabia" pieniądze.
          */
         int earning_time = rand() % 5 + 1;
-        sleep(0); // earning_time
+        sleep(0); // domyślnie earning_time
 
-        if (!salon_open || close_all_clients)
+        if (!salon_open || close_all_clients) // Jeżeli salon jest zamknięty lub otrzymano sygnał zamknięcia klientów, kończymy pętlę
             break;
         /* Przygotowanie danych klienta:
          * Alokacja pamięci na strukturę reprezentującą klienta.
@@ -56,10 +56,10 @@ void *client_thread(void *arg)
         else
             klient->payment = 50;
 
-        if (sem_init(&klient->served, 0, 0) != 0)
+        if (sem_init(&klient->served, 0, 0) != 0) // Inicjalizacja semafora dla klienta
         {
             perror("sem_init");
-            free(klient);
+            free(klient); // Zwolnienie pamięci w przypadku błędu
             exit(1);
         }
 
@@ -67,29 +67,31 @@ void *client_thread(void *arg)
          * Blokujemy mutex poczekalni, aby bezpiecznie sprawdzić, czy jest dostępne miejsce.
          */
         pthread_mutex_lock(&poczekalniaMutex);
-        if (!salon_open || close_all_clients)
+        if (!salon_open || close_all_clients) // Jeśli salon jest zamknięty lub otrzymano sygnał zamknięcia, klient opuszcza salon
         {
             pthread_mutex_unlock(&poczekalniaMutex);
-            free(klient);
+            free(klient); // Zwolnienie pamięci
             break;
         }
-        if (poczekalniaCount >= K) // Jeśli poczekalnia jest pełna, klient odpuszcza i opuszcza salon
+        if (poczekalniaCount >= K) // Jeśli poczekalnia jest pełna, klient opuszcza salon i wraca "zarabiać pieniądze"
         {
             pthread_mutex_unlock(&poczekalniaMutex);
             snprintf(log_buffer, MSG_SIZE, "Klient %d: poczekalnia pełna, opuszczam salon.", id);
             send_message(log_buffer);
-            __sync_fetch_and_add(&sharedStats->total_clients_left, 1);
-            sem_destroy(&klient->served); // Zwalniamy semafor
-            free(klient);                 // Zwalniamy pamięć
-            continue;                     // klient wraca „zarabiać pieniądze”
+            __sync_fetch_and_add(&sharedStats->total_clients_left, 1); // Zwiększanie liczby klientów, którzy opuścili salon
+            sem_destroy(&klient->served);                              // Zwalniamy semafor
+            free(klient);                                              // Zwalniamy pamięć
+            continue;                                                  // klient wraca „zarabiać pieniądze”
         }
+        // Dodanie klienta do poczekalni
         int index = (poczekalniaFront + poczekalniaCount) % K; // Dodajemy klienta do poczekalni na pozycji obliczonej na podstawie aktualnej liczby oczekujących
         poczekalnia[index] = klient;
-        poczekalniaCount++;
+        poczekalniaCount++;                        // Zwiększanie liczby oczekujących klientów
         pthread_cond_signal(&poczekalniaNotEmpty); // Sygnalizujemy, że poczekalnia nie jest pusta (budzimy ewentualne wątki fryzjerów)
         pthread_mutex_unlock(&poczekalniaMutex);
+
         snprintf(log_buffer, MSG_SIZE, "Klient %d: wchodzę do poczekalni. Liczba oczekujących: %d.", id, poczekalniaCount);
-        send_message(log_buffer);
+        send_message(log_buffer); // Logowanie komunikatu
 
         /* Klient czeka na zakończenie obsługi:
          * sem_wait blokuje wątek klienta do momentu, aż fryzjer zakończy obsługę.

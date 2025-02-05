@@ -76,8 +76,9 @@ void *barber_thread(void *arg)
         pthread_mutex_lock(&kasa.mutex_kasa);
         if (klient->payment == 30)
         {
+            // Klient płaci 20 i 10 zł – zwiększamy licznik banknotów 20 i 10 zł
             kasa.banknot_10++;
-            kasa.banknot_20++; // Klient płaci 20 zł – zwiększamy licznik banknotów 20 zł
+            kasa.banknot_20++;
             snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: otrzymałem 20 i 10 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.",
                      id, kasa.banknot_10, kasa.banknot_20, kasa.banknot_50);
             send_message(log_buffer);
@@ -96,25 +97,26 @@ void *barber_thread(void *arg)
          */
         int service_time = rand() % 3 + 1;
         int elapsed = 0;
+        // Pętla symulująca czas trwania strzyżenia klienta
         while (elapsed < service_time)
         {
-            if (close_all_clients)
+            if (close_all_clients) // Jeśli salon jest zamknięty lub mamy sygnał zakończenia obsługi, przerywamy pętlę
                 break;
-            sleep(0);
-            elapsed++;
+            sleep(0);  // Symulujemy upływ czasu
+            elapsed++; // Zwiększamy licznik upływającego czasu
         }
-        if (close_all_clients)
+        if (close_all_clients) // Sprawdzamy, czy salon został zamknięty przed zakończeniem strzyżenia
         {
             snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: przerwałem obsługę klienta %d z powodu zamknięcia salonu.",
-                     id, klient->id);
-            send_message(log_buffer);
+                     id, klient->id); // Logujemy przerwanie usługi z powodu zamknięcia salonu
+            send_message(log_buffer); // Wysyłamy komunikat
         }
         else
         {
             snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: zakończyłem strzyżenie klienta %d (czas usługi: %d s).",
-                     id, klient->id, service_time);
-            send_message(log_buffer);
-            __sync_fetch_and_add(&sharedStats->total_services_done, 1);
+                     id, klient->id, service_time);                     // Logujemy zakończenie usługi strzyżenia i czas trwania
+            send_message(log_buffer);                                   // Wysyłamy komunikat
+            __sync_fetch_and_add(&sharedStats->total_services_done, 1); // Aktualizujemy statystyki, zwiększając liczbę zakończonych usług
         }
 
         /* Zwalnianie fotela – klient opuszcza fotel po zakończeniu usługi.
