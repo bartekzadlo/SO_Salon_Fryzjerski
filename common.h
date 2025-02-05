@@ -104,7 +104,7 @@ void init_kasa();
  */
 void *barber_thread(void *arg);
 void *client_thread(void *arg);
-void *manager_thread(void *arg);
+void *manager_input_thread(void *arg);
 void *simulation_timer_thread(void *arg);
 void *simulation_starter_thread(void *arg);
 
