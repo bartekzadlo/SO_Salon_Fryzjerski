@@ -176,11 +176,10 @@ int main()
     {
         error_exit("ftok dla pamięci współdzielonej");
     }
-    int shm_id = shmget(shm_key, sizeof(SalonStats), IPC_CREAT | 0666); // Utworzenie segmentu pamięci współdzielonej dla struktury SalonStats
+    int shm_id = shmget(shm_key, sizeof(SalonStats), IPC_CREAT | 0600); // Utworzenie segmentu pamięci współdzielonej dla struktury SalonStats
     if (shm_id < 0)
     {
-        perror("shmget");
-        exit(1);
+        error_exit("shmget");
     }
 
     sharedStats = (SalonStats *)shmat(shm_id, NULL, 0); // Przypięcie segmentu pamięci do przestrzeni adresowej procesu
