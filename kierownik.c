@@ -23,5 +23,25 @@ void *manager_input_thread(void *arg)
         timeout.tv_sec = 1;
         timeout.tv_usec = 0;
         int ret = select(STDIN_FILENO + 1, &read_fds, NULL, NULL, &timeout);
+        if (close_all_clients)
+            break;
+        if (ret > 0 && FD_ISSET(STDIN_FILENO, &read_fds))
+        {
+            if (fgets(input, sizeof(input), stdin) != NULL)
+            {
+                char *trimmed = trim_whitespace(input);
+                if (strcmp(trimmed, "1") == 0)
+                {
+                    if (F <= 1)
+                    {
+                        printf(RED "Błąd: Nie można wysłać sygnału 1, ponieważ jest tylko jeden fryzjer.\n" RESET);
+                    }
+                    else
+                    {
+                        barber_stop[0] = 1;
+                        send_message("Manager: Odczytano sygnał 1. Fryzjer 0 kończy pracę przed zamknięciem salonu.");
+                    }
+                }
+            }
+        }
     }
-}
