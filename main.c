@@ -231,6 +231,9 @@ int main()
     {
         error_exit("pthread_create wątku startującego symulację");
     }
+
+    pthread_join(starter_thread, NULL);
+    pthread_join(manager_thread, NULL);
     /* ----------------- Wysłanie komunikatu zakończenia do loggera ----------------- */
     // Przygotowanie komunikatu kończącego działanie loggera
     Message exit_msg;
