@@ -1,14 +1,15 @@
-#include <stdio.h>     // Standardowa biblioteka wejścia/wyjścia – umożliwia korzystanie z funkcji takich jak printf oraz perror
-#include <stdlib.h>    // Biblioteka standardowa – dostarcza funkcje zarządzania pamięcią, takie jak exit() oraz malloc()
-#include <pthread.h>   // Biblioteka do obsługi wątków POSIX – zawiera funkcje do tworzenia i synchronizacji wątków (pthread_create, pthread_join, mutexy, zmienne warunkowe)
-#include <unistd.h>    // Biblioteka unistd – zapewnia dostęp do funkcji systemowych takich jak sleep()
-#include <sys/ipc.h>   // Biblioteka do obsługi kluczy IPC – umożliwia korzystanie z funkcji ftok() do generowania unikalnych kluczy
-#include <sys/shm.h>   // Biblioteka do operacji na pamięci współdzielonej – pozwala na tworzenie i zarządzanie segmentami pamięci współdzielonej (shmget, shmat)
-#include <sys/msg.h>   // Biblioteka do obsługi kolejek komunikatów – zawiera funkcje msgsnd oraz msgrcv, służące do wysyłania i odbierania komunikatów
-#include <sys/wait.h>  // Biblioteka do obsługi funkcji wait – umożliwia oczekiwanie na zakończenie procesów potomnych (wait)
-#include <semaphore.h> // Biblioteka do obsługi semaforów – dostarcza funkcje inicjalizacji oraz operacji na semaforach (sem_init)
-#include <string.h>    // Biblioteka do operacji na ciągach znakowych – umożliwia korzystanie z funkcji takich jak strncpy
-#include "common.h"    // Plik nagłówkowy "common.h" – zawiera definicje stałych, struktur oraz prototypów funkcji wykorzystywanych w aplikacji
+#include <stdio.h>        // Standardowa biblioteka wejścia/wyjścia – umożliwia korzystanie z funkcji takich jak printf oraz perror
+#include <stdlib.h>       // Biblioteka standardowa – dostarcza funkcje zarządzania pamięcią, takie jak exit() oraz malloc()
+#include <pthread.h>      // Biblioteka do obsługi wątków POSIX – zawiera funkcje do tworzenia i synchronizacji wątków (pthread_create, pthread_join, mutexy, zmienne warunkowe)
+#include <unistd.h>       // Biblioteka unistd – zapewnia dostęp do funkcji systemowych takich jak sleep()
+#include <sys/ipc.h>      // Biblioteka do obsługi kluczy IPC – umożliwia korzystanie z funkcji ftok() do generowania unikalnych kluczy
+#include <sys/shm.h>      // Biblioteka do operacji na pamięci współdzielonej – pozwala na tworzenie i zarządzanie segmentami pamięci współdzielonej (shmget, shmat)
+#include <sys/msg.h>      // Biblioteka do obsługi kolejek komunikatów – zawiera funkcje msgsnd oraz msgrcv, służące do wysyłania i odbierania komunikatów
+#include <sys/wait.h>     // Biblioteka do obsługi funkcji wait – umożliwia oczekiwanie na zakończenie procesów potomnych (wait)
+#include <semaphore.h>    // Biblioteka do obsługi semaforów – dostarcza funkcje inicjalizacji oraz operacji na semaforach (sem_init)
+#include <string.h>       // Biblioteka do operacji na ciągach znakowych – umożliwia korzystanie z funkcji takich jak strncpy
+#include <sys/resource.h> // dla struct rlimit, getrlimit, setrlimit, RLIMIT_NPROC
+#include "common.h"       // Plik nagłówkowy "common.h" – zawiera definicje stałych, struktur oraz prototypów funkcji wykorzystywanych w aplikacji
 
 // Globalne zmienne do zarządzania poczekalnią klientów
 
