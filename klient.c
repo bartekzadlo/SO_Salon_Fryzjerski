@@ -36,7 +36,7 @@ void *client_thread(void *arg)
          * Klient czeka losowo od 1 do 5 sekund, aby zasymulować okres, w którym "zarabia" pieniądze.
          */
         int earning_time = rand() % 5 + 1;
-        sleep(earning_time);
+        sleep(0); // earning_time
 
         if (!salon_open || close_all_clients)
             break;
@@ -47,14 +47,15 @@ void *client_thread(void *arg)
         Klient *klient = malloc(sizeof(Klient));
         if (!klient)
         {
-            perror("malloc");
-            exit(1);
+            perror("Błąd malloc klienta");
+            exit(EXIT_FAILURE);
         }
         klient->id = id;
         if (rand() % 2 == 0)
             klient->payment = 30;
         else
             klient->payment = 50;
+
         if (sem_init(&klient->served, 0, 0) != 0)
         {
             perror("sem_init");
@@ -115,9 +116,5 @@ void *client_thread(void *arg)
         sem_destroy(&klient->served); // Zwalniamy semafor
         free(klient);                 // Zwalniamy pamięć
     }
-
-    /* Po zakończeniu pętli, klient kończy pracę w symulacji */
-    snprintf(log_buffer, MSG_SIZE, "Klient %d: kończę pracę w symulacji salonu.", id);
-    send_message(log_buffer);
     return NULL;
 }

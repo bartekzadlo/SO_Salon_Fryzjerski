@@ -49,9 +49,9 @@ void error_exit(const char *msg)
  */
 void init_kasa()
 {
-    kasa.banknot_10 = 0; // Ustawienie początkowej liczby banknotów o nominale 10
-    kasa.banknot_20 = 0; // Ustawienie początkowej liczby banknotów o nominale 20
-    kasa.banknot_50 = 0; // Ustawienie początkowej liczby banknotów o nominale 50
+    kasa.banknot_10 = 10; // Ustawienie początkowej liczby banknotów o nominale 10
+    kasa.banknot_20 = 10; // Ustawienie początkowej liczby banknotów o nominale 20
+    kasa.banknot_50 = 10; // Ustawienie początkowej liczby banknotów o nominale 50
     if (pthread_mutex_init(&kasa.mutex_kasa, NULL) != 0)
     {
         error_exit("pthread_mutex_init kasy");
@@ -76,7 +76,7 @@ void send_message(const char *text)
     msg.mtext[MSG_SIZE - 1] = '\0';                       // Gwarancja zakończenia ciągu znakowego null-em
     if (msgsnd(msgqid, &msg, sizeof(msg.mtext), 0) == -1) // Wysłanie komunikatu do kolejki
     {
-        perror("msgsnd"); // Wypisanie błędu w przypadku niepowodzenia
+        perror("Błąd msgsnd"); // Wypisanie błędu w przypadku niepowodzenia
     }
 }
 
@@ -112,12 +112,12 @@ void logger_process()
         ssize_t ret = msgrcv(msgqid, &msg, sizeof(msg.mtext), 0, 0); // Odbiór komunikatu z kolejki
         if (ret == -1)
         {
-            perror("msgrcv in logger");
+            perror("Błąd msgrcv w loggerze");
             break;
         }
         if (msg.mtype == MSG_TYPE_EXIT)
         {
-            printf("LOGGER: Otrzymano komunikat zakończenia.\n" RESET);
+            printf(CYAN "LOGGER: Otrzymano komunikat zakończenia.\n" RESET);
             break;
         }
         if (strstr(msg.mtext, "Fryzjer") != NULL)
@@ -198,6 +198,10 @@ int main()
 
     /* ----------------- Kolejka komunikatów ----------------- */
     key_t msg_key = ftok(".", 'M'); // Utworzenie klucza dla kolejki komunikatów
+    if (msg_key == -1)
+    {
+        error_exit("ftok dla kolejki komunikatów");
+    }
     msgqid = msgget(msg_key, IPC_CREAT | 0600);
     if (msgqid < 0)
     {
@@ -215,8 +219,11 @@ int main()
         logger_process(); // Proces potomny – uruchomienie loggera, który będzie odbierał i wypisywał komunikaty
     }
 
-    sem_init(&fotele_semafor, 0, N); // Inicjalizacja semafora dla foteli, ograniczającego liczbę jednocześnie obsługiwanych klientów
-
+    if (sem_init(&fotele_semafor, 0, N) == -1)
+    {
+        perror("Błąd inicjalizacji semafora fotele_semafor");
+        exit(EXIT_FAILURE);
+    }
     init_kasa(); // Ustawienie początkowych wartości banknotów i inicjalizacja synchronizacji dla operacji na kasie
 
     pthread_t manager_thread;
@@ -232,6 +239,8 @@ int main()
     }
 
     pthread_join(starter_thread, NULL);
+    // Po zakończeniu symulacji anulujemy wątek managera, aby nie blokował zakończenia programu
+    pthread_cancel(manager_thread);
     pthread_join(manager_thread, NULL);
     /* ----------------- Wysłanie komunikatu zakończenia do loggera ----------------- */
     // Przygotowanie komunikatu kończącego działanie loggera

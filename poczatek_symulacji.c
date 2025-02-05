@@ -10,7 +10,7 @@ void *simulation_starter_thread(void *arg)
 
     if (TP > 0)
     {
-        sleep(TP);
+        sleep(0); // TP
     }
     salon_open = 1;
     send_message("Salon otwarty.");
@@ -21,13 +21,13 @@ void *simulation_starter_thread(void *arg)
         int *arg = malloc(sizeof(*arg));
         if (!arg)
         {
-            perror("malloc");
+            perror("Błąd malloc dla fryzjera");
             exit(EXIT_FAILURE);
         }
         *arg = i;
         if (pthread_create(&fryzjerzy[i], NULL, barber_thread, arg) != 0)
         {
-            perror("pthread_create barber");
+            perror("Błąd pthread_create barber");
             exit(EXIT_FAILURE);
         }
     }
@@ -37,20 +37,20 @@ void *simulation_starter_thread(void *arg)
         int *arg = malloc(sizeof(*arg));
         if (!arg)
         {
-            perror("malloc");
+            perror("Błąd malloc dla klienta");
             exit(EXIT_FAILURE);
         }
         *arg = i + 1;
         if (pthread_create(&klienci[i], NULL, client_thread, arg) != 0)
         {
-            perror("pthread_create client");
+            perror("Błąd pthread_create client");
             exit(EXIT_FAILURE);
         }
     }
     pthread_t timer_thread;
     if (pthread_create(&timer_thread, NULL, simulation_timer_thread, NULL) != 0)
     {
-        perror("pthread_create timer");
+        perror("Błąd pthread_create timer");
         exit(EXIT_FAILURE);
     }
     for (int i = 0; i < F; i++)

@@ -67,6 +67,7 @@ void *barber_thread(void *arg)
          * Funkcja sem_wait blokuje wątek do momentu, aż fotel będzie dostępny.
          */
         sem_wait(&fotele_semafor);
+
         snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: zająłem fotel.", id);
         send_message(log_buffer);
         /* Pobieranie opłaty od klienta i aktualizacja kasy.
@@ -99,7 +100,7 @@ void *barber_thread(void *arg)
         {
             if (close_all_clients)
                 break;
-            sleep(1);
+            sleep(0);
             elapsed++;
         }
         if (close_all_clients)

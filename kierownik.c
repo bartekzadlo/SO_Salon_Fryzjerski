@@ -29,7 +29,10 @@ void *manager_input_thread(void *arg)
     fd_set read_fds;
     struct timeval timeout;
 
-    /* Wyświetlamy prompt raz, przed wejściem w pętlę */
+    /* Ustawienie trybu anulowalności na asynchroniczny */
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
     printf(YELLOW "Wprowadź sygnał (1: fryzjer 0 kończy pracę, 2: zamknięcie salonu):\n" RESET);
     fflush(stdout);
 
