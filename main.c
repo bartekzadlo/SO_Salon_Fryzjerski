@@ -145,6 +145,14 @@ int main()
 {
     srand(time(NULL)); // Inicjalizacja generatora liczb losowych, wykorzystywana przy symulacji zdarzeń
 
+    if (F <= 1 || N >= F)
+    {
+        fprintf(stderr, RED "Błąd: Warunek F > 1 oraz N < F nie jest spełniony.\n" RESET);
+        exit(EXIT_FAILURE);
+    }
+
+    set_process_limit();
+
     /* ----------------- Pamięć współdzielona ----------------- */
     key_t shm_key = ftok(".", 'S');                                     // Utworzenie klucza dla segmentu pamięci współdzielonej za pomocą ftok()
     int shm_id = shmget(shm_key, sizeof(SalonStats), IPC_CREAT | 0666); // Utworzenie segmentu pamięci współdzielonej dla struktury SalonStats
