@@ -128,7 +128,7 @@ void logger_process()
         {
             printf(YELLOW "LOGGER: %s\n" RESET, msg.mtext);
         }
-        else if (strstr(msg.mtext, "Kierownik") != NULL)
+        else if (strstr(msg.mtext, "Manager") != NULL)
         {
             printf(CYAN "LOGGER: %s\n" RESET, msg.mtext);
         }

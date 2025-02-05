@@ -16,7 +16,7 @@ void *simulation_timer_thread(void *arg)
     {
         snprintf(buf, sizeof(buf), "Czas pozostały: %d s", remaining);
         printf(MAGENTA "%s\n" RESET, buf);
-        sleep(0);
+        sleep(1);
         remaining--;
     }
     if (!close_all_clients)
