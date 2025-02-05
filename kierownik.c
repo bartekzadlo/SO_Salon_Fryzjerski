@@ -75,7 +75,16 @@ void *manager_input_thread(void *arg)
                     pthread_mutex_unlock(&poczekalniaMutex);
                     send_message("Manager: Odczytano sygnał 2. Wszyscy klienci opuszczają salon, salon zamykany.");
                 }
+                else
+                {
+                    printf(YELLOW "Nieznany sygnał. Wpisz '1' lub '2'.\n" RESET);
+                }
             }
         }
+        else if (ret < 0)
+        {
+            perror("Błąd select w wątku managera");
+        }
     }
+    return NULL;
 }
