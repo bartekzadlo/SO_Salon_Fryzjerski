@@ -55,7 +55,7 @@ void *barber_thread(void *arg)
          * Następnie aktualizujemy indeks i zmniejszamy licznik klientów w poczekalni.
          */
         Klient *klient = poczekalnia[poczekalniaFront];
-        poczekalniaFront = (poczekalniaFront + 1) % MAX_WAITING;
+        poczekalniaFront = (poczekalniaFront + 1) % K;
         poczekalniaCount--;
         pthread_mutex_unlock(&poczekalniaMutex); // Odblokowanie mutexa poczekalni
 

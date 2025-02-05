@@ -26,7 +26,7 @@ void *simulation_timer_thread(void *arg)
         while (poczekalniaCount > 0)
         {
             Klient *klient = poczekalnia[poczekalniaFront];
-            poczekalniaFront = (poczekalniaFront + 1) % MAX_WAITING;
+            poczekalniaFront = (poczekalniaFront + 1) % K;
             poczekalniaCount--;
             sem_post(&klient->served);
         }

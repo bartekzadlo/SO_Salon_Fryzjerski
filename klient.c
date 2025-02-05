@@ -61,7 +61,7 @@ void *client_thread(void *arg)
          * Blokujemy mutex poczekalni, aby bezpiecznie sprawdzić, czy jest dostępne miejsce.
          */
         pthread_mutex_lock(&poczekalniaMutex);
-        if (poczekalniaCount >= MAX_WAITING) // Jeśli poczekalnia jest pełna, klient odpuszcza i opuszcza salon
+        if (poczekalniaCount >= K) // Jeśli poczekalnia jest pełna, klient odpuszcza i opuszcza salon
         {
             pthread_mutex_unlock(&poczekalniaMutex);
             snprintf(log_buffer, MSG_SIZE, "Klient %d: poczekalnia pełna, opuszczam salon.", id);
@@ -71,7 +71,7 @@ void *client_thread(void *arg)
             free(klient);                 // Zwalniamy pamięć
             continue;                     // klient wraca „zarabiać pieniądze”
         }
-        int index = (poczekalniaFront + poczekalniaCount) % MAX_WAITING; // Dodajemy klienta do poczekalni na pozycji obliczonej na podstawie aktualnej liczby oczekujących
+        int index = (poczekalniaFront + poczekalniaCount) % K; // Dodajemy klienta do poczekalni na pozycji obliczonej na podstawie aktualnej liczby oczekujących
         poczekalnia[index] = klient;
         poczekalniaCount++;
         pthread_cond_signal(&poczekalniaNotEmpty); // Sygnalizujemy, że poczekalnia nie jest pusta (budzimy ewentualne wątki fryzjerów)
