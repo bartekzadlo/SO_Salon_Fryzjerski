@@ -31,7 +31,7 @@ void *barber_thread(void *arg)
          */
         if (barber_stop[id])
         {
-            printf("Fryzjer %d: otrzymałem sygnał 1, kończę pracę.\n", id);
+            snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: otrzymałem sygnał 1, kończę pracę.", id);
             send_message(log_buffer); // Wysłanie komunikatu do loggera
             break;
         }
