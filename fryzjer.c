@@ -72,10 +72,11 @@ void *barber_thread(void *arg)
          * Blokujemy dostęp do kasy używając mutexa, aby zapewnić spójność danych.
          */
         pthread_mutex_lock(&kasa.mutex_kasa);
-        if (klient->payment == 20)
+        if (klient->payment == 30)
         {
+            kasa.banknot_10++;
             kasa.banknot_20++; // Klient płaci 20 zł – zwiększamy licznik banknotów 20 zł
-            snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: otrzymałem 20 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.",
+            snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: otrzymałem 20 i 10 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.",
                      id, kasa.banknot_10, kasa.banknot_20, kasa.banknot_50);
             send_message(log_buffer);
         }
@@ -122,7 +123,7 @@ void *barber_thread(void *arg)
         /* Wydawanie reszty klientowi, jeśli zapłacił 50 zł.
          * Reszta wynosi 30 zł, składająca się z banknotów 10 zł i 20 zł.
          */
-        if (klient->payment == 50)
+        if (klient->payment == 50 && !close_all_clients)
         {
             pthread_mutex_lock(&kasa.mutex_kasa);
             while ((kasa.banknot_10 < 1 || kasa.banknot_20 < 1) && !close_all_clients) // Czekamy, aż w kasie będą dostępne wymagane banknoty (10 zł oraz 20 zł)
@@ -139,9 +140,8 @@ void *barber_thread(void *arg)
             }
             // Wydajemy resztę – zmniejszamy liczbę banknotów w kasie
 
-            kasa.banknot_10--;
             kasa.banknot_20--;
-            snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: wydaję resztę 30 zł (10+20) klientowi %d. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.",
+            snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: wydaję resztę 20 zł klientowi %d. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.",
                      id, klient->id, kasa.banknot_10, kasa.banknot_20, kasa.banknot_50);
             send_message(log_buffer);
             pthread_mutex_unlock(&kasa.mutex_kasa);
