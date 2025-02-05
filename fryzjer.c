@@ -92,14 +92,27 @@ void *barber_thread(void *arg)
          * Losujemy czas trwania usługi (od 1 do 3 sekund) i "usypiamy" wątek.
          */
         int service_time = rand() % 3 + 1;
-        sleep(service_time);
-        snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: zakończyłem strzyżenie klienta %d (czas usługi: %d s).", id, klient->id, service_time);
-        send_message(log_buffer);
-
-        /* Aktualizacja statystyk salonu przechowywanych w pamięci współdzielonej.
-         * Operacja atomowa zwiększająca licznik wykonanych usług.
-         */
-        __sync_fetch_and_add(&sharedStats->total_services_done, 1);
+        int elapsed = 0;
+        while (elapsed < service_time)
+        {
+            if (close_all_clients)
+                break;
+            sleep(1);
+            elapsed++;
+        }
+        if (close_all_clients)
+        {
+            snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: przerwałem obsługę klienta %d z powodu zamknięcia salonu.",
+                     id, klient->id);
+            send_message(log_buffer);
+        }
+        else
+        {
+            snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: zakończyłem strzyżenie klienta %d (czas usługi: %d s).",
+                     id, klient->id, service_time);
+            send_message(log_buffer);
+            __sync_fetch_and_add(&sharedStats->total_services_done, 1);
+        }
 
         /* Zwalnianie fotela – klient opuszcza fotel po zakończeniu usługi.
          * Uwalniamy semafor, co umożliwia zajęcie fotela kolejnemu klientowi.
