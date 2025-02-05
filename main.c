@@ -81,15 +81,28 @@ void logger_process()
         }
         if (msg.mtype == MSG_TYPE_EXIT)
         {
-            printf("LOGGER: Otrzymano komunikat zakończenia.\n");
+            printf("LOGGER: Otrzymano komunikat zakończenia.\n" RESET);
             break;
         }
-        // Wypisanie odebranego komunikatu
-        printf("LOGGER: %s\n", msg.mtext);
+        if (strstr(msg.mtext, "Fryzjer") != NULL)
+        {
+            printf(GREEN "LOGGER: %s\n" RESET, msg.mtext);
+        }
+        else if (strstr(msg.mtext, "Klient") != NULL)
+        {
+            printf(YELLOW "LOGGER: %s\n" RESET, msg.mtext);
+        }
+        else if (strstr(msg.mtext, "Kierownik") != NULL)
+        {
+            printf(CYAN "LOGGER: %s\n" RESET, msg.mtext);
+        }
+        else
+        {
+            printf(RED "LOGGER: %s\n" RESET, msg.mtext);
+        }
     }
-    exit(0); // Zakończenie procesu loggera
+    exit(0);
 }
-
 /*
  * Funkcja main()
  * --------------
