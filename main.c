@@ -171,7 +171,11 @@ int main()
     sim_duration = TK - TP;
 
     /* ----------------- Pamięć współdzielona ----------------- */
-    key_t shm_key = ftok(".", 'S');                                     // Utworzenie klucza dla segmentu pamięci współdzielonej za pomocą ftok()
+    key_t shm_key = ftok(".", 'S'); // Utworzenie klucza dla segmentu pamięci współdzielonej za pomocą ftok()
+    if (shm_key == -1)
+    {
+        error_exit("ftok dla pamięci współdzielonej");
+    }
     int shm_id = shmget(shm_key, sizeof(SalonStats), IPC_CREAT | 0666); // Utworzenie segmentu pamięci współdzielonej dla struktury SalonStats
     if (shm_id < 0)
     {
