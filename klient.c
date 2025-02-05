@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include "common.h"
 
 /*
@@ -46,22 +49,11 @@ void *client_thread(void *arg)
             exit(1);
         }
         klient->id = id;
-
-        /* Losowanie sposobu płatności:
-         * 50% szans na płatność 20 zł, 50% szans na płatność 50 zł.
-         */
-        if (rand() % 2 == 0)
-            klient->payment = 20;
-        else
-            klient->payment = 50;
-
-        /* Inicjalizacja semafora dla klienta:
-         * Semafor 'served' służy do synchronizacji – klient czeka, aż fryzjer zakończy jego obsługę.
-         * Inicjalizujemy semafor z wartością 0.
-         */
+        klient->payment = (rand() % 2 == 0) ? 20 : 50;
         if (sem_init(&klient->served, 0, 0) != 0)
         {
             perror("sem_init");
+            free(klient);
             exit(1);
         }
 
