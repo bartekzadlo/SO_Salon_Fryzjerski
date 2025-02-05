@@ -38,6 +38,8 @@ void *client_thread(void *arg)
         int earning_time = rand() % 5 + 1;
         sleep(earning_time);
 
+        if (!salon_open || close_all_clients)
+            break;
         /* Przygotowanie danych klienta:
          * Alokacja pamięci na strukturę reprezentującą klienta.
          * Ustawienie unikalnego identyfikatora klienta.
@@ -49,7 +51,10 @@ void *client_thread(void *arg)
             exit(1);
         }
         klient->id = id;
-        klient->payment = (rand() % 2 == 0) ? 20 : 50;
+        if (rand() % 2 == 0)
+            klient->payment = 30;
+        else
+            klient->payment = 50;
         if (sem_init(&klient->served, 0, 0) != 0)
         {
             perror("sem_init");
