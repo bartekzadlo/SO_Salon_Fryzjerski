@@ -117,7 +117,7 @@ void logger_process()
         }
         if (msg.mtype == MSG_TYPE_EXIT)
         {
-            printf(CYAN "LOGGER: Otrzymano komunikat zakończenia.\n" RESET);
+            printf(RED "LOGGER: Otrzymano komunikat zakończenia.\n" RESET);
             break;
         }
         if (strstr(msg.mtext, "Fryzjer") != NULL)
