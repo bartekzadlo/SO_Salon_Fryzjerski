@@ -67,6 +67,13 @@ void send_message(const char *text)
     }
 }
 
+/* Funkcja do obsługi błędów – wypisuje komunikat i kończy program */
+void error_exit(const char *msg)
+{
+    perror(msg);
+    exit(EXIT_FAILURE);
+}
+
 /*
  * Funkcja logger_process()
  * ------------------------
