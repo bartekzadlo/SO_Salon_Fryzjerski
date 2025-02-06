@@ -168,9 +168,9 @@ int main()
     {
         error_exit("Błąd odczytu TK");
     }
-    if (TK <= TP)
+    if (TK <= TP || TK < 0 || TP < 0)
     {
-        fprintf(stderr, RED "Błąd: TK musi być większe od TP.\n" RESET);
+        fprintf(stderr, RED "Błąd: TK musi być większe od TP i jednostki muszą być dodatnie\n" RESET);
         exit(EXIT_FAILURE);
     }
     sim_duration = TK - TP;
