@@ -16,7 +16,7 @@ void *simulation_timer_thread(void *arg)
     {
         snprintf(buf, sizeof(buf), "Czas pozostały: %d s", remaining); // Tworzenie komunikatu o pozostałym czasie
         printf(MAGENTA "%s\n" RESET, buf);                             // Wyświetlanie pozostałego czasu w kolorze magenta
-        sleep(1);                                                      // Symulacja upływu czasu - domyślnie 1
+        sleep(0);                                                      // Symulacja upływu czasu - domyślnie 1
         remaining--;                                                   // Zmniejszenie liczby pozostałych sekund
     }
     if (!close_all_clients) // Jeśli salon nie został wcześniej zamknięty

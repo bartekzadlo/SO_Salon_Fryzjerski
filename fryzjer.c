@@ -103,7 +103,7 @@ void *barber_thread(void *arg)
         {
             if (close_all_clients) // Jeśli salon jest zamknięty lub mamy sygnał zakończenia obsługi, przerywamy pętlę
                 break;
-            sleep(1);  // Symulujemy upływ czasu
+            sleep(0);  // Symulujemy upływ czasu
             elapsed++; // Zwiększamy licznik upływającego czasu
         }
         if (close_all_clients) // Sprawdzamy, czy salon został zamknięty przed zakończeniem strzyżenia

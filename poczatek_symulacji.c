@@ -10,7 +10,7 @@ void *simulation_starter_thread(void *arg)
 
     if (TP > 0)
     {
-        sleep(TP); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
+        sleep(0); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
     }
 
     salon_open = 1;                 // Otwieramy salon
