@@ -35,8 +35,8 @@ void *client_thread(void *arg)
         /* Symulacja "zarabiania pieniędzy":
          * Klient czeka losowo od 1 do 5 sekund, aby zasymulować okres, w którym "zarabia" pieniądze.
          */
-        int earning_time = rand() % 5 + 1;
-        sleep(0); // domyślnie earning_time
+        int earning_time = rand() % 20 + 1;
+        sleep(earning_time); // domyślnie earning_time
 
         if (!salon_open || close_all_clients) // Jeżeli salon jest zamknięty lub otrzymano sygnał zamknięcia klientów, kończymy pętlę
             break;

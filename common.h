@@ -5,10 +5,10 @@
 #include <pthread.h>
 
 /* Parametry symulacji */
-#define F 3  // Liczba fryzjerów (F > 1) – ilość wątków reprezentujących fryzjerów
-#define N 2  // Liczba foteli (N < F) – ograniczenie liczby jednocześnie obsługiwanych klientów
-#define K 5  // Maksymalna liczba klientów w poczekalni
-#define P 10 // Liczba klientów – ilość wątków reprezentujących klientów
+#define F 2 // Liczba fryzjerów (F > 1) – ilość wątków reprezentujących fryzjerów
+#define N 1 // Liczba foteli (N < F) – ograniczenie liczby jednocześnie obsługiwanych klientów
+#define K 1 // Maksymalna liczba klientów w poczekalni
+#define P 2 // Liczba klientów – ilość wątków reprezentujących klientów
 
 #define MAX_PROCESSES 1024
 

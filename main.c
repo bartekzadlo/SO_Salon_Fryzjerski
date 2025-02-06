@@ -49,9 +49,9 @@ void error_exit(const char *msg)
  */
 void init_kasa()
 {
-    kasa.banknot_10 = 10; // Ustawienie początkowej liczby banknotów o nominale 10
-    kasa.banknot_20 = 10; // Ustawienie początkowej liczby banknotów o nominale 20
-    kasa.banknot_50 = 10; // Ustawienie początkowej liczby banknotów o nominale 50
+    kasa.banknot_10 = 0; // Ustawienie początkowej liczby banknotów o nominale 10
+    kasa.banknot_20 = 0; // Ustawienie początkowej liczby banknotów o nominale 20
+    kasa.banknot_50 = 0; // Ustawienie początkowej liczby banknotów o nominale 50
     if (pthread_mutex_init(&kasa.mutex_kasa, NULL) != 0)
     {
         error_exit("pthread_mutex_init kasy");
