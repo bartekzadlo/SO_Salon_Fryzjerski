@@ -79,7 +79,7 @@ void *barber_thread(void *arg)
             // Klient płaci 20 i 10 zł – zwiększamy licznik banknotów 20 i 10 zł
             kasa.banknot_10++;
             kasa.banknot_20++;
-            pthread_cond_broadcast(&kasa.uzupelnienie);
+            pthread_cond_signal(&kasa.uzupelnienie);
             snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: otrzymałem 20 i 10 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.",
                      id, kasa.banknot_10, kasa.banknot_20, kasa.banknot_50);
             send_message(log_buffer);
