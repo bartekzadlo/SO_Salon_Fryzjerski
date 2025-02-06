@@ -33,7 +33,7 @@ void *simulation_timer_thread(void *arg)
             poczekalniaCount--;                             // Zmniejszamy liczbę oczekujących klientów
             sem_post(&klient->served);                      // Informujemy klienta, że może być obsłużony przez fryzjera
         }
-        pthread_mutex_unlock(&poczekalniaMutex);                                   // Informujemy klienta, że może być obsłużony przez fryzjera
+        pthread_mutex_unlock(&poczekalniaMutex);
         send_message("Czas symulacji upłynął. Wysłany sygnał 2: Salon zamykany."); // Wysłanie komunikatu o zakończeniu symulacji
     }
     return NULL; // Zakończenie wątku
