@@ -70,7 +70,7 @@ void *manager_input_thread(void *arg)
                     // Ustawienie flag zamknięcia salonu
                     close_all_clients = 1;
                     salon_open = 0;
-                    // Zamknięcie salonu: informowanie oczekujących klientów
+                    pthread_cond_broadcast(&kasa.uzupelnienie);
                     pthread_mutex_lock(&poczekalniaMutex);
                     pthread_cond_broadcast(&poczekalniaNotEmpty); // Powiadomienie o zamknięciu salonu
                     while (poczekalniaCount > 0)                  // Obsługa wszystkich oczekujących klientów

@@ -25,7 +25,8 @@ void *simulation_timer_thread(void *arg)
         salon_open = 0;                               // Zamykamy salon, aby nowe wejścia nie były przyjmowane
         pthread_mutex_lock(&poczekalniaMutex);        // Zabezpieczenie przed równoczesnym dostępem do poczekalni
         pthread_cond_broadcast(&poczekalniaNotEmpty); // Budzimy fryzjerów, informując ich o zamknięciu salonu
-        while (poczekalniaCount > 0)                  // Dopóki są klienci w poczekalni
+        pthread_cond_broadcast(&kasa.uzupelnienie);
+        while (poczekalniaCount > 0) // Dopóki są klienci w poczekalni
         {
             // Obsługuje każdego klienta w poczekalni
             Klient *klient = poczekalnia[poczekalniaFront]; // Pobieramy klienta z poczekalni
