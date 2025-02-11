@@ -176,6 +176,15 @@ int main()
 
     /* ----------------- Pamięć współdzielona ----------------- */
     key_t shm_key = ftok(".", 'S'); // Utworzenie klucza dla segmentu pamięci współdzielonej za pomocą ftok()
+    if (shm_key == -1)
+    {
+        error_exit("ftok dla pamięci współdzielonej");
+    }
+    shmid = shmget(shm_key, IPC_CREAT | 0600);
+    if (shmid < 0)
+    {
+        error_exit("shmget");
+    }
     // Utworzenie segmentu pamięci współdzielonej dla struktury
     // Przypięcie segmentu pamięci do przestrzeni adresowej procesu
     // Inicjalizacja pamięci współdzielonej
