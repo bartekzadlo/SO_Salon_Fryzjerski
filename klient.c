@@ -78,10 +78,9 @@ void *client_thread(void *arg)
             pthread_mutex_unlock(&poczekalniaMutex);
             snprintf(log_buffer, MSG_SIZE, "Klient %d: poczekalnia pełna, opuszczam salon.", id);
             send_message(log_buffer);
-            __sync_fetch_and_add(&sharedStats->total_clients_left, 1); // Zwiększanie liczby klientów, którzy opuścili salon
-            sem_destroy(&klient->served);                              // Zwalniamy semafor
-            free(klient);                                              // Zwalniamy pamięć
-            continue;                                                  // klient wraca „zarabiać pieniądze”
+            sem_destroy(&klient->served); // Zwalniamy semafor
+            free(klient);                 // Zwalniamy pamięć
+            continue;                     // klient wraca „zarabiać pieniądze”
         }
         // Dodanie klienta do poczekalni
         int index = (poczekalniaFront + poczekalniaCount) % K; // Dodajemy klienta do poczekalni na pozycji obliczonej na podstawie aktualnej liczby oczekujących
@@ -103,9 +102,8 @@ void *client_thread(void *arg)
             snprintf(log_buffer, MSG_SIZE, "Klient %d: salon zamknięty – opuszczam salon.", id);
             send_message(log_buffer);
             sem_destroy(&klient->served); // Zwalniamy semafor
-            __sync_fetch_and_add(&sharedStats->total_clients_left, 1);
-            free(klient); // Zwolnienie pamięci klienta
-            break;        // Przerywamy pętlę – klient kończy pracę
+            free(klient);                 // Zwolnienie pamięci klienta
+            break;                        // Przerywamy pętlę – klient kończy pracę
         }
 
         /* Obsługa zakończona:

@@ -115,9 +115,8 @@ void *barber_thread(void *arg)
         else
         {
             snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: zakończyłem strzyżenie klienta %d (czas usługi: %d s).",
-                     id, klient->id, service_time);                     // Logujemy zakończenie usługi strzyżenia i czas trwania
-            send_message(log_buffer);                                   // Wysyłamy komunikat
-            __sync_fetch_and_add(&sharedStats->total_services_done, 1); // Aktualizujemy statystyki, zwiększając liczbę zakończonych usług
+                     id, klient->id, service_time); // Logujemy zakończenie usługi strzyżenia i czas trwania
+            send_message(log_buffer);               // Wysyłamy komunikat
         }
 
         /* Zwalnianie fotela – klient opuszcza fotel po zakończeniu usługi.

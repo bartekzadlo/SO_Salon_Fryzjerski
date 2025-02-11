@@ -19,9 +19,8 @@ int poczekalniaCount = 0;                                      // Aktualna liczb
 pthread_mutex_t poczekalniaMutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex zabezpieczający dostęp do zmiennych poczekalni
 pthread_cond_t poczekalniaNotEmpty = PTHREAD_COND_INITIALIZER; // Zmienna warunkowa sygnalizująca, że poczekalnia nie jest pusta
 
-SalonStats *sharedStats = NULL; // Wskaźnik na strukturę statystyk salonu przechowywanych w pamięci współdzielonej
-Kasa kasa;                      // Struktura reprezentująca kasę salonu, zawiera liczbę dostępnych banknotów
-sem_t fotele_semafor;           // Semafor ograniczający dostęp do foteli w salonie – określa maksymalną liczbę klientów, którzy mogą jednocześnie zajmować fotele
+Kasa kasa;            // Struktura reprezentująca kasę salonu, zawiera liczbę dostępnych banknotów
+sem_t fotele_semafor; // Semafor ograniczający dostęp do foteli w salonie – określa maksymalną liczbę klientów, którzy mogą jednocześnie zajmować fotele
 
 // Flagi kontrolujące stan salonu i zakończenie symulacji
 int salon_open = 1;        // Flaga informująca, czy salon jest nadal otwarty
@@ -177,24 +176,9 @@ int main()
 
     /* ----------------- Pamięć współdzielona ----------------- */
     key_t shm_key = ftok(".", 'S'); // Utworzenie klucza dla segmentu pamięci współdzielonej za pomocą ftok()
-    if (shm_key == -1)
-    {
-        error_exit("ftok dla pamięci współdzielonej");
-    }
-    int shm_id = shmget(shm_key, sizeof(SalonStats), IPC_CREAT | 0600); // Utworzenie segmentu pamięci współdzielonej dla struktury SalonStats
-    if (shm_id < 0)
-    {
-        error_exit("shmget");
-    }
-
-    sharedStats = (SalonStats *)shmat(shm_id, NULL, 0); // Przypięcie segmentu pamięci do przestrzeni adresowej procesu
-    if (sharedStats == (void *)-1)
-    {
-        error_exit("shmat");
-    }
-    // Inicjalizacja statystyk salonu
-    sharedStats->total_clients_left = 0;
-    sharedStats->total_services_done = 0;
+    // Utworzenie segmentu pamięci współdzielonej dla struktury
+    // Przypięcie segmentu pamięci do przestrzeni adresowej procesu
+    // Inicjalizacja pamięci współdzielonej
 
     /* ----------------- Kolejka komunikatów ----------------- */
     key_t msg_key = ftok(".", 'M'); // Utworzenie klucza dla kolejki komunikatów
@@ -224,7 +208,6 @@ int main()
         perror("Błąd inicjalizacji semafora fotele_semafor");
         exit(EXIT_FAILURE);
     }
-    init_kasa(); // Ustawienie początkowych wartości banknotów i inicjalizacja synchronizacji dla operacji na kasie
 
     pthread_t manager_thread;
     if (pthread_create(&manager_thread, NULL, manager_input_thread, NULL) != 0)
