@@ -38,14 +38,6 @@ typedef struct
     char mtext[MSG_SIZE];
 } Message;
 
-/* Struktura przechowywana w pamięci współdzielonej */
-typedef struct
-{
-    int total_clients_left;  // Liczba klientów, którzy opuścili salon (np. gdy poczekalnia była pełna)
-    int total_services_done; // Liczba wykonanych usług (np. ilość przeprowadzonych strzyżeń)
-} SalonStats;
-extern SalonStats *sharedStats; // Wskaźnik do struktury statystyk salonu (przechowywanych w pamięci współdzielonej)
-
 /* Struktura opisująca klienta     */
 typedef struct
 {
