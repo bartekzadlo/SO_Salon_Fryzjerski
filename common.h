@@ -50,7 +50,7 @@ void usun_pamiec_dzielona(int shm_id);
 // operacje na semaforach
 int utworz_semafor(key_t klucz);
 void usun_semafor(int id);
-void setval_semafor(int id, int max);
+void ustaw_semafor(int id, int max);
 int sem_try_wait(int id, int n);
 int sem_getval(int id);
 void sem_p(int id, int n);

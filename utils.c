@@ -107,12 +107,13 @@ void usun_semafor(int id)
     }
 }
 
-void setval_semafor(int id, int max)
+void ustaw_semafor(int id, int max)
 {
     int res = semctl(id, 0, SETVAL, max);
     if (res == -1)
     {
-        error_exit("setval semafor");
+        perror("semctl SETVAL");
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -188,7 +189,8 @@ void sem_v(int id, int n)
         }
         else
         {
-            error_exit("sem op v");
+            perror("semop v");
+            exit(EXIT_FAILURE);
         }
     }
 }

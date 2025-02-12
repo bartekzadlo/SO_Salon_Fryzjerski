@@ -7,8 +7,6 @@
 
 long id;
 int kolejka;
-key_t klucz;
-struct komunikat kom;
 int fotele_semafor;
 int kasa_semafor;
 int shm_id;
@@ -31,6 +29,9 @@ int main()
     {
         error_exit("Blad obslugi sygnalu nr 1");
     }
+
+    key_t klucz;
+    struct komunikat kom;
 
     klucz = ftok(".", 'M');
     kolejka = utworz_kolejke(klucz);

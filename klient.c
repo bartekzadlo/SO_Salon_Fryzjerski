@@ -1,12 +1,9 @@
 #include "common.h"
 
 long id;
-key_t klucz;
-struct komunikat kom;
 int kolejka;
 int poczekalnia_semafor;
 int platnosc;
-int wolne_miejsce;
 int id_fryzjer_obslugujacy;
 
 volatile sig_atomic_t sygnal_klient = 0;
@@ -19,20 +16,25 @@ volatile sig_atomic_t otrzymana_reszta = 0;
 int main()
 {
     srand(time(NULL));
-    long id = getpid();
+    id = getpid();
 
     if (signal(SIGINT, sygnal_2) == SIG_ERR)
     {
         error_exit("Blad obslugi sygnalu 2");
     }
+    struct komunikat kom;
+    key_t klucz;
+    int wolne_miejsce;
 
     klucz = ftok(".", 'M');
     kolejka = utworz_kolejke(klucz);
+
     klucz = ftok(".", 'P');
     poczekalnia_semafor = utworz_semafor(klucz);
 
     while (1)
     {
+        printf("\033[0;32m[KLIENT %ld]: Przyszedłem do salonu.\033[0m\n", id);
         if (sygnal_klient)
         {
             break;
@@ -54,6 +56,7 @@ int main()
             kom.nadawca = id;
             wyslij_komunikat(kolejka, &kom);
             klient_komunikat_poczekalnia = 1;
+            printf(BLUE "Klient %ld: wyslalem komunikat, że jestem w poczekalni.\n" RESET, id);
 
             if (pobranie_z_poczekalni != 1)
             {

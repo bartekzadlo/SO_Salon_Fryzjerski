@@ -8,10 +8,10 @@ int sygnal2 = 0;
 pid_t klienci[P];
 pid_t fryzjerzy[F];
 pthread_t timer_thread;
-int kolejka;
 int fotele_semafor;
 int kasa_semafor;
 int poczekalnia_semafor;
+int kolejka;
 int shm_id;
 int *banknoty; // pamiec dzielona
 
@@ -22,21 +22,29 @@ int main()
         error_exit("Błąd obsługi sygnału");
     }
 
-    srand(time(NULL));
     set_process_limit();
+    srand(time(NULL));
 
     key_t klucz;
+
     klucz = ftok(".", 'M');
     kolejka = utworz_kolejke(klucz);
+
     klucz = ftok(".", 'K');
     kasa_semafor = utworz_semafor(klucz);
-    setval_semafor(kasa_semafor, 1);
+    ustaw_semafor(kasa_semafor, 1);
+
     klucz = ftok(".", 'F');
     fotele_semafor = utworz_semafor(klucz);
-    setval_semafor(fotele_semafor, N);
-    klucz = ftok(",", 'P');
+    ustaw_semafor(fotele_semafor, N);
+
+    klucz = ftok(".", 'P');
     poczekalnia_semafor = utworz_semafor(klucz);
-    setval_semafor(poczekalnia_semafor, K);
+    ustaw_semafor(poczekalnia_semafor, K);
+
+    printf(YELLOW "init poczekalnia: %d.\n", sem_getval(poczekalnia_semafor));
+    printf(YELLOW "init fotele: %d.\n", sem_getval(fotele_semafor));
+
     klucz = ftok(".", 'S');
     shm_id = utworz_pamiec_dzielona(klucz);
     banknoty = dolacz_pamiec_dzielona(shm_id);
