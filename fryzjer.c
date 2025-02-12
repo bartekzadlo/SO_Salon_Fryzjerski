@@ -46,7 +46,7 @@ int main()
     {
         if (sygnal_fryzjer)
         {
-            printf(GREEN "Fryzjer %d: otrzymałem sygnał, kończę pracę." RESET, id);
+            printf(GREEN "Fryzjer %ld: otrzymałem sygnał, kończę pracę." RESET, id);
             break;
         }
 
@@ -63,7 +63,7 @@ int main()
             sem_p(fotele_semafor, 1);
             fotel = 1;
         }
-        printf(GREEN "Fryzjer %d: rozpoczynam obsługę klienta %d zajmując fotel" RESET, id, id_obslugiwany_klient);
+        printf(GREEN "Fryzjer %ld: rozpoczynam obsługę klienta %ld zajmując fotel" RESET, id, id_obslugiwany_klient);
 
         kom.mtype = id_obslugiwany_klient;
         kom.nadawca = id;
@@ -88,13 +88,13 @@ int main()
             // Klient płaci 20 i 10 zł – zwiększamy licznik banknotów 20 i 10 zł
             banknoty[0] += 1;
             banknoty[1] += 1;
-            printf(GREEN "Fryzjer %d: otrzymałem 20 i 10 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d." RESET,
+            printf(GREEN "Fryzjer %ld: otrzymałem 20 i 10 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d." RESET,
                    id, banknoty[0], banknoty[1], banknoty[2]);
         }
         else if (kom.platnosc == 50)
         {
             banknoty[2] += 1;
-            printf(GREEN "Fryzjer %d: otrzymałem 50 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d." RESET,
+            printf(GREEN "Fryzjer %ld: otrzymałem 50 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d." RESET,
                    id, banknoty[0], banknoty[1], banknoty[2]);
         }
 
@@ -103,7 +103,7 @@ int main()
 
         int service_time = rand() % 3 + 1;
         sleep(service_time);
-        printf(GREEN "Fryzjer %d: zakończyłem strzyżenie klienta %d (czas usługi: %d s)." RESET,
+        printf(GREEN "Fryzjer %ld: zakończyłem strzyżenie klienta %ld (czas usługi: %d s)." RESET,
                id, id_obslugiwany_klient, service_time);
 
         if (fotel)
@@ -118,7 +118,7 @@ int main()
             kasa = 1;
             while ((banknoty[0] < 2 && banknoty[1] < 1)) // Czekamy, aż w kasie będą dostępne wymagane banknoty (10 zł oraz 20 zł)
             {
-                printf(GREEN "Fryzjer %d: Nie mogę wydać reszty klientowi %d. Czekam na uzupełnienie" RESET, id, id_obslugiwany_klient);
+                printf(GREEN "Fryzjer %ld: Nie mogę wydać reszty klientowi %ld. Czekam na uzupełnienie" RESET, id, id_obslugiwany_klient);
                 sem_v(kasa_semafor, 1);
                 kasa = 0;
                 sleep(0); // oczekiwanie na wpłatę
@@ -128,13 +128,13 @@ int main()
             if (banknoty[1] >= 1)
             {
                 banknoty[1] -= 1;
-                printf(GREEN "Fryzjer %d: wydaję resztę 20 zł klientowi %d. Kasa: 10zł=%d, 20zł=%d, 50zł=%d." RESET,
+                printf(GREEN "Fryzjer %ld: wydaję resztę 20 zł klientowi %ld. Kasa: 10zł=%d, 20zł=%d, 50zł=%d." RESET,
                        id, id_obslugiwany_klient, banknoty[0], banknoty[1], banknoty[2]);
             }
             else
             {
                 banknoty[0] -= 2;
-                printf(GREEN "Fryzjer %d: wydaję resztę 2 x 10 zł klientowi %d. Kasa: 10zł=%d, 20zł=%d, 50zł=%d." RESET,
+                printf(GREEN "Fryzjer %ld: wydaję resztę 2 x 10 zł klientowi %ld. Kasa: 10zł=%d, 20zł=%d, 50zł=%d." RESET,
                        id, id_obslugiwany_klient, banknoty[0], banknoty[1], banknoty[2]);
             }
             sem_v(kasa_semafor, 1);
@@ -151,12 +151,12 @@ int main()
         wyslalem_reszte = 0;
     }
     // Po wyjściu z pętli pracy fryzjera, logujemy informację o zakończeniu pracy
-    printf(GREEN "Fryzjer %d: wychodzę z pracy." RESET, id);
+    printf(GREEN "Fryzjer %ld: wychodzę z pracy." RESET, id);
 }
 
 void sygnal_1(int sig)
 {
-    printf(GREEN "Fryzjer %d: otrzymałem sygnał nr 1." RESET, id);
+    printf(GREEN "Fryzjer %ld: otrzymałem sygnał nr 1." RESET, id);
 
     // Ustaw flagi
     if (fryzjer_komunikat_poczekalnia)
@@ -179,7 +179,7 @@ void sygnal_1(int sig)
     else
     {
         zwolnij_zasoby_fryzjer();
-        printf(GREEN "Fryzjer %d: wychodzę z pracy." RESET, id);
+        printf(GREEN "Fryzjer %ld: wychodzę z pracy." RESET, id);
     }
 }
 
@@ -188,12 +188,12 @@ void zwolnij_zasoby_fryzjer()
     // Zwolnij semafory
     if (fotel)
     {
-        printf(GREEN "Fryzjer %d: Zwalniam fotel." RESET, id);
+        printf(GREEN "Fryzjer %ld: Zwalniam fotel." RESET, id);
         sem_v(fotele_semafor, 1);
     }
     if (kasa)
     {
-        printf(GREEN "Fryzjer %d: Zwalniam kasę." RESET, id);
+        printf(GREEN "Fryzjer %ld: Zwalniam kasę." RESET, id);
         sem_v(kasa_semafor, 1);
     }
     // Odłącz pamięć

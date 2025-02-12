@@ -212,6 +212,6 @@ void set_process_limit()
 
     if (rl.rlim_cur < F + P)
     {
-        exit_error("Przekroczono możliwą liczbę procesów!");
+        error_exit("Przekroczono możliwą liczbę procesów!");
     }
 }

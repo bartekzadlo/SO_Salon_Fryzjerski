@@ -39,7 +39,7 @@ int main()
         }
         int earning_time = rand() % 5 + 1;
         sleep(earning_time);
-        printf(BLUE "Klient %d: Próbuję wejść do poczekalni" RESET, id);
+        printf(BLUE "Klient %ld: Próbuję wejść do poczekalni" RESET, id);
         if (!w_poczekalni)
         {
             wolne_miejsce = sem_try_wait(poczekalnia_semafor, 1);
@@ -48,7 +48,7 @@ int main()
         if (wolne_miejsce == 0)
         {
             w_poczekalni = 1;
-            printf(BLUE "Klient %d: wchodzę do poczekalni. Liczba wolnych miejsc: %d." RESET, id, sem_getval(poczekalnia_semafor));
+            printf(BLUE "Klient %ld: wchodzę do poczekalni. Liczba wolnych miejsc: %d." RESET, id, sem_getval(poczekalnia_semafor));
 
             kom.mtype = 1;
             kom.nadawca = id;
@@ -99,11 +99,11 @@ int main()
             zaplacone = 0;
             otrzymana_reszta = 0;
 
-            printf(BLUE "Klient %d: zostałem obsłużony i opuszczam salon." RESET, id);
+            printf(BLUE "Klient %ld: zostałem obsłużony i opuszczam salon." RESET, id);
         }
         else
         {
-            printf(BLUE "Klient %d: poczekalnia jest pełna. Wracam do pracy." RESET, id);
+            printf(BLUE "Klient %ld: poczekalnia jest pełna. Wracam do pracy." RESET, id);
         }
 
         if (w_poczekalni)
@@ -111,7 +111,7 @@ int main()
             sem_v(poczekalnia_semafor, 1);
         }
     }
-    printf(BLUE "Klient %d: kończę pracę" RESET, id);
+    printf(BLUE "Klient %ld: kończę pracę" RESET, id);
 }
 
 void sygnal_2(int sig)
@@ -144,7 +144,7 @@ void sygnal_2(int sig)
             printf(BLUE "Klient %ld: Zwalniam swoje miejsce w poczekalni." RESET, id);
             sem_v(poczekalnia_semafor, 1);
         }
-        printf(BLUE "Klient %d: kończę pracę" RESET, id);
+        printf(BLUE "Klient %ld: kończę pracę" RESET, id);
         exit(EXIT_SUCCESS);
     }
 }
