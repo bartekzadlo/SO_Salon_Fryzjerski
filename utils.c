@@ -60,7 +60,7 @@ int utworz_pamiec_dzielona(key_t klucz)
     return shm_id;
 }
 
-int dolacz_pamiec_dzielona(int shm_id)
+int *dolacz_pamiec_dzielona(int shm_id)
 {
     int *ptr = shmat(shm_id, 0, 0);
     if (*ptr == -1)
@@ -96,6 +96,15 @@ int utworz_semafor(key_t klucz)
         error_exit("semget");
     }
     return id;
+}
+
+void usun_semafor(int id)
+{
+    int res = semctl(id, 0, IPC_RMID);
+    if (res == -1)
+    {
+        error_exit("semctl IPC_RMID");
+    }
 }
 
 void setval_semafor(int id, int max)

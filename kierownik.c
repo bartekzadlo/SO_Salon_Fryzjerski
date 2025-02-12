@@ -14,13 +14,13 @@ int sygnal1 = 0;
 int sygnal2 = 0;
 pid_t klienci[P];
 pid_t fryzjerzy[F];
-p_thread_t timer_thread;
+pthread_t timer_thread;
 int kolejka;
 int fotele_semafor;
 int kasa_semafor;
 int poczekalnia_semafor;
 int shm_id;
-int banknoty; // pamiec dzielona
+int *banknoty; // pamiec dzielona
 
 int main()
 {
@@ -34,18 +34,18 @@ int main()
     set_process_limit();
 
     key_t klucz;
-    klucz = ftok(".", "M");
+    klucz = ftok(".", 'M');
     kolejka = utworz_kolejke(klucz);
-    klucz = ftok(".", "K");
+    klucz = ftok(".", 'K');
     kasa_semafor = utworz_semafor(klucz);
     setval_semafor(kasa_semafor, 1);
-    klucz = ftok(".", "F");
+    klucz = ftok(".", 'F');
     fotele_semafor = utworz_semafor(klucz);
     setval_semafor(fotele_semafor, N);
-    klucz = ftok(",", "P");
+    klucz = ftok(",", 'P');
     poczekalnia_semafor = utworz_semafor(klucz);
     setval_semafor(poczekalnia_semafor, K);
-    klucz = ftok(".", "S");
+    klucz = ftok(".", 'S');
     shm_id = utworz_pamiec_dzielona(klucz);
     banknoty = dolacz_pamiec_dzielona(shm_id);
 
@@ -174,7 +174,7 @@ void wyslij_s1()
 
 void wyslij_s2()
 {
-    szybki_koniec();
+    szybki_koniec(0);
 }
 
 void czekaj_na_procesy(int n)
@@ -214,13 +214,12 @@ void *simulation_timer_thread(void *arg)
         remaining--;                                                   // Zmniejszenie liczby pozostałych sekund
     }
     sem_p(poczekalnia_semafor, P);
-    send_message("Czas symulacji upłynął. Wysłany sygnał 2: Salon zamykany."); // Wysłanie komunikatu o zakończeniu symulacji
-    return NULL;                                                               // Zakończenie wątku
+    return NULL; // Zakończenie wątku
 }
 
 void zwolnij_zasoby_kierownik()
 {
-    usun_kolejke_komunikatow(kolejka);
+    usun_kolejke(kolejka);
     usun_semafor(kasa_semafor);
     usun_semafor(fotele_semafor);
     usun_semafor(poczekalnia_semafor);

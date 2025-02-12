@@ -44,11 +44,12 @@ void wyslij_komunikat(int kolejka, struct komunikat *kom);
 void odbierz_komunikat(int kolejka, struct komunikat *kom, long odbiorca);
 // obsługa pamięci współdzielonej
 int utworz_pamiec_dzielona(key_t klucz);
-int dolacz_pamiec_dzielona(int shm_id);
+int *dolacz_pamiec_dzielona(int shm_id);
 void odlacz_pamiec_dzielona(int *ptr);
 void usun_pamiec_dzielona(int shm_id);
 // operacje na semaforach
 int utworz_semafor(key_t klucz);
+void usun_semafor(int id);
 void setval_semafor(int id, int max);
 int sem_try_wait(int id, int n);
 int sem_getval(int id);

@@ -29,16 +29,16 @@ int main()
 
     if (signal(SIGHUP, sygnal_1) == SIG_ERR)
     {
-        error_exit("Blad obslugi sygnalu nr 1")
+        error_exit("Blad obslugi sygnalu nr 1");
     }
 
-    klucz = ftok(".", "M");
+    klucz = ftok(".", 'M');
     kolejka = utworz_kolejke(klucz);
-    klucz = ftok(".", "F");
+    klucz = ftok(".", 'F');
     fotele_semafor = utworz_semafor(klucz);
-    klucz = ftok(".", "K");
+    klucz = ftok(".", 'K');
     kasa_semafor = utworz_semafor(klucz);
-    klucz = ftok(".", "S");
+    klucz = ftok(".", 'S');
     shm_id = utworz_pamiec_dzielona(klucz);
     banknoty = dolacz_pamiec_dzielona(shm_id);
 
@@ -152,7 +152,6 @@ int main()
     }
     // Po wyjściu z pętli pracy fryzjera, logujemy informację o zakończeniu pracy
     printf(GREEN "Fryzjer %d: wychodzę z pracy." RESET, id);
-    return NULL;
 }
 
 void sygnal_1(int sig)

@@ -19,16 +19,16 @@ volatile sig_atomic_t otrzymana_reszta = 0;
 int main()
 {
     srand(time(NULL));
-    long id = get_pid();
+    long id = getpid();
 
     if (signal(SIGINT, sygnal_2) == SIG_ERR)
     {
         error_exit("Blad obslugi sygnalu 2");
     }
 
-    klucz = ftok(".", "M");
+    klucz = ftok(".", 'M');
     kolejka = utworz_kolejke(klucz);
-    klucz = ftok(".", "P");
+    klucz = ftok(".", 'P');
     poczekalnia_semafor = utworz_semafor(klucz);
 
     while (1)
@@ -70,9 +70,13 @@ int main()
             id_fryzjer_obslugujacy = kom.nadawca;
 
             if (rand() % 2 == 0)
+            {
                 int platnosc = 30;
+            }
             else
+            {
                 int platnosc = 50;
+            }
 
             kom.mtype = id_fryzjer_obslugujacy;
             kom.nadawca = id;
