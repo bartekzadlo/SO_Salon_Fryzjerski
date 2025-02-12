@@ -32,8 +32,7 @@
 #define MSG_TYPE_EXIT 999 // Typ komunikatu: sygnał zakończenia (używany do zamknięcia loggera)
 
 /*
- * Struktura Message:
- * Służy do komunikacji między procesami (np. do logowania zdarzeń) przy użyciu kolejki komunikatów.
+ * Struktura Message dla loggera:
  * mtype – typ komunikatu (np. zdarzenie lub exit)
  * mtext – tekst komunikatu (do 128 znaków)
  */
@@ -42,27 +41,6 @@ typedef struct
     long mtype;
     char mtext[MSG_SIZE];
 } Message;
-
-/* Struktura opisująca klienta     */
-typedef struct
-{
-    int id;       // Unikalny identyfikator klienta
-    sem_t served; // Semafor używany przez klienta do oczekiwania na zakończenie obsługi przez fryzjera
-} Klient;
-
-extern pthread_mutex_t poczekalniaMutex;   // Mutex służący do synchronizacji dostępu do kolejki poczekalni
-extern pthread_cond_t poczekalniaNotEmpty; // Zmienna warunkowa, która sygnalizuje, że poczekalnia nie jest pusta
-
-/* Struktura Kasa                 */
-typedef struct
-{
-    int banknot_10;              // Liczba banknotów o nominale 10 zł dostępnych w kasie
-    int banknot_20;              // Liczba banknotów o nominale 20 zł dostępnych w kasie
-    int banknot_50;              // Liczba banknotów o nominale 50 zł dostępnych w kasie
-    pthread_cond_t uzupelnienie; // Zmienna warunkowa sygnalizująca fryzjerom, że kasa została uzupełniona
-    pthread_mutex_t mutex_kasa;  // Mutex służący do synchronizacji dostępu do kasy
-} Kasa;
-extern Kasa kasa; // Globalna struktura kasy salonu
 
 /* Flagi sterujące symulacją      */
 extern int salon_open;        // Flaga informująca, czy salon jest czynny (1 – otwarty, 0 – zamknięty)
