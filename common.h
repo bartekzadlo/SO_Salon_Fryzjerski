@@ -31,21 +31,6 @@
 #define MAGENTA "\033[35m"
 #define CYAN "\033[36m"
 
-/* Godziny – podawane w sekundach od startu symulacji */
-extern int TP;           // początek (przed otwarciem salonu)
-extern int TK;           // koniec
-extern int sim_duration; // TK - TP
-
-/*
- * Funkcja init_kasa:
- * Inicjalizuje kasę salonu, ustawiając początkowe wartości banknotów oraz
- * inicjalizując mutex i zmienną warunkową używaną do synchronizacji operacji na kasie.
- */
-
-void *manager_input_thread(void *arg);
-void *simulation_timer_thread(void *arg);
-void *simulation_starter_thread(void *arg);
-
 struct komunikat
 {
     long mtype;
@@ -64,10 +49,27 @@ void odlacz_pamiec_dzielona(int *ptr);
 void usun_pamiec_dzielona(int shm_id);
 // operacje na semaforach
 int utworz_semafor(key_t klucz);
-int sem_try_wait(int id, int n);
 void setval_semafor(int id, int max);
+int sem_try_wait(int id, int n);
 int sem_getval(int id);
 void sem_p(int id, int n);
 void sem_v(int id, int n);
+// dodatkowe utils.c
+void error_exit(const char *msg);
+void set_process_limit();
+// fryzjer.c
+void sygnal_1(int sig);
+void zwolnij_zasoby_fryzjer();
+// kierownik.c
+void zwolnij_zasoby_kierownik();
+void *simulation_timer_thread(void *arg);
+void zakoncz_symulacje_czasu();
+void czekaj_na_procesy(int n);
+void wyslij_s1();
+void wyslij_s2();
+void szybki_koniec(int s);
+void koniec(int s);
+// klient.c
+void sygnal_2(int sig);
 
 #endif // COMMON_H

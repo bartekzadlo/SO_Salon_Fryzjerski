@@ -79,6 +79,15 @@ void odlacz_pamiec_dzielona(int *ptr)
     }
 }
 
+void usun_pamiec_dzielona(int id)
+{
+    int res = shmctl(id, IPC_RMID, 0);
+    if (res == -1)
+    {
+        error_exit("shmctl IPC_RMID");
+    }
+}
+
 int utworz_semafor(key_t klucz)
 {
     int id = semget(klucz, 1, 0600 | IPC_CREAT);

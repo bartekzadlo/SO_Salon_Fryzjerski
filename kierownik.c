@@ -143,13 +143,13 @@ void koniec(int s)
     zakoncz_symulacje_czasu();
     wyslij_s1();
     wyslij_s2();
-    zwolnij_zasoby();
+    zwolnij_zasoby_kierownik();
     exit(EXIT_SUCCESS);
 }
 
 void szybki_koniec(int s)
 {
-    zwolnij_zasoby();
+    zwolnij_zasoby_kierownik();
     for (int i = 0; i < F; i++)
     {
         kill(fryzjerzy[i], SIGKILL);
@@ -218,7 +218,7 @@ void *simulation_timer_thread(void *arg)
     return NULL;                                                               // Zakończenie wątku
 }
 
-void zwolnij_zasoby()
+void zwolnij_zasoby_kierownik()
 {
     usun_kolejke_komunikatow(kolejka);
     usun_semafor(kasa_semafor);

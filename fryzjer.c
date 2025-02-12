@@ -179,12 +179,12 @@ void sygnal_1(int sig)
     }
     else
     {
-        zwolnij_zasoby();
+        zwolnij_zasoby_fryzjer();
         printf(GREEN "Fryzjer %d: wychodzę z pracy." RESET, id);
     }
 }
 
-void zwolnij_zasoby()
+void zwolnij_zasoby_fryzjer()
 {
     // Zwolnij semafory
     if (fotel)
