@@ -4,10 +4,13 @@ long id;
 key_t klucz;
 int kolejka;
 
+volatile sig_atomic_t w_poczekalni = 0;
+
 int main()
 {
     long id = get_pid();       // Pobieramy identyfikator klienta
     char log_buffer[MSG_SIZE]; // Bufor do przechowywania komunikatów logujących
+    int wolne_miejsce;         // do sprawdzania czy istnieje wolne miejsce w poczekalni
 
     klucz = ftok(".", "M");
     kolejka = utworz_kolejke(klucz);
@@ -31,31 +34,17 @@ int main()
         else
             klient->payment = 50;
 
-        /* Próba wejścia do poczekalni:
-         * Blokujemy mutex poczekalni, aby bezpiecznie sprawdzić, czy jest dostępne miejsce.
-         */
-        pthread_mutex_lock(&poczekalniaMutex);
-        if (!salon_open || close_all_clients) // Jeśli salon jest zamknięty lub otrzymano sygnał zamknięcia, klient opuszcza salon
+        if (w_poczekalni == 0)
         {
-            pthread_mutex_unlock(&poczekalniaMutex);
-            free(klient); // Zwolnienie pamięci
-            break;
+            wolne_miejsce = sem_try_wait(poczekalnia, 1);
         }
-        if (poczekalniaCount >= K) // Jeśli poczekalnia jest pełna, klient opuszcza salon i wraca "zarabiać pieniądze"
+
+        if (wolne_miejsce == 0)
         {
-            pthread_mutex_unlock(&poczekalniaMutex);
-            snprintf(log_buffer, MSG_SIZE, "Klient %d: poczekalnia pełna, opuszczam salon.", id);
+            w_poczekalni = 1;
+            snprintf(log_buffer, MSG_SIZE, "Klient %d: wchodzę do poczekalni. Liczba wolnych miejsc: %d.", id, sem_getval(poczekalnia));
             send_message(log_buffer);
-            sem_destroy(&klient->served); // Zwalniamy semafor
-            free(klient);                 // Zwalniamy pamięć
-            continue;                     // klient wraca „zarabiać pieniądze”
         }
-        // Dodanie klienta do poczekalni
-        int index = (poczekalniaFront + poczekalniaCount) % K; // Dodajemy klienta do poczekalni na pozycji obliczonej na podstawie aktualnej liczby oczekujących
-        poczekalnia[index] = klient;
-        poczekalniaCount++;                        // Zwiększanie liczby oczekujących klientów
-        pthread_cond_signal(&poczekalniaNotEmpty); // Sygnalizujemy, że poczekalnia nie jest pusta (budzimy ewentualne wątki fryzjerów)
-        pthread_mutex_unlock(&poczekalniaMutex);
 
         snprintf(log_buffer, MSG_SIZE, "Klient %d: wchodzę do poczekalni. Liczba oczekujących: %d.", id, poczekalniaCount);
         send_message(log_buffer); // Logowanie komunikatu

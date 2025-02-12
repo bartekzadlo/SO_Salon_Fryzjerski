@@ -51,10 +51,6 @@ typedef struct
     sem_t served; // Semafor używany przez klienta do oczekiwania na zakończenie obsługi przez fryzjera
 } Klient;
 
-/* Kolejka poczekalni – implementowana jako tablica cykliczna */
-extern Klient *poczekalnia[K];             // Tablica wskaźników na klientów reprezentująca poczekalnię
-extern int poczekalniaFront;               // Indeks pierwszego oczekującego klienta (początek kolejki)
-extern int poczekalniaCount;               // Liczba klientów aktualnie oczekujących w poczekalni
 extern pthread_mutex_t poczekalniaMutex;   // Mutex służący do synchronizacji dostępu do kolejki poczekalni
 extern pthread_cond_t poczekalniaNotEmpty; // Zmienna warunkowa, która sygnalizuje, że poczekalnia nie jest pusta
 
@@ -91,14 +87,6 @@ extern int msgqid; // Identyfikator kolejki komunikatów używanej do logowania 
  */
 void init_kasa();
 
-/*
- * Prototypy funkcji wątków:
- * - barber_thread: Funkcja reprezentująca pracę fryzjera.
- * - client_thread: Funkcja reprezentująca działanie klienta.
- * - manager_thread: Funkcja reprezentująca pracę managera (kierownika) salonu.
- */
-void *barber_thread(void *arg);
-void *client_thread(void *arg);
 void *manager_input_thread(void *arg);
 void *simulation_timer_thread(void *arg);
 void *simulation_starter_thread(void *arg);
@@ -125,5 +113,9 @@ int utworz_pamiec_dzielona(key_t klucz);
 int dolacz_pamiec_dzielona(int shm_id);
 void odlacz_pamiec_dzielona(int *ptr);
 void usun_pamiec_dzielona(int shm_id);
+// operacje na semaforach
+int utworz_semafor(key_t klucz);
+int sem_try_wait(int id, int n);
+int sem_getval(int id);
 
 #endif // COMMON_H
