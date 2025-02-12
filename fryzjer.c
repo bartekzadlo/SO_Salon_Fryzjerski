@@ -18,7 +18,7 @@ volatile sig_atomic_t fryzjer_komunikat_poczekalnia = 0;
 volatile sig_atomic_t fotel = 0;
 volatile sig_atomic_t kasa = 0;
 volatile sig_atomic_t czeka_na_zaplate = 0;
-volatile sig_atomic_t odebiera_zaplate = 0;
+volatile sig_atomic_t odbiera_zaplate = 0;
 
 int main()
 {

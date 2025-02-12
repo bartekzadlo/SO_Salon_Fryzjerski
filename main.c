@@ -11,54 +11,16 @@
 #include <sys/resource.h> // dla struct rlimit, getrlimit, setrlimit, RLIMIT_NPROC
 #include "common.h"       // Plik nagłówkowy "common.h" – zawiera definicje stałych, struktur oraz prototypów funkcji wykorzystywanych w aplikacji
 
-// Globalne zmienne do zarządzania poczekalnią klientów
-
-Klient *poczekalnia[K] = {NULL};                               // Tablica wskaźników na klientów, reprezentująca poczekalnię salonu
-int poczekalniaFront = 0;                                      // Indeks pierwszego elementu w kolejce poczekalni
-int poczekalniaCount = 0;                                      // Aktualna liczba klientów oczekujących w poczekalni
-pthread_mutex_t poczekalniaMutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex zabezpieczający dostęp do zmiennych poczekalni
-pthread_cond_t poczekalniaNotEmpty = PTHREAD_COND_INITIALIZER; // Zmienna warunkowa sygnalizująca, że poczekalnia nie jest pusta
-
-Kasa kasa;            // Struktura reprezentująca kasę salonu, zawiera liczbę dostępnych banknotów
-sem_t fotele_semafor; // Semafor ograniczający dostęp do foteli w salonie – określa maksymalną liczbę klientów, którzy mogą jednocześnie zajmować fotele
-
-// Flagi kontrolujące stan salonu i zakończenie symulacji
-int salon_open = 1;        // Flaga informująca, czy salon jest nadal otwarty
-int close_all_clients = 0; // Flaga sygnalizująca konieczność zakończenia obsługi klientów
-int barber_stop[F] = {0};  // Tablica flag określających, kiedy poszczególni fryzjerzy mają zakończyć pracę
-
 /* Godziny – podawane w sekundach od startu symulacji */
 int TP = 0;           // początek (przed otwarciem salonu)
 int TK = 0;           // koniec
 int sim_duration = 0; // TK - TP
-
-int msgqid; // Globalny identyfikator kolejki komunikatów, używany przez loggera oraz inne funkcje komunikacji międzyprocesowej
 
 /* Funkcja do obsługi błędów – wypisuje komunikat i kończy program */
 void error_exit(const char *msg)
 {
     perror(msg);
     exit(EXIT_FAILURE);
-}
-/*
- * Funkcja init_kasa()
- * -------------------
- * Inicjalizuje kasę salonu poprzez ustawienie początkowej liczby banknotów oraz
- * inicjalizację mutexa i zmiennej warunkowej używanych do synchronizacji operacji na kase.
- */
-void init_kasa()
-{
-    kasa.banknot_10 = 10; // Ustawienie początkowej liczby banknotów o nominale 10
-    kasa.banknot_20 = 10; // Ustawienie początkowej liczby banknotów o nominale 20
-    kasa.banknot_50 = 10; // Ustawienie początkowej liczby banknotów o nominale 50
-    if (pthread_mutex_init(&kasa.mutex_kasa, NULL) != 0)
-    {
-        error_exit("pthread_mutex_init kasy");
-    }
-    if (pthread_cond_init(&kasa.uzupelnienie, NULL) != 0)
-    {
-        error_exit("pthread_cond_init kasy");
-    }
 }
 
 /*
@@ -190,7 +152,7 @@ int main()
     // Inicjalizacja pamięci współdzielonej
 
     /* ----------------- Kolejka komunikatów ----------------- */
-    key_t msg_key = ftok(".", 'M'); // Utworzenie klucza dla kolejki komunikatów
+    key_t msg_key = ftok(".", 'Y'); // Utworzenie klucza dla kolejki komunikatów
     if (msg_key == -1)
     {
         error_exit("ftok dla kolejki komunikatów");
@@ -210,12 +172,6 @@ int main()
     else if (logger_pid == 0)
     {
         logger_process(); // Proces potomny – uruchomienie loggera, który będzie odbierał i wypisywał komunikaty
-    }
-
-    if (sem_init(&fotele_semafor, 0, N) == -1)
-    {
-        perror("Błąd inicjalizacji semafora fotele_semafor");
-        exit(EXIT_FAILURE);
     }
 
     pthread_t manager_thread;
@@ -256,13 +212,4 @@ int main()
     {
         error_exit("msgctl");
     }
-
-    /* ----------------- Sprzątanie zasobów ----------------- */
-    // Niszczenie mutexów oraz zmiennych warunkowych używanych w programie
-    pthread_mutex_destroy(&poczekalniaMutex);
-    pthread_cond_destroy(&poczekalniaNotEmpty);
-    pthread_mutex_destroy(&kasa.mutex_kasa);
-    pthread_cond_destroy(&kasa.uzupelnienie);
-
-    shmdt(sharedStats);
 }

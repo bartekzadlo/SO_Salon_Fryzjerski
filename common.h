@@ -42,11 +42,6 @@ typedef struct
     char mtext[MSG_SIZE];
 } Message;
 
-/* Flagi sterujące symulacją      */
-extern int salon_open;        // Flaga informująca, czy salon jest czynny (1 – otwarty, 0 – zamknięty)
-extern int close_all_clients; // Flaga sygnalizująca, że wszyscy klienci muszą natychmiast opuścić salon (sygnał 2)
-extern int barber_stop[F];    // Tablica flag dla fryzjerów – dla każdego fryzjera sygnał (1), aby zakończył pracę
-
 /* Godziny – podawane w sekundach od startu symulacji */
 extern int TP;           // początek (przed otwarciem salonu)
 extern int TK;           // koniec

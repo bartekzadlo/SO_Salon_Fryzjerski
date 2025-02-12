@@ -5,9 +5,10 @@ key_t klucz;
 int kolejka;
 int poczekalnia;
 int platnosc;
+int wolne_miejsce;
+int id_fryzjer_obslugujacy;
 
-volatile sig_atomic_t salon_open;
-volatile sig_atomic_t close_all_clients;
+volatile sig_atomic_t client_stop = 0;
 volatile sig_atomic_t w_poczekalni = 0;
 volatile sig_atomic_t klient_komunikat_poczekalnia = 0;
 volatile sig_atomic_t pobranie_z_poczekalni = 0;
@@ -15,29 +16,19 @@ volatile sig_atomic_t zaplacone = 0;
 
 int main()
 {
-    long id = get_pid();       // Pobieramy identyfikator klienta
-    char log_buffer[MSG_SIZE]; // Bufor do przechowywania komunikatów logujących
-    int wolne_miejsce;         // do sprawdzania czy istnieje wolne miejsce w poczekalni
-    int id_fryzjer_obslugujacy;
+    long id = get_pid();
+    char log_buffer[MSG_SIZE];
     struct komunikat kom;
 
     klucz = ftok(".", "M");
     kolejka = utworz_kolejke(klucz);
-
     klucz = ftok(".", "P");
     poczekalnia = utworz_semafor(klucz);
 
-    while (salon_open && !close_all_clients) // Pętla działania klienta – działa, dopóki salon jest otwarty i nie otrzymano sygnału zamknięcia dla klientów
+    while (1)
     {
-        /* Symulacja "zarabiania pieniędzy":
-         * Klient czeka losowo od 1 do 5 sekund, aby zasymulować okres, w którym "zarabia" pieniądze.
-         */
         int earning_time = rand() % 5 + 1;
-        sleep(0); // domyślnie earning_time
-
-        if (!salon_open || close_all_clients) // Jeżeli salon jest zamknięty lub otrzymano sygnał zamknięcia klientów, kończymy pętlę
-            break;
-
+        sleep(earning_time);
         if (w_poczekalni == 0)
         {
             wolne_miejsce = sem_try_wait(poczekalnia, 1);
