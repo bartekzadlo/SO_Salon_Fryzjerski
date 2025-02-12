@@ -42,8 +42,8 @@ int main()
     poczekalnia_semafor = utworz_semafor(klucz);
     ustaw_semafor(poczekalnia_semafor, K);
 
-    printf(YELLOW "init poczekalnia: %d.\n", sem_getval(poczekalnia_semafor));
-    printf(YELLOW "init fotele: %d.\n", sem_getval(fotele_semafor));
+    printf(YELLOW "Zainicjalizowano poczekalnię, ilość miejsc: %d.\n" RESET, sem_getval(poczekalnia_semafor));
+    printf(YELLOW "Zainicjalizowano fotele, ilość foteli: %d.\n" RESET, sem_getval(fotele_semafor));
 
     klucz = ftok(".", 'S');
     shm_id = utworz_pamiec_dzielona(klucz);
@@ -53,17 +53,19 @@ int main()
     banknoty[1] = 10; // banknoty o nominale 20
     banknoty[2] = 10; // banknoty o nominale 50
 
-    if (F <= 1 || N >= F)
+    printf(YELLOW, "Zainicjalizowane kasę, stan początkowy kasy - Banknoty 10 zł: %d, Banknoty 20 zł: %d, Banknoty 50 zł: %d" RESET, banknoty[0], banknoty[1], banknoty[2])
+
+        if (F <= 1 || N >= F)
     {
         error_exit("Błąd: Warunek F > 1 oraz N < F nie jest spełniony.\n");
     }
 
-    printf("Podaj czas otwarcia (TP) w sekundach: \n");
+    printf(CYAN "Podaj czas otwarcia (TP) w sekundach: \n" RESET);
     if (scanf("%d", &TP) != 1)
     {
         error_exit("Błąd odczytu TP\n");
     }
-    printf("Podaj czas zamknięcia (TK) w sekundach: \n");
+    printf(CYAN "Podaj czas zamknięcia (TK) w sekundach: \n" RESET);
     if (scanf("%d", &TK) != 1)
     {
         error_exit("Błąd odczytu TK\n");
@@ -85,9 +87,9 @@ int main()
     char menu;
     while (menu != '3')
     {
-        printf("1 - zakończ danego fryzjera\n");
-        printf("2 - odeślij klientów do domu\n");
-        printf("3 - koniec\n");
+        printf(CYAN "1 - Zakończ pracę fryzjerów\n");
+        printf("2 - Zakończ pracę klientów\n");
+        printf("3 - Zwolnij zasoby i zakończ program\n" RESET);
 
         while (getchar() != '\n')
             ;
@@ -114,6 +116,7 @@ int main()
 
 void koniec(int s)
 {
+    printf(RED "Wywołano koniec." RESET);
     zakoncz_symulacje_czasu();
     wyslij_s1();
     wyslij_s2();
@@ -123,6 +126,7 @@ void koniec(int s)
 
 void szybki_koniec(int s)
 {
+    printf(RED "Wywołano szybki koniec." RESET);
     zwolnij_zasoby_kierownik();
     for (int i = 0; i < F; i++)
     {
@@ -142,12 +146,14 @@ void szybki_koniec(int s)
 
 void wyslij_s1()
 {
+    printf(RED "Wywołano sygnał 1." RESET);
     kill(fryzjerzy[0], 1);
     czekaj_na_procesy(1);
 }
 
 void wyslij_s2()
 {
+    printf(RED "Wywołano sygnał 2." RESET);
     szybki_koniec(0);
 }
 

@@ -50,7 +50,7 @@ int main()
             printf(GREEN "Fryzjer %ld: otrzymałem sygnał, kończę pracę.\n" RESET, id);
             break;
         }
-
+        printf(GREEN "Fryzjer %ld: czekam na klientów w poczekalni.\n" RESET, id);
         if (fryzjer_komunikat_poczekalnia != 1)
         {
             odbierz_komunikat(kolejka, &kom, 1);
@@ -58,19 +58,21 @@ int main()
         }
 
         id_obslugiwany_klient = kom.nadawca;
+        printf(GREEN "Fryzjer %ld: zaczynam obsługę klienta %ld.\n" RESET, id, id_obslugiwany_klient);
 
         if (!fotel)
         {
             sem_p(fotele_semafor, 1);
             fotel = 1;
         }
-        printf(GREEN "Fryzjer %ld: rozpoczynam obsługę klienta %ld zajmując fotel\n" RESET, id, id_obslugiwany_klient);
+        printf(GREEN "Fryzjer %ld: zajmuję fotel\n" RESET, id);
 
         kom.mtype = id_obslugiwany_klient;
         kom.nadawca = id;
 
         if (czeka_na_zaplate != 1)
         {
+            printf(GREEN "Fryzjer %ld: czekam na zapłatę.\n" RESET, id);
             wyslij_komunikat(kolejka, &kom);
             czeka_na_zaplate = 1;
         }

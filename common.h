@@ -29,7 +29,7 @@
 #define YELLOW "\033[33m"  // informacje o salonie, procesach
 #define BLUE "\033[34m"    // kolor klienta
 #define MAGENTA "\033[35m" // komunikat o czasie
-#define CYAN "\033[36m"
+#define CYAN "\033[36m"    // zwrot do użytkownika
 
 struct komunikat
 {

@@ -6,7 +6,7 @@ int poczekalnia_semafor;
 int platnosc;
 int id_fryzjer_obslugujacy;
 
-volatile sig_atomic_t sygnal_klient = 0;
+volatile sig_atomic_t sygnal_klient = 0; // sygnal przerwanie pracy klienta
 volatile sig_atomic_t w_poczekalni = 0;
 volatile sig_atomic_t klient_komunikat_poczekalnia = 0;
 volatile sig_atomic_t pobranie_z_poczekalni = 0;
@@ -34,7 +34,7 @@ int main()
 
     while (1)
     {
-        printf("\033[0;32m[KLIENT %ld]: Przyszedłem do salonu.\033[0m\n", id);
+        printf(BLUE "Klient %ld: Przyszedłem do salonu.\n", id);
         if (sygnal_klient)
         {
             break;
@@ -60,12 +60,14 @@ int main()
 
             if (pobranie_z_poczekalni != 1)
             {
+                printf(BLUE "Klient %ld: zostałem pobrany przez fryzjera.\n" RESET, id);
                 odbierz_komunikat(kolejka, &kom, id);
                 pobranie_z_poczekalni = 1;
             }
 
             if (w_poczekalni)
             {
+                printf(BLUE "Klient %ld: opuściłem poczekalnie\n" RESET, id);
                 sem_v(poczekalnia_semafor, 1);
                 w_poczekalni = 0;
             }
@@ -87,6 +89,7 @@ int main()
 
             if (zaplacone != 1)
             {
+                printf(BLUE "Klient %ld: płacę.\n" RESET, id);
                 wyslij_komunikat(kolejka, &kom);
                 zaplacone = 1;
             }
@@ -121,7 +124,6 @@ void sygnal_2(int sig)
 {
     printf(BLUE "Klient %ld: Otrzymałem sygnał 2.\n" RESET, id);
 
-    // Ustaw flagi
     if (klient_komunikat_poczekalnia == 1)
     {
         sygnal_klient = 1;
@@ -141,7 +143,6 @@ void sygnal_2(int sig)
     }
     else
     {
-        // Zwolnij semafor
         if (w_poczekalni)
         {
             printf(BLUE "Klient %ld: Zwalniam swoje miejsce w poczekalni.\n" RESET, id);
