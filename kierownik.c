@@ -7,89 +7,74 @@
 #include <ctype.h>
 #include "common.h"
 
-/* Funkcja pomocnicza usuwająca białe znaki z początku i końca łańcucha */
-char *trim_whitespace(char *str)
+int TP = 0;
+int TK = 0;
+int sim_duration = 0;
+int sygnal1 = 0;
+int sygnal2 = 0;
+pid_t klienci[P];
+pid_t fryzjerzy[F];
+int kolejka;
+int fotele_semafor;
+int kasa_semafor;
+int poczekalnia_semafor;
+int shm_id;
+int banknoty;
+
+int main()
 {
-    char *end;
-    // Pomijamy białe znaki na początku łańcucha
-    while (*str && isspace((unsigned char)*str))
-        str++;
-    if (*str == 0) // Jeśli łańcuch jest pusty, zwracamy pusty wskaźnik
-        return str;
-    end = str + strlen(str) - 1; // Pomijamy białe znaki na końcu łańcucha
-    while (end > str && isspace((unsigned char)*end))
-        end--;
-    *(end + 1) = '\0'; // Kończymy łańcuch na ostatnim niebiałym znaku
-    return str;
-}
+    srand(time(NULL));
+    char log_buffer[MSG_SIZE];
+    set_process_limit();
 
-void *manager_input_thread(void *arg)
-{
-    (void)arg; // Nieużywany parametr – brak potrzeby przekazywania argumentów do managera
-    char input[16];
-    fd_set read_fds;
-    struct timeval timeout;
+    key_t klucz;
+    klucz = ftok(".", "M");
+    kolejka = utworz_kolejke(klucz);
+    klucz = ftok(".", "K");
+    kasa_semafor = utworz_semafor(klucz);
+    setval_semafor(kasa_semafor, 1);
+    klucz = ftok(".", "F");
+    fotele_semafor = utworz_semafor(klucz);
+    setval_semafor(fotele_semafor, N);
+    klucz = ftok(",", "P");
+    poczekalnia_semafor = utworz_semafor(klucz);
+    setval_semafor(poczekalnia_semafor, K);
+    klucz = ftok(".", "S");
+    shm_id = utworz_pamiec_dzielona(klucz);
+    banknoty = dolacz_pamiec_dzielona(shm_id);
 
-    /* Ustawienie trybu anulowalności na asynchroniczny */
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+    banknoty[0] = 10; // banknoty o nominale 10
+    banknoty[1] = 10; // banknoty o nominale 20
+    banknoty[2] = 10; // banknoty o nominale 50
 
-    // Instrukcja wyświetlająca użytkownikowi informację o dostępnych sygnałach
-    printf(YELLOW "Wprowadź sygnał (1: fryzjer 0 kończy pracę, 2: zamknięcie salonu):\n" RESET);
-    fflush(stdout);
-
-    while (!close_all_clients) // Pętla oczekująca na sygnały, dopóki nie ma sygnału zamknięcia salonu
+    if (TP > 0)
     {
-        FD_ZERO(&read_fds);                                                  // Zerowanie zbioru descriptorów plików
-        FD_SET(STDIN_FILENO, &read_fds);                                     // Dodanie standardowego wejścia (klawiatura) do zbioru
-        timeout.tv_sec = 1;                                                  // Ustawienie timeoutu na 1 sekundę
-        timeout.tv_usec = 0;                                                 // Brak dodatkowych mikros sekund
-        int ret = select(STDIN_FILENO + 1, &read_fds, NULL, NULL, &timeout); // Funkcja select oczekuje na dane z wejścia lub timeout
+        sleep(0); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
+    }
 
-        if (close_all_clients) // Sprawdzanie, czy nie nadszedł sygnał zamknięcia
-            break;
-        if (ret > 0 && FD_ISSET(STDIN_FILENO, &read_fds)) // Jeśli dane zostały odczytane z wejścia
+    send_message("Salon otwarty.");
+
+    pthread_t timer_thread;
+    if (pthread_create(&timer_thread, NULL, simulation_timer_thread, NULL) != 0)
+    {
+        error_exit("Blad utworzenia watku symulacji czasu");
+    }
+
+    for (int i = 0; i < F; i++)
+    {
+        fryzjerzy[i] = fork();
+        if (fryzjerzy[i] == 0)
         {
-            if (fgets(input, sizeof(input), stdin) != NULL) // Odczytanie wprowadzonego ciągu znaków z klawiatury
-            {
-                char *trimmed = trim_whitespace(input); // Usuwanie białych znaków z początku i końca łańcucha
-                if (strcmp(trimmed, "1") == 0)
-                {
-                    if (F <= 1) // Sprawdzamy, czy jest więcej niż jeden fryzjer
-                    {
-                        printf(RED "Błąd: Nie można wysłać sygnału 1, ponieważ jest tylko jeden fryzjer.\n" RESET);
-                    }
-                    else
-                    {
-                        barber_stop[0] = 1; // Ustawiamy flagę dla fryzjera 0 i wysyłamy komunikat
-                        send_message("Manager: Odczytano sygnał 1 - fryzjer 0 kończy pracę przed zamknięciem salonu.");
-                    }
-                }
-                else if (strcmp(trimmed, "2") == 0) // Obsługa sygnału 2 – zamknięcie salonu
-                {
-                    // Ustawienie flag zamknięcia salonu
-                    close_all_clients = 1;
-                    salon_open = 0;
-                    pthread_cond_broadcast(&kasa.uzupelnienie);
-                    pthread_mutex_lock(&poczekalniaMutex);
-                    pthread_cond_broadcast(&poczekalniaNotEmpty); // Powiadomienie o zamknięciu salonu
-                    while (poczekalniaCount > 0)                  // Obsługa wszystkich oczekujących klientów
-                    {
-                        Klient *klient = poczekalnia[poczekalniaFront];
-                        poczekalniaFront = (poczekalniaFront + 1) % K;
-                        poczekalniaCount--;
-                        sem_post(&klient->served); // Umożliwiamy klientowi kontynuację
-                    }
-                    pthread_mutex_unlock(&poczekalniaMutex);
-                    // Wysyłanie komunikatu o zamknięciu salonu
-                    send_message("Manager: Odczytano sygnał 2. Wszyscy klienci opuszczają salon, salon zamykany.");
-                }
-            }
-        }
-        else if (ret < 0) // Obsługa błędu funkcji select
-        {
-            perror("Błąd select w wątku managera");
+            execl("./fryzjer", "fryzjer", NULL);
         }
     }
-    return NULL; // Zakończenie wątku managera
+
+    for (int i = 0; i < P; i++)
+    {
+        klienci[i] = fork();
+        if (klienci[i] == 0)
+        {
+            execl("./klient", "klient", NULL);
+        }
+    }
 }

@@ -11,60 +11,6 @@
 #include <sys/resource.h> // dla struct rlimit, getrlimit, setrlimit, RLIMIT_NPROC
 #include "common.h"       // Plik nagłówkowy "common.h" – zawiera definicje stałych, struktur oraz prototypów funkcji wykorzystywanych w aplikacji
 
-/* Godziny – podawane w sekundach od startu symulacji */
-int TP = 0;           // początek (przed otwarciem salonu)
-int TK = 0;           // koniec
-int sim_duration = 0; // TK - TP
-
-/* Funkcja do obsługi błędów – wypisuje komunikat i kończy program */
-void error_exit(const char *msg)
-{
-    perror(msg);
-    exit(EXIT_FAILURE);
-}
-
-/*
- * Funkcja send_message()
- * ----------------------
- * Wysyła komunikat do kolejki komunikatów.
- * Parametr 'text' – tekst komunikatu, który ma zostać wysłany.
- */
-void send_message(const char *text)
-{
-    Message msg;
-    msg.mtype = MSG_TYPE_EVENT;                           // Ustawienie typu komunikatu jako zdarzenie (event)
-    strncpy(msg.mtext, text, MSG_SIZE - 1);               // Kopiowanie tekstu do pola wiadomości, zapewniając, że nie przekroczymy rozmiaru
-    msg.mtext[MSG_SIZE - 1] = '\0';                       // Gwarancja zakończenia ciągu znakowego null-em
-    if (msgsnd(msgqid, &msg, sizeof(msg.mtext), 0) == -1) // Wysłanie komunikatu do kolejki
-    {
-        perror("Błąd msgsnd"); // Wypisanie błędu w przypadku niepowodzenia
-    }
-}
-
-/* Funkcja ustawiająca limit procesów na MAX_PROCESSES */
-void set_process_limit()
-{
-    struct rlimit rl;
-    if (getrlimit(RLIMIT_NPROC, &rl) != 0)
-    {
-        error_exit("getrlimit");
-    }
-    if (rl.rlim_cur < MAX_PROCESSES)
-    {
-        rl.rlim_cur = MAX_PROCESSES;
-        if (setrlimit(RLIMIT_NPROC, &rl) != 0)
-        {
-            error_exit("setrlimit");
-        }
-    }
-}
-
-/*
- * Funkcja logger_process()
- * ------------------------
- * Proces loggera – odbiera komunikaty z kolejki komunikatów i wypisuje je na standardowe wyjście.
- * Działa w nieskończonej pętli do momentu otrzymania komunikatu zakończenia (MSG_TYPE_EXIT).
- */
 void logger_process()
 {
     while (1)

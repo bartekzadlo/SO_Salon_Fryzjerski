@@ -89,6 +89,15 @@ int utworz_semafor(key_t klucz)
     return id;
 }
 
+void setval_semafor(int id, int max)
+{
+    int res = semctl(id, 0, SETVAL, max);
+    if (res == -1)
+    {
+        error_exit("setval semafor");
+    }
+}
+
 int sem_try_wait(int id, int n)
 {
     struct sembuf sem_buff = {.sem_num = 0, .sem_op = -n, .sem_flg = IPC_NOWAIT};
@@ -162,6 +171,41 @@ void sem_v(int id, int n)
         else
         {
             error_exit("sem op v");
+        }
+    }
+}
+
+void error_exit(const char *msg)
+{
+    perror(msg);
+    exit(EXIT_FAILURE);
+}
+
+void send_message(const char *text)
+{
+    Message msg;
+    msg.mtype = MSG_TYPE_EVENT;                           // Ustawienie typu komunikatu jako zdarzenie (event)
+    strncpy(msg.mtext, text, MSG_SIZE - 1);               // Kopiowanie tekstu do pola wiadomości, zapewniając, że nie przekroczymy rozmiaru
+    msg.mtext[MSG_SIZE - 1] = '\0';                       // Gwarancja zakończenia ciągu znakowego null-em
+    if (msgsnd(msgqid, &msg, sizeof(msg.mtext), 0) == -1) // Wysłanie komunikatu do kolejki
+    {
+        perror("Błąd msgsnd"); // Wypisanie błędu w przypadku niepowodzenia
+    }
+}
+
+void set_process_limit()
+{
+    struct rlimit rl;
+    if (getrlimit(RLIMIT_NPROC, &rl) != 0)
+    {
+        error_exit("getrlimit");
+    }
+    if (rl.rlim_cur < MAX_PROCESSES)
+    {
+        rl.rlim_cur = MAX_PROCESSES;
+        if (setrlimit(RLIMIT_NPROC, &rl) != 0)
+        {
+            error_exit("setrlimit");
         }
     }
 }

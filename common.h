@@ -9,6 +9,11 @@
 #include <errno.h>
 #include <sys/shm.h>
 #include <sys/msg.h>
+#include <time.h>
+#include <signal.h>
+#include <pthread.h>
+#include <sys/wait.h>
+#include <sys/resource.h>
 
 /* Parametry symulacji */
 #define F 7    // Liczba fryzjerów (F > 1) – ilość wątków reprezentujących fryzjerów
@@ -96,6 +101,7 @@ void usun_pamiec_dzielona(int shm_id);
 // operacje na semaforach
 int utworz_semafor(key_t klucz);
 int sem_try_wait(int id, int n);
+void setval_semafor(int id, int max);
 int sem_getval(int id);
 void sem_p(int id, int n);
 void sem_v(int id, int n);

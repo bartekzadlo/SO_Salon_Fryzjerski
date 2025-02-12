@@ -13,7 +13,6 @@ void *simulation_starter_thread(void *arg)
         sleep(0); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
     }
 
-    salon_open = 1;                 // Otwieramy salon
     send_message("Salon otwarty."); // Wysyłamy komunikat o otwarciu salonu
 
     // Tworzymy wątki dla fryzjerów
