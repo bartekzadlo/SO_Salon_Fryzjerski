@@ -1,3 +1,5 @@
+#include "common.h"
+
 int utworz_kolejke(key_t klucz)
 {
     int kolejka;

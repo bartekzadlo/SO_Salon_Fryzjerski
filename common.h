@@ -52,9 +52,6 @@ extern int poczekalniaCount;               // Liczba klientów aktualnie oczekuj
 extern pthread_mutex_t poczekalniaMutex;   // Mutex służący do synchronizacji dostępu do kolejki poczekalni
 extern pthread_cond_t poczekalniaNotEmpty; // Zmienna warunkowa, która sygnalizuje, że poczekalnia nie jest pusta
 
-/* Semafor foteli                 */
-extern sem_t fotele_semafor; // Semafor kontrolujący liczbę dostępnych foteli (ograniczenie liczby obsługiwanych klientów)
-
 /* Struktura Kasa                 */
 typedef struct
 {
