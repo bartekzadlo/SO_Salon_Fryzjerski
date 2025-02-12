@@ -10,7 +10,7 @@ int kolejka;
 key_t klucz;
 int fotele_semafor;
 int shm_id;
-int pamiec;
+int banknoty;
 long id_obslugiwany_klient;
 volatile sig_atomic_t salon_open;
 volatile sig_atomic_t close_all_clients;
@@ -31,7 +31,7 @@ int main()
     fotele_semafor = utworz_semafor(klucz);
     klucz = ftok(".", "S");
     shm_id = utworz_pamiec_dzielona(klucz);
-    pamiec = dolacz_pamiec_dzielona(shm_id);
+    banknoty = dolacz_pamiec_dzielona(shm_id);
 
     while (1) // Główna pętla pracy fryzjera
     {
@@ -71,9 +71,7 @@ int main()
 
         if (odbiera_zaplate != 1)
         {
-            // printf("\033[0;34m[FRYZJER %ld]: odbieram komunikat zaplata\033[0m\n", ja);
             odbierz_komunikat(kolejka, &kom, ja);
-            // printf("\033[0;34m[FRYZJER %ld]: odebralem komunikat zaplata\033[0m\n", ja);
             odebiera_zaplate = 1;
         }
 
