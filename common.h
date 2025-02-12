@@ -114,5 +114,10 @@ void logger_process();
 // obsługa kolejki komunikatów
 int utworz_kolejke(key_t klucz);
 void usun_kolejke(int kolejka);
+// obsługa pamięci współdzielonej
+int utworz_pamiec_dzielona(key_t klucz);
+int dolacz_pamiec_dzielona(int shm_id);
+void odlacz_pamiec_dzielona(int *ptr);
+void usun_pamiec_dzielona(int shm_id);
 
 #endif // COMMON_H

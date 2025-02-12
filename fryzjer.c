@@ -9,6 +9,8 @@ long id;
 int kolejka;
 key_t klucz;
 int fotele_semafor;
+int shm_id;
+int pamiec;
 
 int main()
 {
@@ -19,6 +21,9 @@ int main()
     kolejka = utworz_kolejke(klucz);
     klucz = ftok(".", "F");
     fotele_semafor = utworz_semafor(klucz);
+    klucz = ftok(".", "S");
+    shm_id = utworz_pamiec_dzielona(klucz);
+    pamiec = dolacz_pamiec_dzielona(shm_id);
 
     while (1) // Główna pętla pracy fryzjera
     {
