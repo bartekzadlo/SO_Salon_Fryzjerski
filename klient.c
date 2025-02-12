@@ -4,17 +4,21 @@ long id;
 key_t klucz;
 int kolejka;
 int poczekalnia;
+int platnosc;
 
 volatile sig_atomic_t salon_open;
 volatile sig_atomic_t close_all_clients;
 volatile sig_atomic_t w_poczekalni = 0;
 volatile sig_atomic_t klient_komunikat_poczekalnia = 0;
+volatile sig_atomic_t pobranie_z_poczekalni = 0;
+volatile sig_atomic_t zaplacone = 0;
 
 int main()
 {
     long id = get_pid();       // Pobieramy identyfikator klienta
     char log_buffer[MSG_SIZE]; // Bufor do przechowywania komunikatów logujących
     int wolne_miejsce;         // do sprawdzania czy istnieje wolne miejsce w poczekalni
+    int id_fryzjer_obslugujacy;
     struct komunikat kom;
 
     klucz = ftok(".", "M");
@@ -34,11 +38,6 @@ int main()
         if (!salon_open || close_all_clients) // Jeżeli salon jest zamknięty lub otrzymano sygnał zamknięcia klientów, kończymy pętlę
             break;
 
-        if (rand() % 2 == 0)
-            klient->payment = 30;
-        else
-            klient->payment = 50;
-
         if (w_poczekalni == 0)
         {
             wolne_miejsce = sem_try_wait(poczekalnia, 1);
@@ -56,10 +55,33 @@ int main()
             klient_komunikat_poczekalnia = 1;
         }
 
-        /* Klient czeka na zakończenie obsługi:
-         * sem_wait blokuje wątek klienta do momentu, aż fryzjer zakończy obsługę.
-         */
-        sem_wait(&klient->served);
+        if (pobranie_z_poczekalni != 1) // w tym miejscu klient dowiaduje sie ze jest obslugiwany a wiec zaraz zwolni miejsce w poczekalni i przejdzie do zaplaty
+        {
+            odbierz_komunikat(kolejka, &kom, id);
+            pobranie_z_poczekalni = 1;
+        }
+
+        if (w_poczekalni)
+        {
+            sem_v(poczekalnia, 1);
+            w_poczekalni = 0;
+        }
+
+        id_fryzjer_obslugujacy = kom.nadawca;
+
+        if (rand() % 2 == 0)
+            int platnosc = 30;
+        else
+            int platnosc = 50;
+
+        kom.mtype = id_fryzjer_obslugujacy;
+        kom.nadawca = id;
+        kom.platnosc = platnosc;
+        if (zaplacone != 1)
+        {
+            wyslij_komunikat(kolejka, &kom);
+            zaplacone = 1;
+        }
 
         if (close_all_clients) // Sprawdzamy, czy w trakcie oczekiwania został wysłany sygnał zamknięcia salonu
         {

@@ -17,6 +17,7 @@ volatile sig_atomic_t close_all_clients;
 volatile sig_atomic_t fryzjer_komunikat_poczekalnia = 0;
 volatile sig_atomic_t fotel = 0;
 volatile sig_atomic_t czeka_na_zaplate = 0;
+volatile sig_atomic_t odebiera_zaplate = 0;
 
 int main()
 {
@@ -60,12 +61,20 @@ int main()
         snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: rozpoczynam obsługę klienta %d zajmując fotel", id, id_obslugiwany_klient);
         send_message(log_buffer);
 
-        kom.mtype = 2;
+        kom.mtype = id_obslugiwany_klient;
         kom.nadawca = id;
         if (czeka_na_zaplate != 1)
         {
             wyslij_komunikat(kolejka, &kom);
             czeka_na_zaplate = 1;
+        }
+
+        if (odbiera_zaplate != 1)
+        {
+            // printf("\033[0;34m[FRYZJER %ld]: odbieram komunikat zaplata\033[0m\n", ja);
+            odbierz_komunikat(kolejka, &kom, ja);
+            // printf("\033[0;34m[FRYZJER %ld]: odebralem komunikat zaplata\033[0m\n", ja);
+            odebiera_zaplate = 1;
         }
 
         pthread_mutex_lock(&kasa.mutex_kasa);

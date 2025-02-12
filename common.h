@@ -47,7 +47,6 @@ typedef struct
 typedef struct
 {
     int id;       // Unikalny identyfikator klienta
-    int payment;  // Kwota przekazywana przez klienta (może wynosić 20 lub 50 zł)
     sem_t served; // Semafor używany przez klienta do oczekiwania na zakończenie obsługi przez fryzjera
 } Klient;
 
@@ -109,6 +108,7 @@ struct komunikat
 {
     long mtype;
     long nadawca;
+    int platnosc;
 };
 // obsługa kolejki komunikatów
 int utworz_kolejke(key_t klucz);
