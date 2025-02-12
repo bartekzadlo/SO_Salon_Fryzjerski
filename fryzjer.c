@@ -121,7 +121,7 @@ int main()
                 printf(GREEN "Fryzjer %ld: Nie mogę wydać reszty klientowi %ld. Czekam na uzupełnienie\n" RESET, id, id_obslugiwany_klient);
                 sem_v(kasa_semafor, 1);
                 kasa = 0;
-                sleep(0); // oczekiwanie na wpłatę
+                sleep(3); // oczekiwanie na wpłatę
                 sem_p(kasa_semafor, 1);
                 kasa = 1;
             }

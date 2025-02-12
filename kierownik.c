@@ -78,7 +78,7 @@ int main()
 
     if (TP > 0)
     {
-        sleep(0); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
+        sleep(TP); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
     }
 
     sem_v(poczekalnia_semafor, K);
@@ -209,8 +209,8 @@ void *simulation_timer_thread(void *arg)
     while (remaining > 0) // Pętla działa dopóki nie minie czas symulacji lub nie otrzymano sygnału zamknięcia salonu
     {
         printf(MAGENTA "Czas pozostały: %d s\n", remaining); // Tworzenie komunikatu o pozostałym czasie
-        sleep(0);                                                      // Symulacja upływu czasu - domyślnie 1
-        remaining--;                                                   // Zmniejszenie liczby pozostałych sekund
+        sleep(1);                                            // Symulacja upływu czasu - domyślnie 1
+        remaining--;                                         // Zmniejszenie liczby pozostałych sekund
     }
     sem_p(poczekalnia_semafor, P);
     return NULL; // Zakończenie wątku
