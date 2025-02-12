@@ -1,34 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <pthread.h>
-#include <semaphore.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/stat.h>
 #include "common.h"
 
-/*
- * Funkcja klienta
- * ---------------
- * Reprezentuje działanie klienta w symulacji salonu fryzjerskiego.
- * Każdy klient (wątek) wykonuje następujące kroki:
- *   1. "Zarabia" pieniądze, symulowane opóźnieniem 1-5 sekund.
- *   2. Przygotowuje swoje dane, w tym unikalny identyfikator oraz losowany sposób płatności (20 zł lub 50 zł).
- *   3. Próbuje wejść do poczekalni:
- *      - Jeśli poczekalnia jest pełna, klient opuszcza salon i wraca "zarabiać pieniądze".
- *      - W przeciwnym razie, klient zajmuje miejsce w poczekalni i czeka na obsługę.
- *   4. Klient czeka, aż fryzjer zakończy jego obsługę (synchronizacja za pomocą semafora).
- *   5. Po obsłużeniu klient opuszcza salon, a statystyki są aktualizowane.
- *   6. W przypadku zamknięcia salonu, klient odpowiednio reaguje i kończy działanie.
- */
+long id;
+key_t klucz;
+int kolejka;
 
-void *client_thread(void *arg)
+int main()
 {
-    int id = *((int *)arg); // Pobieramy identyfikator klienta przekazany jako argument
-    free(arg);              // Zwolnienie pamięci zajmowanej przez argument
-
+    long id = get_pid();       // Pobieramy identyfikator klienta
     char log_buffer[MSG_SIZE]; // Bufor do przechowywania komunikatów logujących
+
+    klucz = ftok(".", "M");
+    kolejka = utworz_kolejke(klucz);
+
+    klucz = ftok(".", "P");
+    poczekalnia = utworz_semafor(klucz);
 
     while (salon_open && !close_all_clients) // Pętla działania klienta – działa, dopóki salon jest otwarty i nie otrzymano sygnału zamknięcia dla klientów
     {
@@ -40,28 +25,11 @@ void *client_thread(void *arg)
 
         if (!salon_open || close_all_clients) // Jeżeli salon jest zamknięty lub otrzymano sygnał zamknięcia klientów, kończymy pętlę
             break;
-        /* Przygotowanie danych klienta:
-         * Alokacja pamięci na strukturę reprezentującą klienta.
-         * Ustawienie unikalnego identyfikatora klienta.
-         */
-        Klient *klient = malloc(sizeof(Klient));
-        if (!klient)
-        {
-            perror("Błąd malloc klienta");
-            exit(EXIT_FAILURE);
-        }
-        klient->id = id;
+
         if (rand() % 2 == 0)
             klient->payment = 30;
         else
             klient->payment = 50;
-
-        if (sem_init(&klient->served, 0, 0) != 0) // Inicjalizacja semafora dla klienta
-        {
-            perror("sem_init");
-            free(klient); // Zwolnienie pamięci w przypadku błędu
-            exit(1);
-        }
 
         /* Próba wejścia do poczekalni:
          * Blokujemy mutex poczekalni, aby bezpiecznie sprawdzić, czy jest dostępne miejsce.

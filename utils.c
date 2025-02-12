@@ -37,3 +37,13 @@ int dolacz_pamiec_dzielona(int shm_id)
     }
     return ptr;
 }
+
+int utworz_semafor(key_t klucz)
+{
+    int id = semget(klucz, 1, 0600 | IPC_CREAT);
+    if (id == -1)
+    {
+        exit_error("semget");
+    }
+    return id;
+}

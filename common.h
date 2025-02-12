@@ -1,8 +1,14 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <semaphore.h>
-#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>
+#include <errno.h>
+#include <sys/shm.h>
+#include <sys/msg.h>
 
 /* Parametry symulacji */
 #define F 7    // Liczba fryzjerów (F > 1) – ilość wątków reprezentujących fryzjerów
