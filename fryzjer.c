@@ -9,6 +9,7 @@ long id;
 int kolejka;
 key_t klucz;
 int fotele_semafor;
+int kasa_semafor;
 int shm_id;
 int banknoty;
 long id_obslugiwany_klient;
@@ -16,6 +17,7 @@ volatile sig_atomic_t salon_open;
 volatile sig_atomic_t close_all_clients;
 volatile sig_atomic_t fryzjer_komunikat_poczekalnia = 0;
 volatile sig_atomic_t fotel = 0;
+volatile sig_atomic_t kasa = 0;
 volatile sig_atomic_t czeka_na_zaplate = 0;
 volatile sig_atomic_t odebiera_zaplate = 0;
 
@@ -29,6 +31,8 @@ int main()
     kolejka = utworz_kolejke(klucz);
     klucz = ftok(".", "F");
     fotele_semafor = utworz_semafor(klucz);
+    klucz = ftok(".", "K");
+    kasa_semafor = utworz_semafor(klucz);
     klucz = ftok(".", "S");
     shm_id = utworz_pamiec_dzielona(klucz);
     banknoty = dolacz_pamiec_dzielona(shm_id);
@@ -63,11 +67,15 @@ int main()
 
         kom.mtype = id_obslugiwany_klient;
         kom.nadawca = id;
+
         if (czeka_na_zaplate != 1)
         {
             wyslij_komunikat(kolejka, &kom);
             czeka_na_zaplate = 1;
         }
+
+        sem_p(kasa_semafor, 1);
+        kasa = 1;
 
         if (odbiera_zaplate != 1)
         {
@@ -91,6 +99,9 @@ int main()
                      id, banknoty[0], banknoty[1], banknoty[2]);
             send_message(log_buffer);
         }
+
+        sem_v(kasa_semafor, 1);
+        kasa = 0;
 
         /* Realizacja usługi – symulacja czasu strzyżenia.
          * Losujemy czas trwania usługi (od 1 do 3 sekund) i "usypiamy" wątek.
@@ -118,36 +129,44 @@ int main()
             send_message(log_buffer);                          // Wysyłamy komunikat
         }
 
-        /* Zwalnianie fotela – klient opuszcza fotel po zakończeniu usługi.
-         * Uwalniamy semafor, co umożliwia zajęcie fotela kolejnemu klientowi.
-         */
-        sem_post(&fotele_semafor);
-
+        if (fotel)
+        {
+            sem_v(fotele_semafor, 1);
+            fotel = 0;
+        }
         /* Wydawanie reszty klientowi, jeśli zapłacił 50 zł.
          * Reszta wynosi 30 zł, składająca się z banknotów 10 zł i 20 zł.
          */
-        if (klient->payment == 50 && !close_all_clients)
+        if (kom.platnosc == 50 && !close_all_clients)
         {
-            pthread_mutex_lock(&kasa.mutex_kasa);
-            while ((kasa.banknot_10 < 1 || kasa.banknot_20 < 1) && !close_all_clients) // Czekamy, aż w kasie będą dostępne wymagane banknoty (10 zł oraz 20 zł)
+            sem_p(kasa_semafor, 1);
+            kasa = 1;
+            while ((banknoty[0] < 2 && banknoty[1] < 1) && !close_all_clients) // Czekamy, aż w kasie będą dostępne wymagane banknoty (10 zł oraz 20 zł)
             {
-                pthread_cond_wait(&kasa.uzupelnienie, &kasa.mutex_kasa);
-            }
-            if (close_all_clients) // Jeśli salon się zamyka, przerywamy operację wydawania reszty
-            {
-                pthread_mutex_unlock(&kasa.mutex_kasa);
-                snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: salon zamknięty, nie wydaję reszty klientowi %d.", id, klient->id);
+                snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: Nie mogę wydać reszty klientowi %d. Czekam na uzupełnienie", id, id_obslugiwany_klient);
                 send_message(log_buffer);
-                sem_post(&klient->served); // Sygnalizujemy klientowi, że został obsłużony (choć reszta nie została wydana)
-                continue;
+                sem_v(kasa_semafor, 1);
+                kasa = 0;
+                sleep(0); // oczekiwanie na wpłatę
+                sem_p(kasa_semafor, 1);
+                kasa = 1;
             }
-            // Wydajemy resztę – zmniejszamy liczbę banknotów w kasie
-
-            kasa.banknot_20--;
-            snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: wydaję resztę 20 zł klientowi %d. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.",
-                     id, klient->id, kasa.banknot_10, kasa.banknot_20, kasa.banknot_50);
-            send_message(log_buffer);
-            pthread_mutex_unlock(&kasa.mutex_kasa);
+            if (banknoty[1] >= 1)
+            {
+                banknoty[1] -= 1;
+                snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: wydaję resztę 20 zł klientowi %d. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.",
+                         id, id_obslugiwany_klient, banknoty[0], banknoty[1], banknoty[2]);
+                send_message(log_buffer);
+            }
+            else
+            {
+                banknoty[0] -= 2;
+                snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: wydaję resztę 2 x 10 zł klientowi %d. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.",
+                         id, id_obslugiwany_klient, banknoty[0], banknoty[1], banknoty[2]);
+                send_message(log_buffer);
+            }
+            sem_v(kasa, 1);
+            zajmuje_kase = 0;
         }
 
         /* Powiadomienie klienta o zakończeniu obsługi.
