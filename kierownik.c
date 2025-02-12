@@ -24,7 +24,6 @@ int banknoty;
 int main()
 {
     srand(time(NULL));
-    char log_buffer[MSG_SIZE];
     set_process_limit();
 
     key_t klucz;
@@ -52,7 +51,7 @@ int main()
         sleep(0); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
     }
 
-    send_message("Salon otwarty.");
+    printf(YELLOW "Salon otwarty." RESET);
 
     pthread_t timer_thread;
     if (pthread_create(&timer_thread, NULL, simulation_timer_thread, NULL) != 0)

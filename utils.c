@@ -177,20 +177,10 @@ void sem_v(int id, int n)
 
 void error_exit(const char *msg)
 {
+    fprintf(stderr, "%s", RED); // Kolorowanie tekstu
     perror(msg);
+    fprintf(stderr, "%s", RESET); // Przywrócenie domyślnego koloru
     exit(EXIT_FAILURE);
-}
-
-void send_message(const char *text)
-{
-    Message msg;
-    msg.mtype = MSG_TYPE_EVENT;                           // Ustawienie typu komunikatu jako zdarzenie (event)
-    strncpy(msg.mtext, text, MSG_SIZE - 1);               // Kopiowanie tekstu do pola wiadomości, zapewniając, że nie przekroczymy rozmiaru
-    msg.mtext[MSG_SIZE - 1] = '\0';                       // Gwarancja zakończenia ciągu znakowego null-em
-    if (msgsnd(msgqid, &msg, sizeof(msg.mtext), 0) == -1) // Wysłanie komunikatu do kolejki
-    {
-        perror("Błąd msgsnd"); // Wypisanie błędu w przypadku niepowodzenia
-    }
 }
 
 void set_process_limit()

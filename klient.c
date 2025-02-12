@@ -34,18 +34,16 @@ int main()
         }
         int earning_time = rand() % 5 + 1;
         sleep(earning_time);
-        snprintf(log_buffer, MSG_SIZE, "Klient %d: Próbuję wejść do poczekalni", id);
-        send_message(log_buffer);
+        printf(BLUE "Klient %d: Próbuję wejść do poczekalni" RESET, id);
         if (w_poczekalni == 0)
         {
-            wolne_miejsce = sem_try_wait(poczekalnia, 1);
+            wolne_miejsce = sem_try_wait(poczekalnia_semafor, 1);
         }
 
         if (wolne_miejsce == 0)
         {
             w_poczekalni = 1;
-            snprintf(log_buffer, MSG_SIZE, "Klient %d: wchodzę do poczekalni. Liczba wolnych miejsc: %d.", id, sem_getval(poczekalnia));
-            send_message(log_buffer);
+            printf(BLUE "Klient %d: wchodzę do poczekalni. Liczba wolnych miejsc: %d." RESET, id, sem_getval(poczekalnia_semafor));
 
             kom.mtype = 1;
             kom.nadawca = id;
@@ -92,18 +90,15 @@ int main()
             zaplacone = 0;
             otrzymana_reszta = 0;
 
-            snprintf(log_buffer, MSG_SIZE, "Klient %d: zostałem obsłużony i opuszczam salon.", id);
-            send_message(log_buffer);
+            printf(BLUE "Klient %d: zostałem obsłużony i opuszczam salon." RESET, id);
         }
         else
         {
-            snprintf(log_buffer, MSG_SIZE, "Klient %d: poczekalnia jest pełna. Wracam do pracy.", id);
-            send_message(log_buffer);
+            printf(BLUE "Klient %d: poczekalnia jest pełna. Wracam do pracy." RESET, id);
         }
         if (w_poczekalni)
         {
-            snprintf(log_buffer, MSG_SIZE, "Klient %d: zwalniam swoje miejsce w poczekalni.", id);
-            send_message(log_buffer);
+            printf(BLUE "Klient %d: zwalniam swoje miejsce w poczekalni." RESET, id);
             sem_v(poczekalnia_semafor, 1);
         }
         return NULL;

@@ -24,63 +24,27 @@
 
 /* Kolory ANSI dla logowania w konsoli */
 #define RESET "\033[0m"
-#define RED "\033[31m"
-#define GREEN "\033[32m"
-#define YELLOW "\033[33m"
-#define BLUE "\033[34m"
+#define RED "\033[31m"    // bledy
+#define GREEN "\033[32m"  // kolor fryzjera
+#define YELLOW "\033[33m" // otwarcie, zamkniecie salonu
+#define BLUE "\033[34m"   // kolor klienta
 #define MAGENTA "\033[35m"
 #define CYAN "\033[36m"
-
-/* Definicja struktury wiadomości */
-#define MSG_SIZE 128      // Maksymalny rozmiar tekstu w komunikacie
-#define MSG_TYPE_EVENT 1  // Typ komunikatu: zdarzenie (np. log zdarzeń)
-#define MSG_TYPE_EXIT 999 // Typ komunikatu: sygnał zakończenia (używany do zamknięcia loggera)
-
-/*
- * Struktura Message dla loggera:
- * mtype – typ komunikatu (np. zdarzenie lub exit)
- * mtext – tekst komunikatu (do 128 znaków)
- */
-typedef struct
-{
-    long mtype;
-    char mtext[MSG_SIZE];
-} Message;
 
 /* Godziny – podawane w sekundach od startu symulacji */
 extern int TP;           // początek (przed otwarciem salonu)
 extern int TK;           // koniec
 extern int sim_duration; // TK - TP
 
-/* Globalny identyfikator kolejki komunikatów */
-extern int msgqid; // Identyfikator kolejki komunikatów używanej do logowania zdarzeń
-
-/* Prototypy funkcji i procedur  */
-
 /*
  * Funkcja init_kasa:
  * Inicjalizuje kasę salonu, ustawiając początkowe wartości banknotów oraz
  * inicjalizując mutex i zmienną warunkową używaną do synchronizacji operacji na kasie.
  */
-void init_kasa();
 
 void *manager_input_thread(void *arg);
 void *simulation_timer_thread(void *arg);
 void *simulation_starter_thread(void *arg);
-
-/*
- * Funkcja send_message:
- * Wysyła komunikat do kolejki komunikatów.
- * Używana głównie do logowania zdarzeń w symulacji.
- */
-void send_message(const char *text);
-
-/*
- * Funkcja logger_process:
- * Proces loggera, który odbiera komunikaty z kolejki i wypisuje je na standardowe wyjście.
- * Proces kończy działanie po otrzymaniu komunikatu zakończenia (MSG_TYPE_EXIT).
- */
-void logger_process();
 
 struct komunikat
 {
