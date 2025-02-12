@@ -165,8 +165,8 @@ int main()
                          id, id_obslugiwany_klient, banknoty[0], banknoty[1], banknoty[2]);
                 send_message(log_buffer);
             }
-            sem_v(kasa, 1);
-            zajmuje_kase = 0;
+            sem_v(kasa_semafor, 1);
+            kasa = 0;
         }
 
         /* Powiadomienie klienta o zakończeniu obsługi.
