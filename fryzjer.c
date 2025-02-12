@@ -13,8 +13,7 @@ int kasa_semafor;
 int shm_id;
 int banknoty;
 long id_obslugiwany_klient;
-volatile sig_atomic_t salon_open;
-volatile sig_atomic_t close_all_clients;
+volatile sig_atomic_t barber_stop = 0;
 volatile sig_atomic_t fryzjer_komunikat_poczekalnia = 0;
 volatile sig_atomic_t fotel = 0;
 volatile sig_atomic_t kasa = 0;
@@ -42,7 +41,7 @@ int main()
         /* Sprawdzenie, czy dla tego fryzjera wysłano sygnał zakończenia pracy.
          * Jeśli flaga barber_stop dla danego fryzjera jest ustawiona, kończymy pracę.
          */
-        if (barber_stop[id])
+        if (barber_stop)
         {
             snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: otrzymałem sygnał 1, kończę pracę.", id);
             send_message(log_buffer); // Wysłanie komunikatu do loggera
@@ -107,27 +106,10 @@ int main()
          * Losujemy czas trwania usługi (od 1 do 3 sekund) i "usypiamy" wątek.
          */
         int service_time = rand() % 3 + 1;
-        int elapsed = 0;
-        // Pętla symulująca czas trwania strzyżenia klienta
-        while (elapsed < service_time)
-        {
-            if (close_all_clients) // Jeśli salon jest zamknięty lub mamy sygnał zakończenia obsługi, przerywamy pętlę
-                break;
-            sleep(0);  // Symulujemy upływ czasu
-            elapsed++; // Zwiększamy licznik upływającego czasu
-        }
-        if (close_all_clients) // Sprawdzamy, czy salon został zamknięty przed zakończeniem strzyżenia
-        {
-            snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: przerwałem obsługę klienta %d z powodu zamknięcia salonu.",
-                     id, id_obslugiwany_klient); // Logujemy przerwanie usługi z powodu zamknięcia salonu
-            send_message(log_buffer);            // Wysyłamy komunikat
-        }
-        else
-        {
-            snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: zakończyłem strzyżenie klienta %d (czas usługi: %d s).",
-                     id, id_obslugiwany_klient, service_time); // Logujemy zakończenie usługi strzyżenia i czas trwania
-            send_message(log_buffer);                          // Wysyłamy komunikat
-        }
+        sleep(service_time);
+        snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: zakończyłem strzyżenie klienta %d (czas usługi: %d s).",
+                 id, id_obslugiwany_klient, service_time); // Logujemy zakończenie usługi strzyżenia i czas trwania
+        send_message(log_buffer);                          // Wysyłamy komunikat
 
         if (fotel)
         {
@@ -137,11 +119,11 @@ int main()
         /* Wydawanie reszty klientowi, jeśli zapłacił 50 zł.
          * Reszta wynosi 30 zł, składająca się z banknotów 10 zł i 20 zł.
          */
-        if (kom.platnosc == 50 && !close_all_clients)
+        if (kom.platnosc == 50)
         {
             sem_p(kasa_semafor, 1);
             kasa = 1;
-            while ((banknoty[0] < 2 && banknoty[1] < 1) && !close_all_clients) // Czekamy, aż w kasie będą dostępne wymagane banknoty (10 zł oraz 20 zł)
+            while ((banknoty[0] < 2 && banknoty[1] < 1)) // Czekamy, aż w kasie będą dostępne wymagane banknoty (10 zł oraz 20 zł)
             {
                 snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: Nie mogę wydać reszty klientowi %d. Czekam na uzupełnienie", id, id_obslugiwany_klient);
                 send_message(log_buffer);
