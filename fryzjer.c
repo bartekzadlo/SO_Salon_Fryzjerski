@@ -37,9 +37,7 @@ int main()
             break;
         }
 
-        /* Czekanie, aż pojawi się klient w poczekalni.
-         * Blokujemy dostęp do zmiennych poczekalni przy użyciu mutexa.
-         */
+        // Czekanie, aż pojawi się klient w poczekalni.
         pthread_mutex_lock(&poczekalniaMutex);
         while (poczekalniaCount == 0 && salon_open && !close_all_clients)
         {
