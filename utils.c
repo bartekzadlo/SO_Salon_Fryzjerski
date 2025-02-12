@@ -70,6 +70,15 @@ int dolacz_pamiec_dzielona(int shm_id)
     return ptr;
 }
 
+void odlacz_pamiec_dzielona(int *ptr)
+{
+    int res = shmdt(ptr);
+    if (res == -1)
+    {
+        error_exit("shmdt");
+    }
+}
+
 int utworz_semafor(key_t klucz)
 {
     int id = semget(klucz, 1, 0600 | IPC_CREAT);
@@ -132,8 +141,27 @@ void sem_p(int id, int n)
         }
         else
         {
-            perror("semop p");
-            exit(EXIT_FAILURE);
+            error_exit("semop p");
+        }
+    }
+}
+
+void sem_v(int id, int n)
+{
+    struct sembuf sem_buff;
+    sem_buff.sem_num = 0;
+    sem_buff.sem_op = n;
+    sem_buff.sem_flg = 0;
+    int res = semop(id, &sem_buff, 1);
+    if (res == -1)
+    {
+        if (errno == EINTR)
+        {
+            sem_v(id, n);
+        }
+        else
+        {
+            error_exit("sem op v");
         }
     }
 }

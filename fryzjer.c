@@ -71,29 +71,26 @@ int main()
 
         if (odbiera_zaplate != 1)
         {
-            odbierz_komunikat(kolejka, &kom, ja);
+            odbierz_komunikat(kolejka, &kom, id);
             odebiera_zaplate = 1;
         }
 
-        pthread_mutex_lock(&kasa.mutex_kasa);
-        if (klient->payment == 30)
+        if (kom.platnosc == 30)
         {
             // Klient płaci 20 i 10 zł – zwiększamy licznik banknotów 20 i 10 zł
-            kasa.banknot_10++;
-            kasa.banknot_20++;
-            pthread_cond_signal(&kasa.uzupelnienie);
+            banknoty[0] += 1;
+            banknoty[1] += 1;
             snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: otrzymałem 20 i 10 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.",
-                     id, kasa.banknot_10, kasa.banknot_20, kasa.banknot_50);
+                     id, banknoty[0], banknoty[1], banknoty[2]);
             send_message(log_buffer);
         }
-        else if (klient->payment == 50)
+        else if (kom.platnosc == 50)
         {
-            kasa.banknot_50++; // Klient płaci 50 zł – zwiększamy licznik banknotów 50 zł
+            banknoty[2] += 1;
             snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: otrzymałem 50 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.",
-                     id, kasa.banknot_10, kasa.banknot_20, kasa.banknot_50);
+                     id, banknoty[0], banknoty[1], banknoty[2]);
             send_message(log_buffer);
         }
-        pthread_mutex_unlock(&kasa.mutex_kasa);
 
         /* Realizacja usługi – symulacja czasu strzyżenia.
          * Losujemy czas trwania usługi (od 1 do 3 sekund) i "usypiamy" wątek.
@@ -111,14 +108,14 @@ int main()
         if (close_all_clients) // Sprawdzamy, czy salon został zamknięty przed zakończeniem strzyżenia
         {
             snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: przerwałem obsługę klienta %d z powodu zamknięcia salonu.",
-                     id, klient->id); // Logujemy przerwanie usługi z powodu zamknięcia salonu
-            send_message(log_buffer); // Wysyłamy komunikat
+                     id, id_obslugiwany_klient); // Logujemy przerwanie usługi z powodu zamknięcia salonu
+            send_message(log_buffer);            // Wysyłamy komunikat
         }
         else
         {
             snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: zakończyłem strzyżenie klienta %d (czas usługi: %d s).",
-                     id, klient->id, service_time); // Logujemy zakończenie usługi strzyżenia i czas trwania
-            send_message(log_buffer);               // Wysyłamy komunikat
+                     id, id_obslugiwany_klient, service_time); // Logujemy zakończenie usługi strzyżenia i czas trwania
+            send_message(log_buffer);                          // Wysyłamy komunikat
         }
 
         /* Zwalnianie fotela – klient opuszcza fotel po zakończeniu usługi.

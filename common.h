@@ -102,5 +102,7 @@ void usun_pamiec_dzielona(int shm_id);
 int utworz_semafor(key_t klucz);
 int sem_try_wait(int id, int n);
 int sem_getval(int id);
+void sem_p(int id, int n);
+void sem_v(int id, int n);
 
 #endif // COMMON_H
