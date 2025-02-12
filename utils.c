@@ -186,16 +186,14 @@ void error_exit(const char *msg)
 void set_process_limit()
 {
     struct rlimit rl;
+
     if (getrlimit(RLIMIT_NPROC, &rl) != 0)
     {
         error_exit("getrlimit");
     }
-    if (rl.rlim_cur < MAX_PROCESSES)
+
+    if (rl.rlim_cur < F + P)
     {
-        rl.rlim_cur = MAX_PROCESSES;
-        if (setrlimit(RLIMIT_NPROC, &rl) != 0)
-        {
-            error_exit("setrlimit");
-        }
+        exit_error("Przekroczono możliwą liczbę procesów!");
     }
 }
