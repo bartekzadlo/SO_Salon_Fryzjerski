@@ -16,19 +16,19 @@
 #include <sys/resource.h>
 
 /* Parametry symulacji */
-#define F 4    // Liczba fryzjerów (F > 1) – ilość wątków reprezentujących fryzjerów
-#define N 3    // Liczba foteli (N < F) – ograniczenie liczby jednocześnie obsługiwanych klientów
-#define K 5   // Maksymalna liczba klientów w poczekalni
+#define F 4  // Liczba fryzjerów (F > 1) – ilość wątków reprezentujących fryzjerów
+#define N 3  // Liczba foteli (N < F) – ograniczenie liczby jednocześnie obsługiwanych klientów
+#define K 5  // Maksymalna liczba klientów w poczekalni
 #define P 10 // Liczba klientów – ilość wątków reprezentujących klientów
 #define MAX_PROCESSES 8192
 
 /* Kolory ANSI dla logowania w konsoli */
 #define RESET "\033[0m"
-#define RED "\033[31m"    // bledy
-#define GREEN "\033[32m"  // kolor fryzjera
-#define YELLOW "\033[33m" // otwarcie, zamkniecie salonu
-#define BLUE "\033[34m"   // kolor klienta
-#define MAGENTA "\033[35m"
+#define RED "\033[31m"     // bledy
+#define GREEN "\033[32m"   // kolor fryzjera
+#define YELLOW "\033[33m"  // informacje o salonie, procesach
+#define BLUE "\033[34m"    // kolor klienta
+#define MAGENTA "\033[35m" // komunikat o czasie
 #define CYAN "\033[36m"
 
 struct komunikat
@@ -70,6 +70,8 @@ void wyslij_s1();
 void wyslij_s2();
 void szybki_koniec(int s);
 void koniec(int s);
+void tworz_fryzjerow();
+void tworz_klientow();
 // klient.c
 void sygnal_2(int sig);
 
