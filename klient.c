@@ -39,7 +39,7 @@ int main()
         }
         int earning_time = rand() % 5 + 1;
         sleep(earning_time);
-        printf(BLUE "Klient %ld: Próbuję wejść do poczekalni" RESET, id);
+        printf(BLUE "Klient %ld: Próbuję wejść do poczekalni\n" RESET, id);
         if (!w_poczekalni)
         {
             wolne_miejsce = sem_try_wait(poczekalnia_semafor, 1);
@@ -48,7 +48,7 @@ int main()
         if (wolne_miejsce == 0)
         {
             w_poczekalni = 1;
-            printf(BLUE "Klient %ld: wchodzę do poczekalni. Liczba wolnych miejsc: %d." RESET, id, sem_getval(poczekalnia_semafor));
+            printf(BLUE "Klient %ld: wchodzę do poczekalni. Liczba wolnych miejsc: %d.\n" RESET, id, sem_getval(poczekalnia_semafor));
 
             kom.mtype = 1;
             kom.nadawca = id;
@@ -99,11 +99,11 @@ int main()
             zaplacone = 0;
             otrzymana_reszta = 0;
 
-            printf(BLUE "Klient %ld: zostałem obsłużony i opuszczam salon." RESET, id);
+            printf(BLUE "Klient %ld: zostałem obsłużony i opuszczam salon.\n" RESET, id);
         }
         else
         {
-            printf(BLUE "Klient %ld: poczekalnia jest pełna. Wracam do pracy." RESET, id);
+            printf(BLUE "Klient %ld: poczekalnia jest pełna. Wracam do pracy.\n" RESET, id);
         }
 
         if (w_poczekalni)
@@ -111,12 +111,12 @@ int main()
             sem_v(poczekalnia_semafor, 1);
         }
     }
-    printf(BLUE "Klient %ld: kończę pracę" RESET, id);
+    printf(BLUE "Klient %ld: kończę pracę\n" RESET, id);
 }
 
 void sygnal_2(int sig)
 {
-    printf(BLUE "Klient %ld: Otrzymałem sygnał 2." RESET, id);
+    printf(BLUE "Klient %ld: Otrzymałem sygnał 2.\n" RESET, id);
 
     // Ustaw flagi
     if (klient_komunikat_poczekalnia == 1)
@@ -141,10 +141,10 @@ void sygnal_2(int sig)
         // Zwolnij semafor
         if (w_poczekalni)
         {
-            printf(BLUE "Klient %ld: Zwalniam swoje miejsce w poczekalni." RESET, id);
+            printf(BLUE "Klient %ld: Zwalniam swoje miejsce w poczekalni.\n" RESET, id);
             sem_v(poczekalnia_semafor, 1);
         }
-        printf(BLUE "Klient %ld: kończę pracę" RESET, id);
+        printf(BLUE "Klient %ld: kończę pracę\n" RESET, id);
         exit(EXIT_SUCCESS);
     }
 }

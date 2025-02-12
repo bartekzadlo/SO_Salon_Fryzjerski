@@ -59,15 +59,15 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    printf("Podaj czas otwarcia (TP) w sekundach: ");
+    printf("Podaj czas otwarcia (TP) w sekundach: \n");
     if (scanf("%d", &TP) != 1)
     {
-        error_exit("Błąd odczytu TP");
+        error_exit("Błąd odczytu TP\n");
     }
-    printf("Podaj czas zamknięcia (TK) w sekundach: ");
+    printf("Podaj czas zamknięcia (TK) w sekundach: \n");
     if (scanf("%d", &TK) != 1)
     {
-        error_exit("Błąd odczytu TK");
+        error_exit("Błąd odczytu TK\n");
     }
     if (TK <= TP || TK < 0 || TP < 0)
     {
@@ -82,12 +82,12 @@ int main()
     }
 
     sem_v(poczekalnia_semafor, K);
-    printf(YELLOW "Salon otwarty." RESET);
+    printf(YELLOW "Salon otwarty.\n" RESET);
 
     pthread_t timer_thread;
     if (pthread_create(&timer_thread, NULL, simulation_timer_thread, NULL) != 0)
     {
-        error_exit("Blad utworzenia watku symulacji czasu");
+        error_exit("Blad utworzenia watku symulacji czasu\n");
     }
 
     for (int i = 0; i < F; i++)
@@ -135,7 +135,7 @@ int main()
             break;
         }
     }
-    error_exit("Błąd kierownik.c");
+    error_exit("Błąd kierownik.c\n");
 }
 
 void koniec(int s)
@@ -189,7 +189,7 @@ void czekaj_na_procesy(int n)
         }
         else
         {
-            printf(MAGENTA "Koniec procesu: %d, status: %d" RESET, wPID, status);
+            printf(MAGENTA "Koniec procesu: %d, status: %d\n" RESET, wPID, status);
         }
     }
 }
@@ -208,8 +208,7 @@ void *simulation_timer_thread(void *arg)
 
     while (remaining > 0) // Pętla działa dopóki nie minie czas symulacji lub nie otrzymano sygnału zamknięcia salonu
     {
-        snprintf(buf, sizeof(buf), "Czas pozostały: %d s", remaining); // Tworzenie komunikatu o pozostałym czasie
-        printf(MAGENTA "%s\n" RESET, buf);                             // Wyświetlanie pozostałego czasu w kolorze magenta
+        printf(MAGENTA "Czas pozostały: %d s\n", remaining); // Tworzenie komunikatu o pozostałym czasie
         sleep(0);                                                      // Symulacja upływu czasu - domyślnie 1
         remaining--;                                                   // Zmniejszenie liczby pozostałych sekund
     }
@@ -226,5 +225,5 @@ void zwolnij_zasoby_kierownik()
     odlacz_pamiec_dzielona(banknoty);
     usun_pamiec_dzielona(shm_id);
 
-    printf(RED "Zasoby zwolnione" RESET);
+    printf(RED "Zasoby zwolnione\n" RESET);
 }
