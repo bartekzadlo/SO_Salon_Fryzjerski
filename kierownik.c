@@ -53,9 +53,9 @@ int main()
     banknoty[1] = 10; // banknoty o nominale 20
     banknoty[2] = 10; // banknoty o nominale 50
 
-    printf(YELLOW, "Zainicjalizowane kasę, stan początkowy kasy - Banknoty 10 zł: %d, Banknoty 20 zł: %d, Banknoty 50 zł: %d" RESET, banknoty[0], banknoty[1], banknoty[2])
+    printf(YELLOW "Zainicjalizowane kasę, stan początkowy kasy - Banknoty 10 zł: %d, Banknoty 20 zł: %d, Banknoty 50 zł: %d\n" RESET, banknoty[0], banknoty[1], banknoty[2]);
 
-        if (F <= 1 || N >= F)
+    if (F <= 1 || N >= F)
     {
         error_exit("Błąd: Warunek F > 1 oraz N < F nie jest spełniony.\n");
     }
@@ -146,15 +146,20 @@ void szybki_koniec(int s)
 
 void wyslij_s1()
 {
-    printf(RED "Wywołano sygnał 1." RESET);
-    kill(fryzjerzy[0], 1);
-    czekaj_na_procesy(1);
+    for (int i = 0; i < F; i++)
+    {
+        kill(fryzjerzy[i], 1);
+    }
+    czekaj_na_procesy(F);
 }
 
 void wyslij_s2()
 {
-    printf(RED "Wywołano sygnał 2." RESET);
-    szybki_koniec(0);
+    for (int i = 0; i < P; i++)
+    {
+        kill(klienci[i], 2);
+    }
+    czekaj_na_procesy(P);
 }
 
 void czekaj_na_procesy(int n)
