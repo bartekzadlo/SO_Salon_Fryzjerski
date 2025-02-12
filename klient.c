@@ -2,13 +2,14 @@
 
 long id;
 key_t klucz;
+struct komunikat kom;
 int kolejka;
 int poczekalnia_semafor;
 int platnosc;
 int wolne_miejsce;
 int id_fryzjer_obslugujacy;
 
-volatile sig_atomic_t client_stop = 0;
+volatile sig_atomic_t sygnal_klient = 0;
 volatile sig_atomic_t w_poczekalni = 0;
 volatile sig_atomic_t klient_komunikat_poczekalnia = 0;
 volatile sig_atomic_t pobranie_z_poczekalni = 0;
@@ -17,9 +18,13 @@ volatile sig_atomic_t otrzymana_reszta = 0;
 
 int main()
 {
+    srand(time(NULL));
     long id = get_pid();
-    char log_buffer[MSG_SIZE];
-    struct komunikat kom;
+
+    if (signal(SIGINT, sygnal_2) == SIG_ERR)
+    {
+        error_exit("Blad obslugi sygnalu 2");
+    }
 
     klucz = ftok(".", "M");
     kolejka = utworz_kolejke(klucz);
@@ -28,14 +33,14 @@ int main()
 
     while (1)
     {
-        if (client_stop)
+        if (sygnal_klient)
         {
             break;
         }
         int earning_time = rand() % 5 + 1;
         sleep(earning_time);
         printf(BLUE "Klient %d: Próbuję wejść do poczekalni" RESET, id);
-        if (w_poczekalni == 0)
+        if (!w_poczekalni)
         {
             wolne_miejsce = sem_try_wait(poczekalnia_semafor, 1);
         }
@@ -96,11 +101,46 @@ int main()
         {
             printf(BLUE "Klient %d: poczekalnia jest pełna. Wracam do pracy." RESET, id);
         }
+
         if (w_poczekalni)
         {
-            printf(BLUE "Klient %d: zwalniam swoje miejsce w poczekalni." RESET, id);
             sem_v(poczekalnia_semafor, 1);
         }
-        return NULL;
+    }
+    printf(BLUE "Klient %d: kończę pracę" RESET, id);
+}
+
+void sygnal_2(int sig)
+{
+    printf(BLUE "Klient %ld: Otrzymałem sygnał 2." RESET, id);
+
+    // Ustaw flagi
+    if (klient_komunikat_poczekalnia == 1)
+    {
+        sygnal_klient = 1;
+
+        if (pobranie_z_poczekalni != 1)
+        {
+            pobranie_z_poczekalni = -1;
+        }
+        else if (zaplacone != 1)
+        {
+            zaplacone = -1;
+        }
+        else if (otrzymana_reszta != 1)
+        {
+            otrzymana_reszta = -1;
+        }
+    }
+    else
+    {
+        // Zwolnij semafor
+        if (w_poczekalni)
+        {
+            printf(BLUE "Klient %ld: Zwalniam swoje miejsce w poczekalni." RESET, id);
+            sem_v(poczekalnia_semafor, 1);
+        }
+        printf(BLUE "Klient %d: kończę pracę" RESET, id);
+        exit(EXIT_SUCCESS);
     }
 }
