@@ -16,10 +16,10 @@
 #include <sys/resource.h>
 
 /* Parametry symulacji */
-#define F 7    // Liczba fryzjerów (F > 1) – ilość wątków reprezentujących fryzjerów
-#define N 5    // Liczba foteli (N < F) – ograniczenie liczby jednocześnie obsługiwanych klientów
-#define K 10   // Maksymalna liczba klientów w poczekalni
-#define P 5000 // Liczba klientów – ilość wątków reprezentujących klientów
+#define F 4    // Liczba fryzjerów (F > 1) – ilość wątków reprezentujących fryzjerów
+#define N 3    // Liczba foteli (N < F) – ograniczenie liczby jednocześnie obsługiwanych klientów
+#define K 5   // Maksymalna liczba klientów w poczekalni
+#define P 10 // Liczba klientów – ilość wątków reprezentujących klientów
 #define MAX_PROCESSES 8192
 
 /* Kolory ANSI dla logowania w konsoli */
