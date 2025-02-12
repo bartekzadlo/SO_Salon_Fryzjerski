@@ -43,7 +43,7 @@ int main()
          */
         if (barber_stop)
         {
-            snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: otrzymałem sygnał 1, kończę pracę.", id);
+            snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: otrzymałem sygnał, kończę pracę.", id);
             send_message(log_buffer); // Wysłanie komunikatu do loggera
             break;
         }

@@ -3,7 +3,7 @@
 long id;
 key_t klucz;
 int kolejka;
-int poczekalnia;
+int poczekalnia_semafor;
 int platnosc;
 int wolne_miejsce;
 int id_fryzjer_obslugujacy;
@@ -13,6 +13,7 @@ volatile sig_atomic_t w_poczekalni = 0;
 volatile sig_atomic_t klient_komunikat_poczekalnia = 0;
 volatile sig_atomic_t pobranie_z_poczekalni = 0;
 volatile sig_atomic_t zaplacone = 0;
+volatile sig_atomic_t otrzymana_reszta = 0;
 
 int main()
 {
@@ -23,12 +24,18 @@ int main()
     klucz = ftok(".", "M");
     kolejka = utworz_kolejke(klucz);
     klucz = ftok(".", "P");
-    poczekalnia = utworz_semafor(klucz);
+    poczekalnia_semafor = utworz_semafor(klucz);
 
     while (1)
     {
+        if (client_stop)
+        {
+            break;
+        }
         int earning_time = rand() % 5 + 1;
         sleep(earning_time);
+        snprintf(log_buffer, MSG_SIZE, "Klient %d: Próbuję wejść do poczekalni", id);
+        send_message(log_buffer);
         if (w_poczekalni == 0)
         {
             wolne_miejsce = sem_try_wait(poczekalnia, 1);
@@ -44,54 +51,60 @@ int main()
             kom.nadawca = id;
             wyslij_komunikat(kolejka, &kom);
             klient_komunikat_poczekalnia = 1;
-        }
 
-        if (pobranie_z_poczekalni != 1) // w tym miejscu klient dowiaduje sie ze jest obslugiwany a wiec zaraz zwolni miejsce w poczekalni i przejdzie do zaplaty
+            if (pobranie_z_poczekalni != 1)
+            {
+                odbierz_komunikat(kolejka, &kom, id);
+                pobranie_z_poczekalni = 1;
+            }
+
+            if (w_poczekalni)
+            {
+                sem_v(poczekalnia_semafor, 1);
+                w_poczekalni = 0;
+            }
+
+            id_fryzjer_obslugujacy = kom.nadawca;
+
+            if (rand() % 2 == 0)
+                int platnosc = 30;
+            else
+                int platnosc = 50;
+
+            kom.mtype = id_fryzjer_obslugujacy;
+            kom.nadawca = id;
+            kom.platnosc = platnosc;
+
+            if (zaplacone != 1)
+            {
+                wyslij_komunikat(kolejka, &kom);
+                zaplacone = 1;
+            }
+
+            if (otrzymana_reszta != 1)
+            {
+                odbierz_komunikat(kolejka, &kom, id);
+                otrzymana_reszta = 1;
+            }
+
+            klient_komunikat_poczekalnia = 0;
+            pobranie_z_poczekalni = 0;
+            zaplacone = 0;
+            otrzymana_reszta = 0;
+
+            snprintf(log_buffer, MSG_SIZE, "Klient %d: zostałem obsłużony i opuszczam salon.", id);
+            send_message(log_buffer);
+        }
+        else
         {
-            odbierz_komunikat(kolejka, &kom, id);
-            pobranie_z_poczekalni = 1;
+            snprintf(log_buffer, MSG_SIZE, "Klient %d: poczekalnia jest pełna. Wracam do pracy.", id);
+            send_message(log_buffer);
         }
-
         if (w_poczekalni)
         {
-            sem_v(poczekalnia, 1);
-            w_poczekalni = 0;
-        }
-
-        id_fryzjer_obslugujacy = kom.nadawca;
-
-        if (rand() % 2 == 0)
-            int platnosc = 30;
-        else
-            int platnosc = 50;
-
-        kom.mtype = id_fryzjer_obslugujacy;
-        kom.nadawca = id;
-        kom.platnosc = platnosc;
-        if (zaplacone != 1)
-        {
-            wyslij_komunikat(kolejka, &kom);
-            zaplacone = 1;
-        }
-
-        if (close_all_clients) // Sprawdzamy, czy w trakcie oczekiwania został wysłany sygnał zamknięcia salonu
-        {
-            snprintf(log_buffer, MSG_SIZE, "Klient %d: salon zamknięty – opuszczam salon.", id);
+            snprintf(log_buffer, MSG_SIZE, "Klient %d: zwalniam swoje miejsce w poczekalni.", id);
             send_message(log_buffer);
-            sem_destroy(&klient->served); // Zwalniamy semafor
-            free(klient);                 // Zwolnienie pamięci klienta
-            break;                        // Przerywamy pętlę – klient kończy pracę
+            sem_v(poczekalnia_semafor, 1);
         }
-
-        /* Obsługa zakończona:
-         * Klient zostaje obsłużony i opuszcza salon.
-         */
-        snprintf(log_buffer, MSG_SIZE, "Klient %d: zostałem obsłużony i opuszczam salon.", id);
-        send_message(log_buffer);
-
-        // Zwalniamy zasoby klienta: niszczymy semafor i zwalniamy pamięć
-        sem_destroy(&klient->served); // Zwalniamy semafor
-        free(klient);                 // Zwalniamy pamięć
+        return NULL;
     }
-    return NULL;
-}
