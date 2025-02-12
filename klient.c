@@ -76,11 +76,11 @@ int main()
 
             if (rand() % 2 == 0)
             {
-                int platnosc = 30;
+                platnosc = 30;
             }
             else
             {
-                int platnosc = 50;
+                platnosc = 50;
             }
 
             kom.mtype = id_fryzjer_obslugujacy;
@@ -89,15 +89,16 @@ int main()
 
             if (zaplacone != 1)
             {
-                printf(BLUE "Klient %ld: płacę.\n" RESET, id);
+                printf(BLUE "Klient %ld: płacę %d zł.\n" RESET, id, platnosc);
                 wyslij_komunikat(kolejka, &kom);
+                printf(BLUE "Klient %ld: wysłałem komunikat" RESET, id);
                 zaplacone = 1;
             }
-
             if (otrzymana_reszta != 1)
             {
                 odbierz_komunikat(kolejka, &kom, id);
                 otrzymana_reszta = 1;
+                printf(BLUE "Klient %ld: otrzymałem komunikat o zakończeniu obsługi.\n" RESET, id);
             }
 
             klient_komunikat_poczekalnia = 0;

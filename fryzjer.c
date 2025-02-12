@@ -7,6 +7,7 @@ int kasa_semafor;
 int shm_id;
 int *banknoty;
 long id_obslugiwany_klient;
+int platnosc;
 volatile sig_atomic_t sygnal_fryzjer = 0;
 volatile sig_atomic_t fryzjer_komunikat_poczekalnia = 0;
 volatile sig_atomic_t fotel = 0;
@@ -74,14 +75,17 @@ int main()
 
         if (odbiera_zaplate != 1)
         {
+            printf(GREEN "Fryzjer %ld: otrzymałem komunikat o zapłacie.\n" RESET, id);
             odbierz_komunikat(kolejka, &kom, id);
             odbiera_zaplate = 1;
         }
 
+        platnosc = kom.platnosc;
+
         sem_p(kasa_semafor, 1);
         kasa = 1;
 
-        if (kom.platnosc == 30)
+        if (platnosc == 30)
         {
             // Klient płaci 20 i 10 zł – zwiększamy licznik banknotów 20 i 10 zł
             banknoty[0] += 1;
@@ -89,7 +93,7 @@ int main()
             printf(GREEN "Fryzjer %ld: otrzymałem 20 i 10 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
                    id, banknoty[0], banknoty[1], banknoty[2]);
         }
-        else if (kom.platnosc == 50)
+        else if (platnosc == 50)
         {
             banknoty[2] += 1;
             printf(GREEN "Fryzjer %ld: otrzymałem 50 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
@@ -142,7 +146,9 @@ int main()
         {
             wyslij_komunikat(kolejka, &kom);
             wyslalem_reszte = 1;
+            printf(GREEN "Fryzjer %ld: Wysłałem komunikat o zakończeniu usługi.\n" RESET, id);
         }
+
         fryzjer_komunikat_poczekalnia = 0;
         czeka_na_zaplate = 0;
         odbiera_zaplate = 0;
