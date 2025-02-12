@@ -5,24 +5,17 @@
 #include <unistd.h>
 #include "common.h"
 
-/*
- * Funkcja barber_thread
- * ---------------------
- * Reprezentuje pracę fryzjera w symulacji. Każdy fryzjer wykonuje tę funkcję
- * w osobnym wątku. Funkcja wykonuje pętlę, w której fryzjer:
- *   - Czeka na klientów, którzy pojawią się w poczekalni.
- *   - Pobiera klienta z kolejki.
- *   - Realizuje usługę strzyżenia, pobiera opłatę i aktualizuje kasę.
- *   - W razie potrzeby wydaje resztę.
- *   - Aktualizuje statystyki oraz sygnalizuje klientowi zakończenie obsługi.
- * W przypadku otrzymania sygnału zakończenia pracy, fryzjer przerywa pętlę i wychodzi.
- */
-void *barber_thread(void *arg)
-{
-    int id = *((int *)arg); // Pobranie identyfikatora fryzjera przekazanego jako argument wątku
-    free(arg);              // Zwolnienie pamięci przydzielonej dla argumentu
+long id;
+int kolejka;
+key_t klucz;
 
+int main()
+{
+    long id = getpid();        // Pobranie identyfikatora fryzjera
     char log_buffer[MSG_SIZE]; // Bufor do przechowywania komunikatów logujących
+
+    klucz = ftok(".", "M");
+    kolejka = utworz_kolejke(klucz);
 
     while (1) // Główna pętla pracy fryzjera
     {

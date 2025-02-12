@@ -9,8 +9,7 @@
 #define N 5    // Liczba foteli (N < F) – ograniczenie liczby jednocześnie obsługiwanych klientów
 #define K 10   // Maksymalna liczba klientów w poczekalni
 #define P 5000 // Liczba klientów – ilość wątków reprezentujących klientów
-
-#define MAX_PROCESSES 1024
+#define MAX_PROCESSES 8192
 
 /* Kolory ANSI dla logowania w konsoli */
 #define RESET "\033[0m"
@@ -114,5 +113,9 @@ void send_message(const char *text);
  * Proces kończy działanie po otrzymaniu komunikatu zakończenia (MSG_TYPE_EXIT).
  */
 void logger_process();
+
+// obsługa kolejki komunikatów
+int utworz_kolejke(key_t klucz);
+void usun_kolejke(int kolejka);
 
 #endif // COMMON_H
