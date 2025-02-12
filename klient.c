@@ -3,8 +3,12 @@
 long id;
 key_t klucz;
 int kolejka;
+int poczekalnia;
 
+volatile sig_atomic_t salon_open;
+volatile sig_atomic_t close_all_clients;
 volatile sig_atomic_t w_poczekalni = 0;
+volatile sig_atomic_t komunikat_poczekalnia = 0;
 
 int main()
 {
@@ -44,10 +48,12 @@ int main()
             w_poczekalni = 1;
             snprintf(log_buffer, MSG_SIZE, "Klient %d: wchodzę do poczekalni. Liczba wolnych miejsc: %d.", id, sem_getval(poczekalnia));
             send_message(log_buffer);
-        }
 
-        snprintf(log_buffer, MSG_SIZE, "Klient %d: wchodzę do poczekalni. Liczba oczekujących: %d.", id, poczekalniaCount);
-        send_message(log_buffer); // Logowanie komunikatu
+            kom.mtype = 1;
+            kom.nadawca = id;
+            wyslij_komunikat(kolejka, &kom);
+            komunikat_poczekalnia = 1;
+        }
 
         /* Klient czeka na zakończenie obsługi:
          * sem_wait blokuje wątek klienta do momentu, aż fryzjer zakończy obsługę.

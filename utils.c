@@ -18,6 +18,22 @@ void usun_kolejke(int kolejka)
     }
 }
 
+void wyslij_komunikat(int kolejka, struct komunikat *kom)
+{
+    int res = msgsnd(kolejka, (struct msgbuf *)kom, sizeof(struct komunikat) - sizeof(long), 0);
+    if (res == -1)
+    {
+        if (errno == EINTR)
+        {
+            wyslij_komunikat(kolejka, kom);
+        }
+        else
+        {
+            error_exit("msgsnd");
+        }
+    }
+}
+
 int utworz_pamiec_dzielona(key_t klucz)
 {
     int shm_id = shmget(klucz, sizeof(int), 0600 | IPC_CREAT);

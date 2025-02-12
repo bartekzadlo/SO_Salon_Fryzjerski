@@ -105,9 +105,15 @@ void send_message(const char *text);
  */
 void logger_process();
 
+struct komunikat
+{
+    long mtype;
+    long nadawca;
+};
 // obsługa kolejki komunikatów
 int utworz_kolejke(key_t klucz);
 void usun_kolejke(int kolejka);
+void wyslij_komunikat(int kolejka, struct komunikat *kom);
 // obsługa pamięci współdzielonej
 int utworz_pamiec_dzielona(key_t klucz);
 int dolacz_pamiec_dzielona(int shm_id);
