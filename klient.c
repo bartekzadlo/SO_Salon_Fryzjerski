@@ -8,13 +8,14 @@ int poczekalnia;
 volatile sig_atomic_t salon_open;
 volatile sig_atomic_t close_all_clients;
 volatile sig_atomic_t w_poczekalni = 0;
-volatile sig_atomic_t komunikat_poczekalnia = 0;
+volatile sig_atomic_t klient_komunikat_poczekalnia = 0;
 
 int main()
 {
     long id = get_pid();       // Pobieramy identyfikator klienta
     char log_buffer[MSG_SIZE]; // Bufor do przechowywania komunikatów logujących
     int wolne_miejsce;         // do sprawdzania czy istnieje wolne miejsce w poczekalni
+    struct komunikat kom;
 
     klucz = ftok(".", "M");
     kolejka = utworz_kolejke(klucz);
@@ -52,7 +53,7 @@ int main()
             kom.mtype = 1;
             kom.nadawca = id;
             wyslij_komunikat(kolejka, &kom);
-            komunikat_poczekalnia = 1;
+            klient_komunikat_poczekalnia = 1;
         }
 
         /* Klient czeka na zakończenie obsługi:

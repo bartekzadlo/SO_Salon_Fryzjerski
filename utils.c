@@ -34,6 +34,22 @@ void wyslij_komunikat(int kolejka, struct komunikat *kom)
     }
 }
 
+void odbierz_komunikat(int kolejka, struct komunikat *kom, long odbiorca)
+{
+    int res = msgrcv(kolejka, (struct msgbuf *)kom, sizeof(struct komunikat) - sizeof(long), odbiorca, 0);
+    if (res == -1)
+    {
+        if (errno == EINTR)
+        {
+            odbierz_komunikat(kolejka, kom, odbiorca);
+        }
+        else
+        {
+            error_exit("msgrcv");
+        }
+    }
+}
+
 int utworz_pamiec_dzielona(key_t klucz)
 {
     int shm_id = shmget(klucz, sizeof(int), 0600 | IPC_CREAT);
@@ -99,4 +115,25 @@ int sem_getval(int id)
         error_exit("sem_getval");
     }
     return retval;
+}
+
+void sem_p(int id, int n)
+{
+    struct sembuf sem_buff;
+    sem_buff.sem_num = 0;
+    sem_buff.sem_op = -n;
+    sem_buff.sem_flg = 0;
+    int res = semop(id, &sem_buff, 1);
+    if (res == -1)
+    {
+        if (errno == EINTR)
+        {
+            sem_p(id, n);
+        }
+        else
+        {
+            perror("semop p");
+            exit(EXIT_FAILURE);
+        }
+    }
 }

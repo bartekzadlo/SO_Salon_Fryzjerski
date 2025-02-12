@@ -11,11 +11,18 @@ key_t klucz;
 int fotele_semafor;
 int shm_id;
 int pamiec;
+long id_obslugiwany_klient;
+volatile sig_atomic_t salon_open;
+volatile sig_atomic_t close_all_clients;
+volatile sig_atomic_t fryzjer_komunikat_poczekalnia = 0;
+volatile sig_atomic_t fotel = 0;
+volatile sig_atomic_t czeka_na_zaplate = 0;
 
 int main()
 {
     long id = getpid();        // Pobranie identyfikatora fryzjera
     char log_buffer[MSG_SIZE]; // Bufor do przechowywania komunikatów logujących
+    struct komunikat kom;
 
     klucz = ftok(".", "M");
     kolejka = utworz_kolejke(klucz);
@@ -37,41 +44,30 @@ int main()
             break;
         }
 
-        // Czekanie, aż pojawi się klient w poczekalni.
-        pthread_mutex_lock(&poczekalniaMutex);
-        while (poczekalniaCount == 0 && salon_open && !close_all_clients)
+        // Czeka na klienta
+        if (fryzjer_komunikat_poczekalnia != 1)
         {
-            pthread_cond_wait(&poczekalniaNotEmpty, &poczekalniaMutex); // Czekamy, aż warunek (poczekalnia nie jest pusta) zostanie spełniony.
-        }
-        if ((poczekalniaCount == 0 && !salon_open) || close_all_clients) // Jeśli poczekalnia jest pusta i salon jest zamknięty lub mamy sygnał zakończenia, odblokowujemy mutex i wychodzimy z pętli
-        {
-            pthread_mutex_unlock(&poczekalniaMutex);
-            break;
+            odbierz_komunikat(kolejka, &kom, 1);
+            fryzjer_komunikat_poczekalnia = 1;
         }
 
-        /* Pobieramy klienta z poczekalni.
-         * Klient znajduje się na pozycji wskazywanej przez poczekalniaFront.
-         * Następnie aktualizujemy indeks i zmniejszamy licznik klientów w poczekalni.
-         */
-        Klient *klient = poczekalnia[poczekalniaFront];
-        poczekalniaFront = (poczekalniaFront + 1) % K;
-        poczekalniaCount--;
-        pthread_mutex_unlock(&poczekalniaMutex); // Odblokowanie mutexa poczekalni
-
-        snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: rozpoczynam obsługę klienta %d (płatność: %d zł).", id, klient->id, klient->payment);
+        id_obslugiwany_klient = kom.nadawca;
+        if (!fotel)
+        {
+            sem_p(fotele_semafor, 1); // Zajmujemy fotel
+            fotel = 1;
+        }
+        snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: rozpoczynam obsługę klienta %d zajmując fotel", id, id_obslugiwany_klient);
         send_message(log_buffer);
 
-        /* Rezerwacja fotela – symulujemy zajęcie fotela przez klienta.
-         * Semafor fotele_semafor kontroluje liczbę dostępnych foteli.
-         * Funkcja sem_wait blokuje wątek do momentu, aż fotel będzie dostępny.
-         */
-        sem_wait(&fotele_semafor);
+        kom.mtype = 2;
+        kom.nadawca = id;
+        if (czeka_na_zaplate != 1)
+        {
+            wyslij_komunikat(kolejka, &kom);
+            czeka_na_zaplate = 1;
+        }
 
-        snprintf(log_buffer, MSG_SIZE, "Fryzjer %d: zająłem fotel.", id);
-        send_message(log_buffer);
-        /* Pobieranie opłaty od klienta i aktualizacja kasy.
-         * Blokujemy dostęp do kasy używając mutexa, aby zapewnić spójność danych.
-         */
         pthread_mutex_lock(&kasa.mutex_kasa);
         if (klient->payment == 30)
         {
