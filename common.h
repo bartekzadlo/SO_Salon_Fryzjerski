@@ -68,6 +68,7 @@ void zakoncz_symulacje_czasu();
 void czekaj_na_procesy(int n);
 void wyslij_s1();
 void wyslij_s2();
+void wyslij_s3();
 void szybki_koniec(int s);
 void koniec(int s);
 void tworz_fryzjerow();

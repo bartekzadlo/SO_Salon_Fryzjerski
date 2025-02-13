@@ -116,7 +116,7 @@ int main()
 
 void sygnal_2(int sig)
 {
-    printf(BLUE "Klient %ld: Otrzymałem sygnał 2.\n" RESET, id);
+    printf(RED "Klient %ld: Otrzymałem sygnał 2.\n" RESET, id);
 
     if (klient_komunikat_poczekalnia == 1)
     {

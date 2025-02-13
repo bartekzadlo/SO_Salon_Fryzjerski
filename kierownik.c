@@ -85,7 +85,7 @@ int main()
     char menu;
     while (menu != '3')
     {
-        printf(CYAN "1 - Zakończ pracę fryzjerów\n");
+        printf(CYAN "1 - Zakończ pracę fryzjera\n");
         printf("2 - Zakończ pracę klientów\n");
         printf("3 - Zwolnij zasoby i zakończ program\n" RESET);
 
@@ -116,7 +116,7 @@ void koniec(int s)
 {
     printf(RED "Wywołano koniec." RESET);
     zakoncz_symulacje_czasu();
-    wyslij_s1();
+    wyslij_s3();
     wyslij_s2();
     zwolnij_zasoby_kierownik();
     exit(EXIT_SUCCESS);
@@ -144,11 +144,11 @@ void szybki_koniec(int s)
 
 void wyslij_s1()
 {
-    for (int i = 0; i < F; i++)
+    for (int i = 0; i < 1; i++)
     {
         kill(fryzjerzy[i], 1);
     }
-    czekaj_na_procesy(F);
+    czekaj_na_procesy(1);
 }
 
 void wyslij_s2()
@@ -158,6 +158,15 @@ void wyslij_s2()
         kill(klienci[i], 2);
     }
     czekaj_na_procesy(P);
+}
+
+void wyslij_s3()
+{
+    for (int i = 0; i < F; i++)
+    {
+        kill(fryzjerzy[i], 1);
+    }
+    czekaj_na_procesy(F);
 }
 
 void czekaj_na_procesy(int n)
