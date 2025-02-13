@@ -91,14 +91,14 @@ int main()
             {
                 printf(BLUE "Klient %ld: płacę %d zł.\n" RESET, id, platnosc);
                 wyslij_komunikat(kolejka, &kom);
-                printf(BLUE "Klient %ld: wysłałem komunikat" RESET, id);
+                printf(BLUE "Klient %ld: wysłałem komunikat\n" RESET, id);
                 zaplacone = 1;
             }
             if (otrzymana_reszta != 1)
             {
                 odbierz_komunikat(kolejka, &kom, id);
-                otrzymana_reszta = 1;
                 printf(BLUE "Klient %ld: otrzymałem komunikat o zakończeniu obsługi.\n" RESET, id);
+                otrzymana_reszta = 1;
             }
 
             klient_komunikat_poczekalnia = 0;

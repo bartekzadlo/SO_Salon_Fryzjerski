@@ -20,6 +20,7 @@ void usun_kolejke(int kolejka)
 
 void wyslij_komunikat(int kolejka, struct komunikat *kom)
 {
+    printf("Wysłano\n");
     int res = msgsnd(kolejka, (struct msgbuf *)kom, sizeof(struct komunikat) - sizeof(long), 0);
     if (res == -1)
     {
@@ -36,6 +37,7 @@ void wyslij_komunikat(int kolejka, struct komunikat *kom)
 
 void odbierz_komunikat(int kolejka, struct komunikat *kom, long odbiorca)
 {
+    printf("Odebrano\n");
     int res = msgrcv(kolejka, (struct msgbuf *)kom, sizeof(struct komunikat) - sizeof(long), odbiorca, 0);
     if (res == -1)
     {
