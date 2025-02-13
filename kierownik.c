@@ -9,7 +9,7 @@ pthread_t timer_thread;
 int fotele_semafor;
 int kasa_semafor;
 int poczekalnia_semafor;
-int kolejka;
+int msg_qid;
 int shm_id;
 int *banknoty; // pamiec dzielona
 
@@ -23,29 +23,33 @@ int main()
     set_process_limit();
     srand(time(NULL));
 
-    key_t klucz;
+    key_t msg_qkey;
+    key_t sem_key_k;
+    key_t sem_key_f;
+    key_t sem_key_p;
+    key_t shm_key;
 
-    klucz = ftok(".", 'M');
-    kolejka = utworz_kolejke(klucz);
+    msg_qkey = ftok(".", 'M');
+    msg_qid = stworz_kolejke_komunikatow(msg_qkey);
 
-    klucz = ftok(".", 'K');
-    kasa_semafor = utworz_semafor(klucz);
-    ustaw_semafor(kasa_semafor, 1);
+    sem_key_k = ftok(".", 'K');
+    kasa_semafor = utworz_semafor(sem_key_k);
+    sem_setval(kasa_semafor, 1);
 
-    klucz = ftok(".", 'F');
-    fotele_semafor = utworz_semafor(klucz);
-    ustaw_semafor(fotele_semafor, N);
+    sem_key_f = ftok(".", 'F');
+    fotele_semafor = utworz_semafor(sem_key_f);
+    sem_setval(fotele_semafor, N);
 
-    klucz = ftok(".", 'P');
-    poczekalnia_semafor = utworz_semafor(klucz);
-    ustaw_semafor(poczekalnia_semafor, 0);
+    sem_key_p = ftok(".", 'P');
+    poczekalnia_semafor = utworz_semafor(sem_key_p);
+    sem_setval(poczekalnia_semafor, 0);
 
     printf(YELLOW "Zainicjalizowano poczekalnię, ilość miejsc: %d.\n" RESET, sem_getval(poczekalnia_semafor));
     printf(YELLOW "Zainicjalizowano fotele, ilość foteli: %d.\n" RESET, sem_getval(fotele_semafor));
 
-    klucz = ftok(".", 'S');
-    shm_id = utworz_pamiec_dzielona(klucz);
-    banknoty = dolacz_pamiec_dzielona(shm_id);
+    shm_key = ftok(".", 'S');
+    shm_id = stworz_pamiec_dzielona(shm_key);
+    banknoty = dolacz_do_pamieci_dzielonej(shm_id);
 
     banknoty[0] = 10; // banknoty o nominale 10
     banknoty[1] = 10; // banknoty o nominale 20
@@ -226,7 +230,7 @@ void *simulation_timer_thread(void *arg)
 
 void zwolnij_zasoby_kierownik()
 {
-    usun_kolejke(kolejka);
+    usun_kolejke_komunikatow(msg_qid);
     usun_semafor(kasa_semafor);
     usun_semafor(fotele_semafor);
     usun_semafor(poczekalnia_semafor);

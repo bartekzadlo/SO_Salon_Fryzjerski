@@ -1,7 +1,7 @@
 #include "common.h"
 
 long id;
-int kolejka;
+int msg_qid;
 int poczekalnia_semafor;
 int id_fryzjer_obslugujacy;
 
@@ -21,16 +21,17 @@ int main()
     {
         error_exit("Blad obslugi sygnalu 2");
     }
-    struct komunikat kom;
-    key_t klucz;
+    struct komunikat komunikat;
+    key_t msg_qkey;
+    key_t sem_key_p;
     int wolne_miejsce;
     int platnosc;
 
-    klucz = ftok(".", 'M');
-    kolejka = utworz_kolejke(klucz);
+    msg_qkey = ftok(".", 'M');
+    msg_qid = stworz_kolejke_komunikatow(msg_qkey);
 
-    klucz = ftok(".", 'P');
-    poczekalnia_semafor = utworz_semafor(klucz);
+    sem_key_p = ftok(".", 'P');
+    poczekalnia_semafor = utworz_semafor(sem_key_p);
 
     while (1)
     {
@@ -52,16 +53,16 @@ int main()
             w_poczekalni = 1;
             printf(BLUE "Klient %ld: wchodzę do poczekalni. Liczba wolnych miejsc: %d.\n" RESET, id, sem_getval(poczekalnia_semafor));
 
-            kom.mtype = 1;
-            kom.nadawca = id;
-            wyslij_komunikat(kolejka, &kom);
+            komunikat.mtype = 1;
+            komunikat.nadawca = id;
+            wyslij_komunikat_do_kolejki(msg_qid, &komunikat);
             klient_komunikat_poczekalnia = 1;
             printf(BLUE "Klient %ld: wyslalem komunikat, że jestem w poczekalni.\n" RESET, id);
 
             if (pobranie_z_poczekalni != 1)
             {
                 printf(BLUE "Klient %ld: zostałem pobrany przez fryzjera.\n" RESET, id);
-                odbierz_komunikat(kolejka, &kom, id);
+                pobierz_komunikat_z_kolejki(msg_qid, &komunikat, id);
                 pobranie_z_poczekalni = 1;
             }
 
@@ -72,24 +73,24 @@ int main()
                 w_poczekalni = 0;
             }
 
-            id_fryzjer_obslugujacy = kom.nadawca;
+            id_fryzjer_obslugujacy = komunikat.nadawca;
 
             platnosc = (rand() % 2 == 0) ? 30 : 50;
 
-            kom.mtype = id_fryzjer_obslugujacy;
-            kom.nadawca = id;
-            kom.platnosc = platnosc;
+            komunikat.mtype = id_fryzjer_obslugujacy;
+            komunikat.nadawca = id;
+            komunikat.platnosc = platnosc;
 
             if (zaplacone != 1)
             {
                 printf(BLUE "Klient %ld: płacę %d zł.\n" RESET, id, platnosc);
-                wyslij_komunikat(kolejka, &kom);
+                wyslij_komunikat_do_kolejki(msg_qid, &komunikat);
                 printf(BLUE "Klient %ld: wysłałem komunikat\n" RESET, id);
                 zaplacone = 1;
             }
             if (otrzymana_reszta != 1)
             {
-                odbierz_komunikat(kolejka, &kom, id);
+                pobierz_komunikat_z_kolejki(msg_qid, &komunikat, id);
                 printf(BLUE "Klient %ld: otrzymałem komunikat o zakończeniu obsługi.\n" RESET, id);
                 otrzymana_reszta = 1;
             }

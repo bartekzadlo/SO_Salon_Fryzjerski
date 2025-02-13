@@ -1,118 +1,118 @@
 #include "common.h"
 
-int utworz_kolejke(key_t klucz)
+int stworz_kolejke_komunikatow(key_t msg_qkey)
 {
-    int kolejka;
-    if ((kolejka = msgget(klucz, IPC_CREAT | 0600)) == -1)
+    int msg_qid;
+    msg_qid = msgget(msg_qkey, IPC_CREAT | 0600);
+    if (msg_qid == -1)
     {
-        error_exit("Nie udalo sie stworzyc kolejki komunikatów");
+        error_exit("Błąd przy tworzeniu kolejki komunikatów");
     }
-    return kolejka;
+    return msg_qid;
 }
 
-void usun_kolejke(int kolejka)
+void usun_kolejke_komunikatow(int msg_qid)
 {
-    if (msgctl(kolejka, IPC_RMID, NULL) == -1)
+    if (msgctl(msg_qid, IPC_RMID, NULL) == -1)
     {
-        error_exit("Nie udalo sie usunac kolejki komunikatów");
+        error_exit("Nie udało się usunąć kolejki komunikatów");
     }
 }
 
-void wyslij_komunikat(int kolejka, struct komunikat *kom)
+void wyslij_komunikat_do_kolejki(int msg_qid, struct komunikat *komunikat)
 {
-
-    int res = msgsnd(kolejka, (struct msgbuf *)kom, sizeof(struct komunikat) - sizeof(long), 0);
-    if (res == -1)
-    {
-        if (errno == EINTR)
-        {
-            wyslij_komunikat(kolejka, kom);
-        }
-        else
-        {
-            error_exit("msgsnd");
-        }
-    }
-    printf("Wysłano\n");
-}
-
-void odbierz_komunikat(int kolejka, struct komunikat *kom, long odbiorca)
-{
-    int res = msgrcv(kolejka, (struct msgbuf *)kom, sizeof(struct komunikat) - sizeof(long), odbiorca, 0);
-    if (res == -1)
+    int status = msgsnd(msg_qid, (struct msgbuf *)komunikat, sizeof(struct komunikat) - sizeof(long), 0);
+    if (status == -1)
     {
         if (errno == EINTR)
         {
-            odbierz_komunikat(kolejka, kom, odbiorca);
+            wyslij_komunikat_do_kolejki(msg_qid, komunikat);
         }
         else
         {
-            error_exit("msgrcv");
+            error_exit("Błąd wysyłania komunikatu");
         }
     }
-    printf("Odebrano\n");
+    printf("Komunikat wysłany pomyślnie\n");
 }
 
-int utworz_pamiec_dzielona(key_t klucz)
+void pobierz_komunikat_z_kolejki(int msg_qid, struct komunikat *komunikat, long odbiorca_id)
 {
-    int shm_id = shmget(klucz, sizeof(int), 0600 | IPC_CREAT);
+    int status = msgrcv(msg_qid, (struct msgbuf *)komunikat, sizeof(struct komunikat) - sizeof(long), odbiorca_id, 0);
+    if (status == -1)
+    {
+        if (errno == EINTR)
+        {
+            pobierz_komunikat_z_kolejki(msg_qid, komunikat, odbiorca_id);
+        }
+        else
+        {
+            error_exit("Błąd odbierania komunikatu");
+        }
+    }
+    printf("Komunikat odebrany pomyślnie\n");
+}
+
+int stworz_pamiec_dzielona(key_t shm_key)
+{
+    int shm_id = shmget(shm_key, sizeof(int), 0600 | IPC_CREAT);
     if (shm_id == -1)
     {
-        error_exit("shmget");
+        error_exit("Błąd tworzenia pamięci dzielonej");
     }
     return shm_id;
 }
 
-int *dolacz_pamiec_dzielona(int shm_id)
+int *dolacz_do_pamieci_dzielonej(int shm_id)
 {
-    int *ptr = shmat(shm_id, 0, 0);
-    if (*ptr == -1)
+    int *adres = shmat(shm_id, 0, 0);
+    if (adres == (int *)-1)
     {
-        error_exit("shmat");
+        error_exit("Błąd dołączania do pamięci dzielonej");
     }
-    return ptr;
+    return adres;
 }
 
-void odlacz_pamiec_dzielona(int *ptr)
+void odlacz_pamiec_dzielona(int *shm_ptr)
 {
-    int res = shmdt(ptr);
-    if (res == -1)
+    int result = shmdt(shm_ptr);
+    if (result == -1)
     {
         error_exit("shmdt");
     }
 }
 
-void usun_pamiec_dzielona(int id)
+void usun_pamiec_dzielona(int shm_id)
 {
-    int res = shmctl(id, IPC_RMID, 0);
-    if (res == -1)
+    int result = shmctl(shm_id, IPC_RMID, 0);
+    if (result == -1)
     {
         error_exit("shmctl IPC_RMID");
     }
 }
 
-int utworz_semafor(key_t klucz)
+int stworz_semafor(key_t sem_key)
 {
-    int id = semget(klucz, 1, 0600 | IPC_CREAT);
-    if (id == -1)
+    int sem_id = semget(sem_key, 1, 0600 | IPC_CREAT);
+    if (sem_id == -1)
     {
-        error_exit("semget");
+        error_exit("semget failed");
     }
-    return id;
+    return sem_id;
 }
 
-void usun_semafor(int id)
+void usun_semafor(int sem_id)
 {
-    int res = semctl(id, 0, IPC_RMID);
-    if (res == -1)
+    int result = semctl(sem_id, 0, IPC_RMID);
+    if (result == -1)
     {
-        error_exit("semctl IPC_RMID");
+        error_exit("semctl IPC_RMID failed");
     }
 }
 
-void ustaw_semafor(int id, int max)
+void sem_setval(int sem_id, int value)
 {
-    int res = semctl(id, 0, SETVAL, max);
+    int res = semctl(sem_id, 0, SETVAL, value);
     if (res == -1)
     {
         perror("semctl SETVAL");
@@ -120,14 +120,14 @@ void ustaw_semafor(int id, int max)
     }
 }
 
-int sem_try_wait(int id, int n)
+int sem_try_wait(int sem_id, int n)
 {
     struct sembuf sem_buff = {.sem_num = 0, .sem_op = -n, .sem_flg = IPC_NOWAIT};
 
     while (1)
     {
-        int res = semop(id, &sem_buff, 1);
-        if (res == 0)
+        int result = semop(sem_id, &sem_buff, 1);
+        if (result == 0)
         {
             return 0; // Udało się zmniejszyć semafor
         }
@@ -142,7 +142,7 @@ int sem_try_wait(int id, int n)
         }
         else
         {
-            error_exit("sem op try wait");
+            error_exit("semop - nie udało się wykonać operacji try wait");
         }
     }
 }

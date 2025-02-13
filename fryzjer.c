@@ -1,7 +1,7 @@
 #include "common.h"
 
 long id;
-int kolejka;
+int msg_qid;
 int fotele_semafor;
 int kasa_semafor;
 int shm_id;
@@ -25,19 +25,22 @@ int main()
         error_exit("Blad obslugi sygnalu nr 1");
     }
 
-    key_t klucz;
-    struct komunikat kom;
+    key_t msg_qkey;
+    key_t sem_key_f;
+    key_t sem_key_k;
+    key_t shm_key;
+    struct komunikat komunikat;
     int platnosc;
 
-    klucz = ftok(".", 'M');
-    kolejka = utworz_kolejke(klucz);
-    klucz = ftok(".", 'F');
-    fotele_semafor = utworz_semafor(klucz);
-    klucz = ftok(".", 'K');
-    kasa_semafor = utworz_semafor(klucz);
-    klucz = ftok(".", 'S');
-    shm_id = utworz_pamiec_dzielona(klucz);
-    banknoty = dolacz_pamiec_dzielona(shm_id);
+    msg_qkey = ftok(".", 'M');
+    msg_qid = stworz_kolejke_komunikatow(msg_qkey);
+    sem_key_f = ftok(".", 'F');
+    fotele_semafor = utworz_semafor(sem_key_f);
+    sem_key_k = ftok(".", 'K');
+    kasa_semafor = utworz_semafor(sem_key_k);
+    shm_key = ftok(".", 'S');
+    shm_id = stworz_pamiec_dzielona(shm_key);
+    banknoty = dolacz_do_pamieci_dzielonej(shm_id);
 
     while (1)
     {
@@ -49,11 +52,11 @@ int main()
         printf(GREEN "Fryzjer %ld: czekam na klientów w poczekalni.\n" RESET, id);
         if (fryzjer_komunikat_poczekalnia != 1)
         {
-            odbierz_komunikat(kolejka, &kom, 1);
+            pobierz_komunikat_z_kolejki(msg_qid, &komunikat, 1);
             fryzjer_komunikat_poczekalnia = 1;
         }
 
-        id_obslugiwany_klient = kom.nadawca;
+        id_obslugiwany_klient = komunikat.nadawca;
         printf(GREEN "Fryzjer %ld: zaczynam obsługę klienta %ld.\n" RESET, id, id_obslugiwany_klient);
 
         if (!fotel)
@@ -64,24 +67,24 @@ int main()
         printf(GREEN "Fryzjer %ld: zajmuję fotel\n" RESET, id);
 
         printf(GREEN "Fryzjer %ld: Proszę klienta %ld o zapłatę za strzyżenie.\n" RESET, id, id_obslugiwany_klient);
-        kom.mtype = id_obslugiwany_klient;
-        kom.nadawca = id;
+        komunikat.mtype = id_obslugiwany_klient;
+        komunikat.nadawca = id;
 
         if (czeka_na_zaplate != 1)
         {
             printf(GREEN "Fryzjer %ld: czekam na zapłatę.\n" RESET, id);
-            wyslij_komunikat(kolejka, &kom);
+            wyslij_komunikat_do_kolejki(msg_qid, &komunikat);
             czeka_na_zaplate = 1;
         }
 
         if (odbiera_zaplate != 1)
         {
-            odbierz_komunikat(kolejka, &kom, id);
+            pobierz_komunikat_z_kolejki(msg_qid, &komunikat, id);
             printf(GREEN "Fryzjer %ld: otrzymałem komunikat o zapłacie.\n" RESET, id);
             odbiera_zaplate = 1;
         }
 
-        platnosc = kom.platnosc;
+        platnosc = komunikat.platnosc;
 
         sem_p(kasa_semafor, 1);
         kasa = 1;
@@ -115,7 +118,7 @@ int main()
             fotel = 0;
         }
 
-        if (kom.platnosc == 50)
+        if (komunikat.platnosc == 50)
         {
             sem_p(kasa_semafor, 1);
             kasa = 1;
@@ -143,11 +146,11 @@ int main()
             sem_v(kasa_semafor, 1);
             kasa = 0;
         }
-        kom.mtype = id_obslugiwany_klient;
-        kom.nadawca = id;
+        komunikat.mtype = id_obslugiwany_klient;
+        komunikat.nadawca = id;
         if (wyslalem_reszte != 1)
         {
-            wyslij_komunikat(kolejka, &kom);
+            wyslij_komunikat_do_kolejki(msg_qid, &komunikat);
             wyslalem_reszte = 1;
             printf(GREEN "Fryzjer %ld: Wysłałem komunikat o zakończeniu usługi.\n" RESET, id);
         }

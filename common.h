@@ -38,19 +38,19 @@ struct komunikat
     int platnosc;
 };
 // obsługa kolejki komunikatów
-int utworz_kolejke(key_t klucz);
-void usun_kolejke(int kolejka);
-void wyslij_komunikat(int kolejka, struct komunikat *kom);
-void odbierz_komunikat(int kolejka, struct komunikat *kom, long odbiorca);
+int stworz_kolejke_komunikatow(key_t msg_qkey);
+void usun_kolejke_komunikatow(int msg_qid);
+void wyslij_komunikat_do_kolejki(int msg_qid, struct komunikat *komunikat);
+void pobierz_komunikat_z_kolejki(int msg_qid, struct komunikat *komunikat, long odbiorca_id);
 // obsługa pamięci współdzielonej
-int utworz_pamiec_dzielona(key_t klucz);
-int *dolacz_pamiec_dzielona(int shm_id);
-void odlacz_pamiec_dzielona(int *ptr);
+int stworz_pamiec_dzielona(key_t shm_key);
+int *dolacz_do_pamieci_dzielonej(int shm_id);
+void odlacz_pamiec_dzielona(int *shm_ptr);
 void usun_pamiec_dzielona(int shm_id);
 // operacje na semaforach
-int utworz_semafor(key_t klucz);
-void usun_semafor(int id);
-void ustaw_semafor(int id, int max);
+int stworz_semafor(key_t sem_key);
+void usun_semafor(int sem_id);
+void sem_setval(int sem_id, int value);
 int sem_try_wait(int id, int n);
 int sem_getval(int id);
 void sem_p(int id, int n);
