@@ -14,7 +14,7 @@ volatile sig_atomic_t otrzymana_reszta = 0;
 
 int main()
 {
-    srand(time(NULL));
+    srand(time(NULL) + getpid());
     id = getpid();
 
     if (signal(SIGINT, sygnal_2) == SIG_ERR)
@@ -39,7 +39,7 @@ int main()
         {
             break;
         }
-        int earning_time = rand() % 5 + 1;
+        int earning_time = rand() % 10 + 3;
         sleep(earning_time);
         printf(BLUE "Klient %ld: Próbuję wejść do poczekalni\n" RESET, id);
         if (!w_poczekalni)
@@ -74,14 +74,7 @@ int main()
 
             id_fryzjer_obslugujacy = kom.nadawca;
 
-            if (rand() % 2 == 0)
-            {
-                platnosc = 30;
-            }
-            else
-            {
-                platnosc = 50;
-            }
+            platnosc = (rand() % 2 == 0) ? 30 : 50;
 
             kom.mtype = id_fryzjer_obslugujacy;
             kom.nadawca = id;
