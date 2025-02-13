@@ -7,7 +7,6 @@ int kasa_semafor;
 int shm_id;
 int *banknoty;
 long id_obslugiwany_klient;
-int platnosc;
 volatile sig_atomic_t sygnal_fryzjer = 0;
 volatile sig_atomic_t fryzjer_komunikat_poczekalnia = 0;
 volatile sig_atomic_t fotel = 0;
@@ -28,6 +27,7 @@ int main()
 
     key_t klucz;
     struct komunikat kom;
+    int platnosc;
 
     klucz = ftok(".", 'M');
     kolejka = utworz_kolejke(klucz);
@@ -63,6 +63,7 @@ int main()
         }
         printf(GREEN "Fryzjer %ld: zajmuję fotel\n" RESET, id);
 
+        printf(GREEN "Fryzjer %ld: Proszę klienta %ld o zapłatę za strzyżenie.\n" RESET, id, id_obslugiwany_klient);
         kom.mtype = id_obslugiwany_klient;
         kom.nadawca = id;
 
@@ -75,8 +76,8 @@ int main()
 
         if (odbiera_zaplate != 1)
         {
-            printf(GREEN "Fryzjer %ld: otrzymałem komunikat o zapłacie.\n" RESET, id);
             odbierz_komunikat(kolejka, &kom, id);
+            printf(GREEN "Fryzjer %ld: otrzymałem komunikat o zapłacie.\n" RESET, id);
             odbiera_zaplate = 1;
         }
 
@@ -142,6 +143,8 @@ int main()
             sem_v(kasa_semafor, 1);
             kasa = 0;
         }
+        kom.mtype = id_obslugiwany_klient;
+        kom.nadawca = id;
         if (wyslalem_reszte != 1)
         {
             wyslij_komunikat(kolejka, &kom);

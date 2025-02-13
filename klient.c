@@ -3,7 +3,6 @@
 long id;
 int kolejka;
 int poczekalnia_semafor;
-int platnosc;
 int id_fryzjer_obslugujacy;
 
 volatile sig_atomic_t sygnal_klient = 0; // sygnal przerwanie pracy klienta
@@ -25,6 +24,7 @@ int main()
     struct komunikat kom;
     key_t klucz;
     int wolne_miejsce;
+    int platnosc;
 
     klucz = ftok(".", 'M');
     kolejka = utworz_kolejke(klucz);
