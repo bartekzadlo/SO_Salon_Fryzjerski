@@ -105,7 +105,7 @@ int main()
         kasa = 0;
 
         int service_time = rand() % 3 + 1;
-        sleep(service_time);
+        sleep(service_time); // domyslnie service_time
         printf(GREEN "Fryzjer %ld: zakończyłem strzyżenie klienta %ld (czas usługi: %d s).\n" RESET,
                id, id_obslugiwany_klient, service_time);
 
@@ -124,7 +124,7 @@ int main()
                 printf(GREEN "Fryzjer %ld: Nie mogę wydać reszty klientowi %ld. Czekam na uzupełnienie\n" RESET, id, id_obslugiwany_klient);
                 sem_v(kasa_semafor, 1);
                 kasa = 0;
-                sleep(3); // oczekiwanie na wpłatę
+                sleep(3); // domyslnie 3
                 sem_p(kasa_semafor, 1);
                 kasa = 1;
             }

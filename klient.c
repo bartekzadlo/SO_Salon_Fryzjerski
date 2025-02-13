@@ -40,7 +40,7 @@ int main()
             break;
         }
         int earning_time = rand() % 10 + 3;
-        sleep(earning_time);
+        sleep(earning_time); // domyslni earning_time
         printf(BLUE "Klient %ld: Próbuję wejść do poczekalni\n" RESET, id);
         if (!w_poczekalni)
         {

@@ -38,7 +38,7 @@ int main()
 
     klucz = ftok(".", 'P');
     poczekalnia_semafor = utworz_semafor(klucz);
-    ustaw_semafor(poczekalnia_semafor, K);
+    ustaw_semafor(poczekalnia_semafor, 0);
 
     printf(YELLOW "Zainicjalizowano poczekalnię, ilość miejsc: %d.\n" RESET, sem_getval(poczekalnia_semafor));
     printf(YELLOW "Zainicjalizowano fotele, ilość foteli: %d.\n" RESET, sem_getval(fotele_semafor));
@@ -109,7 +109,15 @@ int main()
             break;
         }
     }
-    error_exit("Błąd kierownik.c\n");
+}
+
+void koniec2(int s)
+{
+    printf(RED "Wywołano koniec." RESET);
+    wyslij_s3();
+    wyslij_s2();
+    zwolnij_zasoby_kierownik();
+    exit(EXIT_SUCCESS);
 }
 
 void koniec(int s)
@@ -210,8 +218,9 @@ void *simulation_timer_thread(void *arg)
             sleep(1);                                            // Symulacja upływu czasu - domyślnie 1
             remaining--;                                         // Zmniejszenie liczby pozostałych sekund
         }
-        sem_p(poczekalnia_semafor, P);
-        return NULL; // Zakończenie wątku
+        sem_p(poczekalnia_semafor, K);
+        printf(YELLOW "Salon zamknięty.\n" RESET);
+        return NULL;
     }
 }
 
