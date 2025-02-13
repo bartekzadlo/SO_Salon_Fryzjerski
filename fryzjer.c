@@ -163,7 +163,8 @@ int main()
 
 void sygnal_1(int sig)
 {
-    printf(GREEN "Fryzjer %ld: otrzymałem sygnał nr 1.\n" RESET, id);
+    long id = getpid();
+    printf(RED "Fryzjer %ld: Otrzymałem sygnał 1\n" RESET, id);
 
     // Ustaw flagi
     if (fryzjer_komunikat_poczekalnia)
@@ -186,7 +187,7 @@ void sygnal_1(int sig)
     else
     {
         zwolnij_zasoby_fryzjer();
-        printf(GREEN "Fryzjer %ld: wychodzę z pracy.\n" RESET, id);
+        exit(EXIT_SUCCESS);
     }
 }
 

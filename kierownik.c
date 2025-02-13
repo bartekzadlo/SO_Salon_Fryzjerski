@@ -3,8 +3,6 @@
 int TP = 0;
 int TK = 0;
 int sim_duration = 0;
-int sygnal1 = 0;
-int sygnal2 = 0;
 pid_t klienci[P];
 pid_t fryzjerzy[F];
 pthread_t timer_thread;
