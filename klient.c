@@ -21,17 +21,18 @@ int main()
     {
         error_exit("Blad obslugi sygnalu 2");
     }
-    struct komunikat komunikat;
-    key_t msg_qkey;
-    key_t sem_key_p;
+    struct Message msg;
     int wolne_miejsce;
     int platnosc;
 
-    msg_qkey = ftok(".", 'M');
-    msg_qid = stworz_kolejke_komunikatow(msg_qkey);
+    key_t msg_qkey;
+    key_t sem_key_p;
 
+    msg_qkey = ftok(".", 'M');
     sem_key_p = ftok(".", 'P');
-    poczekalnia_semafor = utworz_semafor(sem_key_p);
+
+    msg_qid = stworz_kolejke_komunikatow(msg_qkey);
+    poczekalnia_semafor = stworz_semafor(sem_key_p);
 
     while (1)
     {
@@ -53,16 +54,16 @@ int main()
             w_poczekalni = 1;
             printf(BLUE "Klient %ld: wchodzę do poczekalni. Liczba wolnych miejsc: %d.\n" RESET, id, sem_getval(poczekalnia_semafor));
 
-            komunikat.mtype = 1;
-            komunikat.nadawca = id;
-            wyslij_komunikat_do_kolejki(msg_qid, &komunikat);
+            msg.message_type = 1;
+            msg.nadawca = id;
+            wyslij_komunikat_do_kolejki(msg_qid, &msg);
             klient_komunikat_poczekalnia = 1;
             printf(BLUE "Klient %ld: wyslalem komunikat, że jestem w poczekalni.\n" RESET, id);
 
             if (pobranie_z_poczekalni != 1)
             {
                 printf(BLUE "Klient %ld: zostałem pobrany przez fryzjera.\n" RESET, id);
-                pobierz_komunikat_z_kolejki(msg_qid, &komunikat, id);
+                pobierz_komunikat_z_kolejki(msg_qid, &msg, id);
                 pobranie_z_poczekalni = 1;
             }
 
@@ -73,24 +74,24 @@ int main()
                 w_poczekalni = 0;
             }
 
-            id_fryzjer_obslugujacy = komunikat.nadawca;
+            id_fryzjer_obslugujacy = msg.nadawca;
 
             platnosc = (rand() % 2 == 0) ? 30 : 50;
 
-            komunikat.mtype = id_fryzjer_obslugujacy;
-            komunikat.nadawca = id;
-            komunikat.platnosc = platnosc;
+            msg.message_type = id_fryzjer_obslugujacy;
+            msg.nadawca = id;
+            msg.platnosc = platnosc;
 
             if (zaplacone != 1)
             {
                 printf(BLUE "Klient %ld: płacę %d zł.\n" RESET, id, platnosc);
-                wyslij_komunikat_do_kolejki(msg_qid, &komunikat);
+                wyslij_komunikat_do_kolejki(msg_qid, &msg);
                 printf(BLUE "Klient %ld: wysłałem komunikat\n" RESET, id);
                 zaplacone = 1;
             }
             if (otrzymana_reszta != 1)
             {
-                pobierz_komunikat_z_kolejki(msg_qid, &komunikat, id);
+                pobierz_komunikat_z_kolejki(msg_qid, &msg, id);
                 printf(BLUE "Klient %ld: otrzymałem komunikat o zakończeniu obsługi.\n" RESET, id);
                 otrzymana_reszta = 1;
             }

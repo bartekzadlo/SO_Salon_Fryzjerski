@@ -30,30 +30,28 @@ int main()
     key_t shm_key;
 
     msg_qkey = ftok(".", 'M');
-    msg_qid = stworz_kolejke_komunikatow(msg_qkey);
-
+    shm_key = ftok(".", 'S');
     sem_key_k = ftok(".", 'K');
-    kasa_semafor = utworz_semafor(sem_key_k);
-    sem_setval(kasa_semafor, 1);
-
     sem_key_f = ftok(".", 'F');
-    fotele_semafor = utworz_semafor(sem_key_f);
-    sem_setval(fotele_semafor, N);
-
     sem_key_p = ftok(".", 'P');
-    poczekalnia_semafor = utworz_semafor(sem_key_p);
+
+    msg_qid = stworz_kolejke_komunikatow(msg_qkey);
+    shm_id = stworz_pamiec_dzielona(shm_key);
+    kasa_semafor = stworz_semafor(sem_key_k);
+    fotele_semafor = stworz_semafor(sem_key_f);
+    poczekalnia_semafor = stworz_semafor(sem_key_p);
+
+    banknoty = dolacz_do_pamieci_dzielonej(shm_id);
+    banknoty[0] = 10; // banknoty o nominale 10
+    banknoty[1] = 10; // banknoty o nominale 20
+    banknoty[2] = 10; // banknoty o nominale 50
+
+    sem_setval(kasa_semafor, 1);
+    sem_setval(fotele_semafor, N);
     sem_setval(poczekalnia_semafor, 0);
 
     printf(YELLOW "Zainicjalizowano poczekalnię, ilość miejsc: %d.\n" RESET, sem_getval(poczekalnia_semafor));
     printf(YELLOW "Zainicjalizowano fotele, ilość foteli: %d.\n" RESET, sem_getval(fotele_semafor));
-
-    shm_key = ftok(".", 'S');
-    shm_id = stworz_pamiec_dzielona(shm_key);
-    banknoty = dolacz_do_pamieci_dzielonej(shm_id);
-
-    banknoty[0] = 10; // banknoty o nominale 10
-    banknoty[1] = 10; // banknoty o nominale 20
-    banknoty[2] = 10; // banknoty o nominale 50
 
     printf(YELLOW "Zainicjalizowane kasę, stan początkowy kasy - Banknoty 10 zł: %d, Banknoty 20 zł: %d, Banknoty 50 zł: %d\n" RESET, banknoty[0], banknoty[1], banknoty[2]);
 

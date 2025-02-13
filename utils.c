@@ -19,14 +19,14 @@ void usun_kolejke_komunikatow(int msg_qid)
     }
 }
 
-void wyslij_komunikat_do_kolejki(int msg_qid, struct komunikat *komunikat)
+void wyslij_komunikat_do_kolejki(int msg_qid, struct Message *msg)
 {
-    int status = msgsnd(msg_qid, (struct msgbuf *)komunikat, sizeof(struct komunikat) - sizeof(long), 0);
+    int status = msgsnd(msg_qid, (struct msgbuf *)msg, sizeof(struct Message) - sizeof(long), 0);
     if (status == -1)
     {
         if (errno == EINTR)
         {
-            wyslij_komunikat_do_kolejki(msg_qid, komunikat);
+            wyslij_komunikat_do_kolejki(msg_qid, msg);
         }
         else
         {
@@ -36,14 +36,14 @@ void wyslij_komunikat_do_kolejki(int msg_qid, struct komunikat *komunikat)
     printf("Komunikat wysłany pomyślnie\n");
 }
 
-void pobierz_komunikat_z_kolejki(int msg_qid, struct komunikat *komunikat, long odbiorca_id)
+void pobierz_komunikat_z_kolejki(int msg_qid, struct Message *msg, long odbiorca_id)
 {
-    int status = msgrcv(msg_qid, (struct msgbuf *)komunikat, sizeof(struct komunikat) - sizeof(long), odbiorca_id, 0);
+    int status = msgrcv(msg_qid, (struct msgbuf *)msg, sizeof(struct Message) - sizeof(long), odbiorca_id, 0);
     if (status == -1)
     {
         if (errno == EINTR)
         {
-            pobierz_komunikat_z_kolejki(msg_qid, komunikat, odbiorca_id);
+            pobierz_komunikat_z_kolejki(msg_qid, msg, odbiorca_id);
         }
         else
         {

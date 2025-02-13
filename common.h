@@ -31,17 +31,17 @@
 #define MAGENTA "\033[35m" // komunikat o czasie
 #define CYAN "\033[36m"    // zwrot do użytkownika
 
-struct komunikat
+struct Message
 {
-    long mtype;
+    long message_type;
     long nadawca;
     int platnosc;
 };
 // obsługa kolejki komunikatów
 int stworz_kolejke_komunikatow(key_t msg_qkey);
 void usun_kolejke_komunikatow(int msg_qid);
-void wyslij_komunikat_do_kolejki(int msg_qid, struct komunikat *komunikat);
-void pobierz_komunikat_z_kolejki(int msg_qid, struct komunikat *komunikat, long odbiorca_id);
+void wyslij_komunikat_do_kolejki(int msg_qid, struct Message *msg);
+void pobierz_komunikat_z_kolejki(int msg_qid, struct Message *msg, long odbiorca_id);
 // obsługa pamięci współdzielonej
 int stworz_pamiec_dzielona(key_t shm_key);
 int *dolacz_do_pamieci_dzielonej(int shm_id);
