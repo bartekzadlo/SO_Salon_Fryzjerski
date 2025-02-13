@@ -33,7 +33,6 @@ void wyslij_komunikat_do_kolejki(int msg_qid, struct Message *msg)
             error_exit("Błąd wysyłania komunikatu");
         }
     }
-    printf("Komunikat wysłany pomyślnie\n");
 }
 
 void pobierz_komunikat_z_kolejki(int msg_qid, struct Message *msg, long odbiorca_id)
@@ -50,7 +49,6 @@ void pobierz_komunikat_z_kolejki(int msg_qid, struct Message *msg, long odbiorca
             error_exit("Błąd odbierania komunikatu");
         }
     }
-    printf("Komunikat odebrany pomyślnie\n");
 }
 
 int stworz_pamiec_dzielona(key_t shm_key)
