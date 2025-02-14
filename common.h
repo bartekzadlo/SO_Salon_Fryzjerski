@@ -71,7 +71,6 @@ void wyslij_s2();
 void wyslij_s3();
 void szybki_koniec(int s);
 void koniec(int s);
-void koniec2(int s);
 void tworz_fryzjerow();
 void tworz_klientow();
 // klient.c

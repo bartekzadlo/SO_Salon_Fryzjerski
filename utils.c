@@ -26,7 +26,7 @@ void wyslij_komunikat_do_kolejki(int msg_qid, struct Message *msg)
     {
         if (errno == EINTR)
         {
-            wyslij_komunikat_do_kolejki(msg_qid, msg);
+            wyslij_komunikat_do_kolejki(msg_qid, msg); // ponowienie próby
         }
         else
         {
@@ -42,7 +42,7 @@ void pobierz_komunikat_z_kolejki(int msg_qid, struct Message *msg, long odbiorca
     {
         if (errno == EINTR)
         {
-            pobierz_komunikat_z_kolejki(msg_qid, msg, odbiorca_id);
+            pobierz_komunikat_z_kolejki(msg_qid, msg, odbiorca_id); // ponowienie próby
         }
         else
         {
@@ -155,6 +155,7 @@ int sem_getval(int id)
     return retval;
 }
 
+// zmniejszenie wartości semafora
 void sem_p(int id, int n)
 {
     struct sembuf sem_buff;
@@ -175,6 +176,7 @@ void sem_p(int id, int n)
     }
 }
 
+// zwiększenie wartości semafora
 void sem_v(int id, int n)
 {
     struct sembuf sem_buff;

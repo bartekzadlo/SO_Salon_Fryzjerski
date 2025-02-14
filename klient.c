@@ -43,12 +43,12 @@ int main()
     // Pętla działania klienta
     while (1)
     {
-        id_klient = getpid();                                   // Przypisujemy id klientowi
-        printf(BLUE "Klient %ld: Pracuję.\n" RESET, id_klient); // Rozpoczynamy od pracy klienta
-        if (sygnal_klient)
+        id_klient = getpid(); // Przypisujemy id klientowi
+        if (sygnal_klient)    // Jeśli ustawiona flaga sygnału dla klienta to nie przychodzimy do poczekalni
         {
             break;
         }
+        printf(BLUE "Klient %ld: Pracuję.\n" RESET, id_klient);                    // Rozpoczynamy od pracy klienta
         int earning_time = rand() % 10 + 3;                                        // Losowy czas klienta (pomiędzy 3 a 13 sekund)
         sleep(earning_time);                                                       // domyslnie earning_time
         printf(BLUE "Klient %ld: Próbuję wejść do poczekalni\n" RESET, id_klient); // Klient próbuje wejść do poczekalni
@@ -126,7 +126,7 @@ int main()
 
 void sygnal_2(int sig) // Funkcja obsługi sygnału SIGINT
 {
-    printf(RED "Klient %ld: Otrzymałem sygnał 2.\n" RESET, id_klient); // informacja o otrzymaniu sygnału o końcu pracy
+    printf(RED "Klient %ld: Otrzymałem sygnał końca pracy.\n" RESET, id_klient); // informacja o otrzymaniu sygnału o końcu pracy
 
     if (klient_komunikat_poczekalnia == 1) // jeśli klient jest już po wysłaniu komunikatu do fryzjera
     {

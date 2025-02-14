@@ -1,61 +1,62 @@
 #include "common.h"
 
-int TP = 0;
-int TK = 0;
-int sim_duration = 0;
-pid_t klienci[P];
-pid_t fryzjerzy[F];
-pthread_t timer_thread;
+int TP = 0;             // czas otwarcia salonu
+int TK = 0;             // czas zamknięcia salonu
+int sim_duration = 0;   // długość trwania otwartego salonu
+pid_t klienci[P];       // tablica procesów klientów
+pid_t fryzjerzy[F];     // tablica procesów fryzjerów
+pthread_t timer_thread; // wątek symulacji czasu
+// semafory
 int fotele_semafor;
 int kasa_semafor;
 int poczekalnia_semafor;
+// kolejka komunikatów
 int msg_qid;
+// pamięć dzielona
 int shm_id;
-int *banknoty; // pamiec dzielona
+int *banknoty; // kasa/banknoty -  pamiec dzielona
 
 int main()
 {
-    if (signal(SIGINT, szybki_koniec) == SIG_ERR)
+    if (signal(SIGINT, szybki_koniec) == SIG_ERR) // Ustawienie obsługi sygnału SIGINT na funkcję szybki_koniec.
     {
         error_exit("Błąd obsługi sygnału");
     }
 
-    set_process_limit();
-    srand(time(NULL));
+    set_process_limit(); // ustawiamy i sprawdzamy czy nie został przekroczony limit procesów
+    srand(time(NULL));   // Inicjalizacja generatora liczb losowych na podstawie czasu systemowego
 
+    // Deklaracja wszystkich kluczy
     key_t msg_qkey;
     key_t sem_key_k;
     key_t sem_key_f;
     key_t sem_key_p;
     key_t shm_key;
-
+    // Tworzenie kluczy
     msg_qkey = ftok(".", 'M');
     shm_key = ftok(".", 'S');
     sem_key_k = ftok(".", 'K');
     sem_key_f = ftok(".", 'F');
     sem_key_p = ftok(".", 'P');
-
+    // Tworzenie struktur przy pomocy naszych kluczy
     msg_qid = stworz_kolejke_komunikatow(msg_qkey);
     shm_id = stworz_pamiec_dzielona(shm_key);
     kasa_semafor = stworz_semafor(sem_key_k);
     fotele_semafor = stworz_semafor(sem_key_f);
     poczekalnia_semafor = stworz_semafor(sem_key_p);
-
+    // Dołączenie pamięci współdzielonej i inicjalizacja banknotów w kasie
     banknoty = dolacz_do_pamieci_dzielonej(shm_id);
     banknoty[0] = 10; // banknoty o nominale 10
     banknoty[1] = 10; // banknoty o nominale 20
     banknoty[2] = 10; // banknoty o nominale 50
 
-    sem_setval(kasa_semafor, 1);
-    sem_setval(fotele_semafor, N);
-    sem_setval(poczekalnia_semafor, 0);
+    sem_setval(kasa_semafor, 1);   // ustawiamy semafor kasa na 1 - mamy jedną wspólną kasę, tylko jedna osoba może ją obsługiwać
+    sem_setval(fotele_semafor, N); // ustawiamy semafor foteli na N - ilość foteli
 
-    printf(YELLOW "Zainicjalizowano poczekalnię, ilość miejsc: %d.\n" RESET, sem_getval(poczekalnia_semafor));
     printf(YELLOW "Zainicjalizowano fotele, ilość foteli: %d.\n" RESET, sem_getval(fotele_semafor));
-
     printf(YELLOW "Zainicjalizowane kasę, stan początkowy kasy - Banknoty 10 zł: %d, Banknoty 20 zł: %d, Banknoty 50 zł: %d\n" RESET, banknoty[0], banknoty[1], banknoty[2]);
 
-    if (F <= 1 || N >= F)
+    if (F <= 1 || N >= F) // walidacja danych F i N
     {
         error_exit("Błąd: Warunek F > 1 oraz N < F nie jest spełniony.\n");
     }
@@ -70,20 +71,22 @@ int main()
     {
         error_exit("Błąd odczytu TK\n");
     }
-    if (TK <= TP || TK < 0 || TP < 0)
+    if (TK <= TP || TK < 0 || TP < 0) // walidacja danych TP i TK - porównanie
     {
         error_exit("Błąd: TK musi być większe od TP i jednostki muszą być dodatnie\n");
     }
-    sim_duration = TK - TP;
+    sim_duration = TK - TP; // obliczenie czasu trwania symulacji salonu
 
+    // tworzenie wątku symulacji czasu - otwiera ona i zamyka salon (nie kończy programu - otwiera i zamyka poczekalnię)
     if (pthread_create(&timer_thread, NULL, simulation_timer_thread, NULL) != 0)
     {
         error_exit("Blad utworzenia watku symulacji czasu\n");
     }
 
-    tworz_fryzjerow();
-    tworz_klientow();
+    tworz_fryzjerow(); // wywolanie funkcji tworzenia fryzjerów
+    tworz_klientow();  // wywołanie funkcji tworzenia klientów
 
+    // menu obsługi sygnałów
     char menu;
     while (menu != '3')
     {
@@ -98,13 +101,13 @@ int main()
         switch (menu)
         {
         case '1':
-            wyslij_s1();
+            wyslij_s1(); // sygnał 1 kończy pracę jednego fryzjera
             break;
         case '2':
-            wyslij_s2();
+            wyslij_s2(); // sygnał 2 kończy natychmiastowo pracę wszystkich klientów
             break;
         case '3':
-            koniec(0);
+            koniec(0); // zamyka program, zwalniając ps i ipcs
             break;
         default:
             printf(RED "Niepoprawna opcja\n" RESET);
@@ -113,29 +116,21 @@ int main()
     }
 }
 
-void koniec2(int s)
+void koniec(int s) // zamykanie salonu
 {
-    printf(RED "Wywołano koniec." RESET);
-    wyslij_s3();
-    wyslij_s2();
-    zwolnij_zasoby_kierownik();
+    printf(RED "Wywołano koniec.\n" RESET);
+    zakoncz_symulacje_czasu();  // kończymy wątek symulacji czasu - cancel i join
+    wyslij_s3();                // wysyłamy sygnał 3 - zamknięcie procesu wszystkich fryzjerów
+    wyslij_s2();                // wysyłamy sygnał 2 - zamknięcie procesu wszystkich klientów
+    zwolnij_zasoby_kierownik(); // zwalniamy wszystkie zasoby
     exit(EXIT_SUCCESS);
 }
 
-void koniec(int s)
+void szybki_koniec(int s) // obsługa szybkiego końca - zabicia programu
 {
-    printf(RED "Wywołano koniec." RESET);
-    zakoncz_symulacje_czasu();
-    wyslij_s3();
-    wyslij_s2();
-    zwolnij_zasoby_kierownik();
-    exit(EXIT_SUCCESS);
-}
-
-void szybki_koniec(int s)
-{
-    printf(RED "Wywołano szybki koniec." RESET);
-    zwolnij_zasoby_kierownik();
+    printf(RED "Wywołano szybki koniec.\n" RESET);
+    zwolnij_zasoby_kierownik(); // zwalniamy zasoby
+    // konczymy fryzjerów i klientów
     for (int i = 0; i < F; i++)
     {
         kill(fryzjerzy[i], SIGKILL);
@@ -144,37 +139,37 @@ void szybki_koniec(int s)
     {
         kill(klienci[i], SIGKILL);
     }
-    czekaj_na_procesy(F);
+    czekaj_na_procesy(F); // czekamy na zakończenie procesów
     czekaj_na_procesy(P);
 
-    zakoncz_symulacje_czasu();
+    zakoncz_symulacje_czasu(); // kończymy wątek symulacji czasu
 
     exit(EXIT_SUCCESS);
 }
 
 void wyslij_s1()
 {
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < 1; i++) // zabicie jednego fryzjera
     {
-        kill(fryzjerzy[i], 1);
+        kill(fryzjerzy[i], 1); // 1- SYGNAŁ SIGHUP
     }
     czekaj_na_procesy(1);
 }
 
 void wyslij_s2()
 {
-    for (int i = 0; i < P; i++)
+    for (int i = 0; i < P; i++) // zabicie wszystkich klientów
     {
-        kill(klienci[i], 2);
+        kill(klienci[i], 2); // 2 - SYGNAŁ SIGINT
     }
     czekaj_na_procesy(P);
 }
 
 void wyslij_s3()
 {
-    for (int i = 0; i < F; i++)
+    for (int i = 0; i < F; i++) // zabicie wszystkich fryzjerów
     {
-        kill(fryzjerzy[i], 1);
+        kill(fryzjerzy[i], 1); // 1 - SYGNAŁ SIGHUP
     }
     czekaj_na_procesy(F);
 }
@@ -182,51 +177,52 @@ void wyslij_s3()
 void czekaj_na_procesy(int n)
 {
     int wPID, status;
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < n; i++) // Pętla oczekująca na zakończenie n procesów potomnych
     {
-        wPID = wait(&status);
-        if (wPID == -1)
+        wPID = wait(&status); // Oczekiwanie na zakończenie procesu potomnego
+        if (wPID == -1)       // Sprawdzenie błędu funkcji wait()
         {
             error_exit("Błąd wait");
         }
         else
         {
-            printf(YELLOW "Koniec procesu: %d, status: %d\n" RESET, wPID, status);
+            printf(YELLOW "Koniec procesu: %d, status: %d\n" RESET, wPID, status); // Wyświetlenie informacji o zakończonym procesie i jego statusie
         }
     }
 }
 
 void zakoncz_symulacje_czasu()
 {
-    pthread_cancel(timer_thread);
-    pthread_join(timer_thread, NULL);
+    pthread_cancel(timer_thread);     // Anulowanie wątku zegara (timer_thread)
+    pthread_join(timer_thread, NULL); // Oczekiwanie na zakończenie wątku zegara, aby upewnić się, że został poprawnie zatrzymany
 }
 
 void *simulation_timer_thread(void *arg)
 {
-    while (1)
+    while (1) // Pętla działania symulowania czasu
     {
         if (TP > 0)
         {
             sleep(TP); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
         }
-        printf(YELLOW "Salon otwarty.\n" RESET);
-        sem_v(poczekalnia_semafor, K);
+        printf(YELLOW "Salon otwarty.\n" RESET);                                                                   // Informacja o otwarciu salonu
+        sem_setval(poczekalnia_semafor, K);                                                                        // Inicjalizacji poczekalni - ilość K wolnych miejsc
+        printf(YELLOW "Zainicjalizowano poczekalnię, ilość miejsc: %d.\n" RESET, sem_getval(poczekalnia_semafor)); // Informacja o inicjalizacji poczekalni
 
         int remaining = sim_duration; // Zmienna do przechowywania czasu pozostałego do zakończenia symulacji
         while (remaining > 0)         // Pętla działa dopóki nie minie czas symulacji
         {
-            printf(MAGENTA "Czas pozostały: %d s\n", remaining); // Tworzenie komunikatu o pozostałym czasie
+            printf(MAGENTA "Czas pozostały: %d s\n", remaining); // Informacja o pozostałym czasie
             sleep(1);                                            // Symulacja upływu czasu - domyślnie 1
             remaining--;                                         // Zmniejszenie liczby pozostałych sekund
         }
-        sem_p(poczekalnia_semafor, K);
+        sem_setval(poczekalnia_semafor, 0); // Zamknięcie poczekalni po upływie czasu - równoznaczne z zamknięciem salonu - kolejni klienci nie wejdą
         printf(YELLOW "Salon zamknięty.\n" RESET);
         return NULL;
     }
 }
 
-void zwolnij_zasoby_kierownik()
+void zwolnij_zasoby_kierownik() // funkcja zwalniająca wszelkie zasoby
 {
     usun_kolejke_komunikatow(msg_qid);
     usun_semafor(kasa_semafor);
@@ -234,11 +230,10 @@ void zwolnij_zasoby_kierownik()
     usun_semafor(poczekalnia_semafor);
     odlacz_pamiec_dzielona(banknoty);
     usun_pamiec_dzielona(shm_id);
-
     printf(YELLOW "Zasoby zwolnione\n" RESET);
 }
 
-void tworz_fryzjerow()
+void tworz_fryzjerow() // funkcja tworząca fryzjerów
 {
     for (int i = 0; i < F; i++)
     {
@@ -251,7 +246,7 @@ void tworz_fryzjerow()
     }
 }
 
-void tworz_klientow()
+void tworz_klientow() // funkcja tworząca klientów
 {
     for (int i = 0; i < P; i++)
     {
