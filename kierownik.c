@@ -18,7 +18,7 @@ int *banknoty; // kasa/banknoty -  pamiec dzielona
 
 int main()
 {
-    if (signal(SIGINT, sig_handler_int) == SIG_ERR) // Ustawienie obsługi sygnału SIGINT na funkcję szybki_koniec.
+    if (signal(SIGINT, sig_handler_int) == SIG_ERR) // Ustawienie obsługi sygnału SIGINT na sig_handler_int.
     {
         error_exit("Błąd obsługi sygnału");
     }

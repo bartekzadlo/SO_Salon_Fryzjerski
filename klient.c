@@ -18,7 +18,7 @@ int main()
     srand(time(NULL) + getpid());
 
     // Rejestracja funkcji obsługi sygnału SIGINT (przerwanie) w celu wywołania funkcji sygnal_2 przy otrzymaniu sygnału.
-    if (signal(SIGINT, sygnal_2) == SIG_ERR)
+    if (signal(SIGINT, sig_handler_klient) == SIG_ERR)
     {
         error_exit("Blad obslugi sygnalu 2");
     }
@@ -124,7 +124,7 @@ int main()
     printf(BLUE "Klient %ld: kończę pracę\n" RESET, id_klient); // informacja o zakończeniu pracy klienta (koniec procesu)
 }
 
-void sygnal_2(int sig) // Funkcja obsługi sygnału SIGINT
+void sig_handler_klient(int sig) // Funkcja obsługi sygnału SIGINT
 {
     printf(RED "Klient %ld: Otrzymałem sygnał końca pracy.\n" RESET, id_klient); // informacja o otrzymaniu sygnału o końcu pracy
 

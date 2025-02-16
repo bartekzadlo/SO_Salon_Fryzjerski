@@ -78,6 +78,6 @@ void koniec(int s);
 void tworz_fryzjerow();
 void tworz_klientow();
 // klient.c
-void sygnal_2(int sig);
+void sig_handler_klient(int sig);
 
 #endif // COMMON_H
