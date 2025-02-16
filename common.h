@@ -62,6 +62,8 @@ void set_process_limit();
 void sig_handler_fryzjer(int sig);
 void fryzjer_exit();
 void wydaj_reszte();
+void zajmij_kase();
+void zwolnij_kase();
 // kierownik.c
 void zwolnij_zasoby_kierownik();
 void *simulation_timer_thread(void *arg);

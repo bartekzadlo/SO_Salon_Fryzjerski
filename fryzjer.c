@@ -96,8 +96,7 @@ int main()
 
         platnosc = msg.platnosc; // Przypisujemy płatność przekazaną przez klienta do zmiennej płatność
 
-        sem_p(kasa_semafor, 1); // Zajmujemy semafor kasy
-        kasa_zajeta = 1;        // Ustawiamy flagę kasa - potrzebna przy zwalnianiu zasobów
+        zajmij_kase();
 
         if (platnosc == 30) // jeśli płatność 30 przekazana przez klienta to:
         {
@@ -114,8 +113,7 @@ int main()
                    id, banknoty[0], banknoty[1], banknoty[2]);
         }
 
-        sem_v(kasa_semafor, 1); // zwalniamy semafor kasa
-        kasa_zajeta = 0;        // ustawiamy flagę kasy na 0
+        zwolnij_kase();
 
         int service_time = rand() % 3 + 1; // losowanie czasu symulacji strzyżenia
         sleep(service_time);               // symulacja strzyżenia - domyslnie service_time
@@ -202,16 +200,13 @@ void fryzjer_exit()
 
 void wydaj_reszte()
 {
-    sem_p(kasa_semafor, 1);                      // zajmujemy semafor kasa
-    kasa_zajeta = 1;                             // ustawiamy flagę zajęcia kasy
+    zajmij_kase();
     while ((banknoty[0] < 2 && banknoty[1] < 1)) // Jeśli w kasie nie mamy 2 baknkotów 10 złotych lub 1 banknotu 20 złotowego
     {
         printf(GREEN "Fryzjer %ld: Nie mogę wydać reszty klientowi %ld. Czekam na uzupełnienie\n" RESET, id, id_obslugiwany_klient);
-        sem_v(kasa_semafor, 1); // zwalniamy semafor aby ktoś inny mógł operować na kasie
-        kasa_zajeta = 0;        // flaga kasy na 0
-        sleep(3);               // czekamy chwilę, może ktoś w tym czasie uzupełni kasę - domyslnie 3
-        sem_p(kasa_semafor, 1); // ponawiamy zajęcie kasy
-        kasa_zajeta = 1;        // ustawiamy flagę - sprawdzamy ponownie warunek while
+        zwolnij_kase();
+        sleep(3); // czekamy chwilę, może ktoś w tym czasie uzupełni kasę - domyslnie 3
+        zajmij_kase();
     }
     if (banknoty[1] >= 1) // jeśli mamy jeden banknot 20 złotych
     {
@@ -225,6 +220,17 @@ void wydaj_reszte()
         printf(GREEN "Fryzjer %ld: wydaję resztę 2 x 10 zł klientowi %ld. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
                id, id_obslugiwany_klient, banknoty[0], banknoty[1], banknoty[2]);
     }
+    zwolnij_kase();
+}
+
+void zajmij_kase()
+{
+    sem_p(kasa_semafor, 1); // zajmujemy semafor kasa
+    kasa_zajeta = 1;        // ustawiamy flagę zajęcia kasy
+}
+
+void zwolnij_kase()
+{
     sem_v(kasa_semafor, 1); // zwalniamy kasę
     kasa_zajeta = 0;        // ustawiamy flagę na 0
 }
