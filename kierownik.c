@@ -222,10 +222,10 @@ void *simulation_timer_thread(void *arg)
         while (remaining > 0)         // Pętla działa dopóki nie minie czas symulacji
         {
             printf(MAGENTA "Czas pozostały: %d s\n", remaining); // Informacja o pozostałym czasie
-            sleep(1);                                            // Symulacja upływu czasu - MUSI BYĆ USTAWIONY CZAS 1
+            sleep(0);                                            // Symulacja upływu czasu - MUSI BYĆ USTAWIONY CZAS 1
             remaining--;                                         // Zmniejszenie liczby pozostałych sekund
         }
-        sem_setval(poczekalnia_semafor, 0); // Zamknięcie poczekalni po upływie czasu - równoznaczne z zamknięciem salonu - kolejni klienci nie wejdą
+        // sem_setval(poczekalnia_semafor, 0); // NALEŻY ZAKOMENTOWAĆ GDY SLEEP(0) Zamknięcie poczekalni po upływie czasu - równoznaczne z zamknięciem salonu - kolejni klienci nie wejdą
         printf(YELLOW "Salon zamknięty.\n" RESET);
         return NULL;
     }
