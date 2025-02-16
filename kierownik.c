@@ -16,8 +16,26 @@ int msg_qid;
 int shm_id;
 int *kasa; // kasa -  pamiec dzielona
 
+char get_char(void)
+{
+    struct termios oldt, newt;
+    char ch;
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO); // Wyłącz tryb kanoniczny i echo
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    ch = getchar();
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // Przywróć stare ustawienia
+    return ch;
+}
+
 int main()
 {
+    if (signal(SIGINT, sig_handler_int) == SIG_ERR) // Ustawienie obsługi sygnału SIGINT na sig_handler_int.
+    {
+        error_exit("Błąd obsługi sygnału szybkiego końca");
+    }
+
     set_process_limit(); // ustawiamy i sprawdzamy czy nie został przekroczony limit procesów
 
     if (F <= 1 || N >= F) // walidacja danych F i N
@@ -41,11 +59,6 @@ int main()
     }
 
     sim_duration = TK - TP; // obliczenie czasu trwania symulacji salonu
-
-    if (signal(SIGINT, sig_handler_int) == SIG_ERR) // Ustawienie obsługi sygnału SIGINT na sig_handler_int.
-    {
-        error_exit("Błąd obsługi sygnału szybkiego końca");
-    }
 
     // Deklaracja wszystkich kluczy
     key_t msg_qkey;
@@ -85,17 +98,14 @@ int main()
     tworz_klientow();  // wywołanie funkcji tworzenia klientów
 
     // menu obsługi sygnałów
-    char menu;
+    char menu = 0;
     while (menu != '3')
     {
         printf(CYAN "1 - Zakończ pracę fryzjera\n");
         printf("2 - Zakończ pracę klientów\n");
         printf("3 - Zwolnij zasoby i zakończ program\n" RESET);
 
-        while (getchar() != '\n')
-            ;
-        while (scanf("%c", &menu) != 1)
-            ;
+        menu = get_char();
         switch (menu)
         {
         case '1':
