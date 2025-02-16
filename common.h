@@ -20,7 +20,6 @@
 #define N 1 // Liczba foteli (N < F) – ograniczenie liczby jednocześnie obsługiwanych klientów
 #define K 1 // Maksymalna liczba klientów w poczekalni
 #define P 1 // Liczba klientów – ilość wątków reprezentujących klientów
-#define MAX_PROCESSES 8192
 
 /* Kolory ANSI dla logowania w konsoli */
 #define RESET "\033[0m"

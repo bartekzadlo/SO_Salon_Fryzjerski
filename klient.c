@@ -5,8 +5,8 @@ int msg_qid;
 int poczekalnia_semafor;
 long id_fryzjera;
 
-volatile sig_atomic_t sygnal_klient = 0;                //  obsługa przerwań w przypadku sygnału SIGINT
-volatile sig_atomic_t w_poczekalni = 0;                 //  czy klient znajduje się w poczekaln
+volatile sig_atomic_t sygnal_klient = 0;                // obsługa przerwań w przypadku sygnału SIGINT
+volatile sig_atomic_t w_poczekalni = 0;                 // czy klient znajduje się w poczekaln
 volatile sig_atomic_t klient_komunikat_poczekalnia = 0; // czy klient wysłał już komunikat o swojej obecności w poczekalni
 volatile sig_atomic_t pobranie_z_poczekalni = 0;        // czy klient został już pobrany z poczekalni przez fryzjera.
 volatile sig_atomic_t zaplacone = 0;                    // czy klient zapłacił za usługę fryzjerską
@@ -17,10 +17,10 @@ int main()
     // Inicjalizacja generatora liczb losowych na podstawie czasu systemowego oraz unikalnego identyfikatora procesu (PID).
     srand(time(NULL) + getpid());
 
-    // Rejestracja funkcji obsługi sygnału SIGINT (przerwanie) w celu wywołania funkcji sygnal_2 przy otrzymaniu sygnału.
+    // Rejestracja funkcji obsługi sygnału SIGINT (przerwanie) w celu wywołania funkcji sig_handler_klient przy otrzymaniu sygnału.
     if (signal(SIGINT, sig_handler_klient) == SIG_ERR)
     {
-        error_exit("Blad obslugi sygnalu 2");
+        error_exit("Błąd obsługi sygnalu zabijającego klientów");
     }
     // Deklaracja zmiennej typu Message, która będzie używana do przechowywania wiadomości wysyłanych i odbieranych w komunikacji między procesami
     struct Message msg;

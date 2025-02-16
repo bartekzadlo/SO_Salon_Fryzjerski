@@ -76,7 +76,7 @@ void odlacz_pamiec_dzielona(int *shm_ptr)
     int result = shmdt(shm_ptr);
     if (result == -1)
     {
-        error_exit("shmdt");
+        error_exit("Błąd odłączania pamięci dzielonej");
     }
 }
 
@@ -85,7 +85,7 @@ void usun_pamiec_dzielona(int shm_id)
     int result = shmctl(shm_id, IPC_RMID, 0);
     if (result == -1)
     {
-        error_exit("shmctl IPC_RMID");
+        error_exit("Błąd usuwania pamięci dzielonej");
     }
 }
 
@@ -94,7 +94,7 @@ int stworz_semafor(key_t sem_key)
     int sem_id = semget(sem_key, 1, 0600 | IPC_CREAT);
     if (sem_id == -1)
     {
-        error_exit("semget failed");
+        error_exit("Błąd tworzenia semafora");
     }
     return sem_id;
 }
@@ -104,7 +104,7 @@ void usun_semafor(int sem_id)
     int result = semctl(sem_id, 0, IPC_RMID);
     if (result == -1)
     {
-        error_exit("semctl IPC_RMID failed");
+        error_exit("Błąd usuwania semafora.");
     }
 }
 
@@ -113,8 +113,7 @@ void sem_setval(int sem_id, int value)
     int res = semctl(sem_id, 0, SETVAL, value);
     if (res == -1)
     {
-        perror("semctl SETVAL");
-        exit(EXIT_FAILURE);
+        error_exit("Błąd ustawiania wartości semafora");
     }
 }
 
@@ -140,7 +139,7 @@ int sem_try_wait(int sem_id, int n)
         }
         else
         {
-            error_exit("semop - nie udało się wykonać operacji try wait");
+            error_exit("Błąd: nie udało się wykonać operacji try wait");
         }
     }
 }
@@ -150,7 +149,7 @@ int sem_getval(int id)
     int retval = semctl(id, 0, GETVAL);
     if (retval == -1)
     {
-        error_exit("sem_getval");
+        error_exit("Błąd pobierania wartości semafora");
     }
     return retval;
 }
@@ -171,7 +170,7 @@ void sem_p(int id, int n)
         }
         else
         {
-            error_exit("semop p");
+            error_exit("Błąd operacaji zmniejszenia semafora.");
         }
     }
 }
@@ -192,8 +191,7 @@ void sem_v(int id, int n)
         }
         else
         {
-            perror("semop v");
-            exit(EXIT_FAILURE);
+            error_exit("Błąd operacji zwiększenia wartości semafora");
         }
     }
 }
@@ -212,7 +210,7 @@ void set_process_limit()
 
     if (getrlimit(RLIMIT_NPROC, &rl) != 0)
     {
-        error_exit("getrlimit");
+        error_exit("Błąd pobrania limitu procesów w funkcji set_process_limit");
     }
 
     if (rl.rlim_cur < F + P)

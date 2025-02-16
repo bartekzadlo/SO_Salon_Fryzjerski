@@ -20,7 +20,7 @@ int main()
 {
     if (signal(SIGINT, sig_handler_int) == SIG_ERR) // Ustawienie obsługi sygnału SIGINT na sig_handler_int.
     {
-        error_exit("Błąd obsługi sygnału");
+        error_exit("Błąd obsługi sygnału szybkiego końca");
     }
 
     set_process_limit(); // ustawiamy i sprawdzamy czy nie został przekroczony limit procesów
@@ -78,7 +78,7 @@ int main()
     // tworzenie wątku symulacji czasu - otwiera ona i zamyka salon (nie kończy programu - otwiera i zamyka poczekalnię)
     if (pthread_create(&timer_thread, NULL, simulation_timer_thread, NULL) != 0)
     {
-        error_exit("Blad utworzenia watku symulacji czasu\n");
+        error_exit("Błąd utworzenia wątku symulacji czasu\n");
     }
 
     tworz_fryzjerow(); // wywolanie funkcji tworzenia fryzjerów
@@ -180,7 +180,7 @@ void wait_for_process(int n)
         wPID = wait(&status); // Oczekiwanie na zakończenie procesu potomnego
         if (wPID == -1)       // Sprawdzenie błędu funkcji wait()
         {
-            error_exit("Błąd wait");
+            error_exit("Błąd czekania na proces");
         }
         else
         {

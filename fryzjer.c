@@ -6,7 +6,7 @@ int fotele_semafor;
 int kasa_semafor;
 int shm_id;
 int *banknoty;
-long id_obslugiwany_klient;
+long id_klienta;
 volatile sig_atomic_t sygnal_fryzjer = 0;
 volatile sig_atomic_t fryzjer_komunikat_poczekalnia = 0;
 volatile sig_atomic_t fotel_zajety = 0;
@@ -23,7 +23,7 @@ int main()
     // Rejestracja funkcji obsługi sygnału SIGHUP (przerwanie) w celu wywołania funkcji sygnal_1 przy otrzymaniu sygnału.
     if (signal(SIGHUP, sig_handler_fryzjer) == SIG_ERR)
     {
-        error_exit("Blad obslugi sygnalu nr 1");
+        error_exit("Blad obslugi sygnalu usunięcia fryzjera");
     }
 
     // Deklaracja zmiennej typu Message, która będzie używana do przechowywania wiadomości wysyłanych i odbieranych w komunikacji między procesami
@@ -66,8 +66,8 @@ int main()
             fryzjer_komunikat_poczekalnia = 1;             // Ustawienie flagi o tym, że komunikat został przyjęty
         }
 
-        id_obslugiwany_klient = msg.nadawca;                                                           // przypisujemy id obsługiwanego klienta przekazane w komunikacie do zmiennej
-        printf(GREEN "Fryzjer %ld: zaczynam obsługę klienta %ld.\n" RESET, id, id_obslugiwany_klient); // informacja zaczynamy obsługę
+        id_klienta = msg.nadawca;                                                           // przypisujemy id obsługiwanego klienta przekazane w komunikacie do zmiennej
+        printf(GREEN "Fryzjer %ld: zaczynam obsługę klienta %ld.\n" RESET, id, id_klienta); // informacja zaczynamy obsługę
 
         if (!fotel_zajety) // jeśli fotel nie jest zajęty
         {
@@ -76,9 +76,9 @@ int main()
         }
         printf(GREEN "Fryzjer %ld: zajmuję fotel\n" RESET, id); // Informacja o zajęciu fotela
 
-        printf(GREEN "Fryzjer %ld: Proszę klienta %ld o zapłatę za strzyżenie.\n" RESET, id, id_obslugiwany_klient); // Przechodzimy do prośby o płatnosc
+        printf(GREEN "Fryzjer %ld: Proszę klienta %ld o zapłatę za strzyżenie.\n" RESET, id, id_klienta); // Przechodzimy do prośby o płatnosc
         // Przygotowanie komunikatu - wezwania do zapłaty
-        msg.message_type = id_obslugiwany_klient;
+        msg.message_type = id_klienta;
         msg.nadawca = id;
 
         if (czeka_na_zaplate != 1) // Sprawdzenie flagi
@@ -118,7 +118,7 @@ int main()
         int service_time = rand() % 3 + 1; // losowanie czasu symulacji strzyżenia
         sleep(service_time);               // symulacja strzyżenia - domyslnie service_time
         printf(GREEN "Fryzjer %ld: zakończyłem strzyżenie klienta %ld (czas usługi: %d s).\n" RESET,
-               id, id_obslugiwany_klient, service_time);
+               id, id_klienta, service_time);
 
         if (fotel_zajety) // jeśli fotel zajęty
         {
@@ -132,7 +132,7 @@ int main()
             wydaj_reszte();
         }
         // Przygotowujemy komunikat dla klienta, że obsługa została zakończona i reszta jeśli wymagana wydana
-        msg.message_type = id_obslugiwany_klient;
+        msg.message_type = id_klienta;
         msg.nadawca = id;
         if (koniec_obslugi != 1) // sprawdzamy flagę koniec obsługi
         {
@@ -203,7 +203,7 @@ void wydaj_reszte()
     zajmij_kase();
     while ((banknoty[0] < 2 && banknoty[1] < 1)) // Jeśli w kasie nie mamy 2 baknkotów 10 złotych lub 1 banknotu 20 złotowego
     {
-        printf(GREEN "Fryzjer %ld: Nie mogę wydać reszty klientowi %ld. Czekam na uzupełnienie\n" RESET, id, id_obslugiwany_klient);
+        printf(GREEN "Fryzjer %ld: Nie mogę wydać reszty klientowi %ld. Czekam na uzupełnienie\n" RESET, id, id_klienta);
         zwolnij_kase();
         sleep(3); // czekamy chwilę, może ktoś w tym czasie uzupełni kasę - domyslnie 3
         zajmij_kase();
@@ -212,13 +212,13 @@ void wydaj_reszte()
     {
         banknoty[1] -= 1; // wydajemy ten banknot
         printf(GREEN "Fryzjer %ld: wydaję resztę 20 zł klientowi %ld. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
-               id, id_obslugiwany_klient, banknoty[0], banknoty[1], banknoty[2]);
+               id, id_klienta, banknoty[0], banknoty[1], banknoty[2]);
     }
     else // w innym przypadku to oznacza, że mamy wystarczająco banknotów 10 złotych
     {
         banknoty[0] -= 2; // wydajemy dwa baknoty 10 złotych
         printf(GREEN "Fryzjer %ld: wydaję resztę 2 x 10 zł klientowi %ld. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
-               id, id_obslugiwany_klient, banknoty[0], banknoty[1], banknoty[2]);
+               id, id_klienta, banknoty[0], banknoty[1], banknoty[2]);
     }
     zwolnij_kase();
 }
