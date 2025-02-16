@@ -5,7 +5,7 @@ int msg_qid;
 int fotele_semafor;
 int kasa_semafor;
 int shm_id;
-int *banknoty;
+int *kasa;
 long id_klienta;
 volatile sig_atomic_t sygnal_fryzjer = 0;
 volatile sig_atomic_t fryzjer_komunikat_poczekalnia = 0;
@@ -48,8 +48,8 @@ int main()
     shm_id = stworz_pamiec_dzielona(shm_key);
     fotele_semafor = stworz_semafor(sem_key_f);
     kasa_semafor = stworz_semafor(sem_key_k);
-    // Banknoty/kasa nasza pamiec wspoldzielona
-    banknoty = dolacz_do_pamieci_dzielonej(shm_id);
+    // Kasa nasza pamiec wspoldzielona
+    kasa = dolacz_do_pamieci_dzielonej(shm_id);
 
     while (1)
     {
@@ -101,16 +101,16 @@ int main()
         if (platnosc == 30) // jeśli płatność 30 przekazana przez klienta to:
         {
             // Klient płaci 20 i 10 zł – zwiększamy licznik banknotów 20 i 10 zł
-            banknoty[0] += 1;
-            banknoty[1] += 1;
+            kasa[0] += 1;
+            kasa[1] += 1;
             printf(GREEN "Fryzjer %ld: otrzymałem 20 i 10 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
-                   id, banknoty[0], banknoty[1], banknoty[2]);
+                   id, kasa[0], kasa[1], kasa[2]);
         }
         else if (platnosc == 50) // jeśli płatność klienta wyniosła 50 zł to:
         {
-            banknoty[2] += 1; // dodajemy do kasy baknoty 50 zł
+            kasa[2] += 1; // dodajemy do kasy baknoty 50 zł
             printf(GREEN "Fryzjer %ld: otrzymałem 50 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
-                   id, banknoty[0], banknoty[1], banknoty[2]);
+                   id, kasa[0], kasa[1], kasa[2]);
         }
 
         zwolnij_kase();
@@ -195,30 +195,30 @@ void fryzjer_exit()
         sem_v(kasa_semafor, 1);
     }
     // Odłącz pamięć
-    odlacz_pamiec_dzielona(banknoty);
+    odlacz_pamiec_dzielona(kasa);
 }
 
 void wydaj_reszte()
 {
     zajmij_kase();
-    while ((banknoty[0] < 2 && banknoty[1] < 1)) // Jeśli w kasie nie mamy 2 baknkotów 10 złotych lub 1 banknotu 20 złotowego
+    while ((kasa[0] < 2 && kasa[1] < 1)) // Jeśli w kasie nie mamy 2 baknkotów 10 złotych lub 1 banknotu 20 złotowego
     {
         printf(GREEN "Fryzjer %ld: Nie mogę wydać reszty klientowi %ld. Czekam na uzupełnienie\n" RESET, id, id_klienta);
         zwolnij_kase();
         sleep(3); // czekamy chwilę, może ktoś w tym czasie uzupełni kasę - domyslnie 3
         zajmij_kase();
     }
-    if (banknoty[1] >= 1) // jeśli mamy jeden banknot 20 złotych
+    if (kasa[1] >= 1) // jeśli mamy jeden banknot 20 złotych
     {
-        banknoty[1] -= 1; // wydajemy ten banknot
+        kasa[1] -= 1; // wydajemy ten banknot
         printf(GREEN "Fryzjer %ld: wydaję resztę 20 zł klientowi %ld. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
-               id, id_klienta, banknoty[0], banknoty[1], banknoty[2]);
+               id, id_klienta, kasa[0], kasa[1], kasa[2]);
     }
     else // w innym przypadku to oznacza, że mamy wystarczająco banknotów 10 złotych
     {
-        banknoty[0] -= 2; // wydajemy dwa baknoty 10 złotych
+        kasa[0] -= 2; // wydajemy dwa baknoty 10 złotych
         printf(GREEN "Fryzjer %ld: wydaję resztę 2 x 10 zł klientowi %ld. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
-               id, id_klienta, banknoty[0], banknoty[1], banknoty[2]);
+               id, id_klienta, kasa[0], kasa[1], kasa[2]);
     }
     zwolnij_kase();
 }

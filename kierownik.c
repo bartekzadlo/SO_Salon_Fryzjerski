@@ -14,7 +14,7 @@ int poczekalnia_semafor;
 int msg_qid;
 // pamięć dzielona
 int shm_id;
-int *banknoty; // kasa/banknoty -  pamiec dzielona
+int *kasa; // kasa -  pamiec dzielona
 
 int main()
 {
@@ -45,14 +45,14 @@ int main()
     fotele_semafor = stworz_semafor(sem_key_f);
     poczekalnia_semafor = stworz_semafor(sem_key_p);
     // Dołączenie pamięci współdzielonej i inicjalizacja banknotów w kasie
-    banknoty = dolacz_do_pamieci_dzielonej(shm_id);
+    kasa = dolacz_do_pamieci_dzielonej(shm_id);
     zainicjalizuj_kase();
 
     sem_setval(kasa_semafor, 1);   // ustawiamy semafor kasa na 1 - mamy jedną wspólną kasę, tylko jedna osoba może ją obsługiwać
     sem_setval(fotele_semafor, N); // ustawiamy semafor foteli na N - ilość foteli
 
     printf(YELLOW "Zainicjalizowano fotele, ilość foteli: %d.\n" RESET, sem_getval(fotele_semafor));
-    printf(YELLOW "Zainicjalizowane kasę, stan początkowy kasy - Banknoty 10 zł: %d, Banknoty 20 zł: %d, Banknoty 50 zł: %d\n" RESET, banknoty[0], banknoty[1], banknoty[2]);
+    printf(YELLOW "Zainicjalizowane kasę, stan początkowy kasy - Banknoty 10 zł: %d, Banknoty 20 zł: %d, Banknoty 50 zł: %d\n" RESET, kasa[0], kasa[1], kasa[2]);
 
     if (F <= 1 || N >= F) // walidacja danych F i N
     {
@@ -226,7 +226,7 @@ void zwolnij_zasoby_kierownik() // funkcja zwalniająca wszelkie zasoby
     usun_semafor(kasa_semafor);
     usun_semafor(fotele_semafor);
     usun_semafor(poczekalnia_semafor);
-    odlacz_pamiec_dzielona(banknoty);
+    odlacz_pamiec_dzielona(kasa);
     usun_pamiec_dzielona(shm_id);
     printf(YELLOW "Zasoby zwolnione\n" RESET);
 }
@@ -259,7 +259,7 @@ void tworz_klientow() // funkcja tworząca klientów
 
 void zainicjalizuj_kase()
 {
-    banknoty[0] = 10; // banknoty o nominale 10
-    banknoty[1] = 10; // banknoty o nominale 20
-    banknoty[2] = 10; // banknoty o nominale 50
+    kasa[0] = 10; // banknoty o nominale 10
+    kasa[1] = 10; // banknoty o nominale 20
+    kasa[2] = 10; // banknoty o nominale 50
 }
