@@ -9,8 +9,8 @@ int *banknoty;
 long id_obslugiwany_klient;
 volatile sig_atomic_t sygnal_fryzjer = 0;
 volatile sig_atomic_t fryzjer_komunikat_poczekalnia = 0;
-volatile sig_atomic_t fotel = 0;
-volatile sig_atomic_t kasa = 0;
+volatile sig_atomic_t fotel_zajety = 0;
+volatile sig_atomic_t kasa_zajeta = 0;
 volatile sig_atomic_t czeka_na_zaplate = 0;
 volatile sig_atomic_t odbiera_zaplate = 0;
 volatile sig_atomic_t koniec_obslugi = 0;
@@ -21,7 +21,7 @@ int main()
     srand(time(NULL));
 
     // Rejestracja funkcji obsługi sygnału SIGHUP (przerwanie) w celu wywołania funkcji sygnal_1 przy otrzymaniu sygnału.
-    if (signal(SIGHUP, sygnal_1) == SIG_ERR)
+    if (signal(SIGHUP, sig_handler_fryzjer) == SIG_ERR)
     {
         error_exit("Blad obslugi sygnalu nr 1");
     }
@@ -69,10 +69,10 @@ int main()
         id_obslugiwany_klient = msg.nadawca;                                                           // przypisujemy id obsługiwanego klienta przekazane w komunikacie do zmiennej
         printf(GREEN "Fryzjer %ld: zaczynam obsługę klienta %ld.\n" RESET, id, id_obslugiwany_klient); // informacja zaczynamy obsługę
 
-        if (!fotel) // jeśli fotel nie jest zajęty
+        if (!fotel_zajety) // jeśli fotel nie jest zajęty
         {
             sem_p(fotele_semafor, 1); // zajmujemy semaforem fotel
-            fotel = 1;                // ustawienie flagi o zajęciu fotela
+            fotel_zajety = 1;         // ustawienie flagi o zajęciu fotela
         }
         printf(GREEN "Fryzjer %ld: zajmuję fotel\n" RESET, id); // Informacja o zajęciu fotela
 
@@ -97,7 +97,7 @@ int main()
         platnosc = msg.platnosc; // Przypisujemy płatność przekazaną przez klienta do zmiennej płatność
 
         sem_p(kasa_semafor, 1); // Zajmujemy semafor kasy
-        kasa = 1;               // Ustawiamy flagę kasa - potrzebna przy zwalnianiu zasobów
+        kasa_zajeta = 1;        // Ustawiamy flagę kasa - potrzebna przy zwalnianiu zasobów
 
         if (platnosc == 30) // jeśli płatność 30 przekazana przez klienta to:
         {
@@ -115,32 +115,32 @@ int main()
         }
 
         sem_v(kasa_semafor, 1); // zwalniamy semafor kasa
-        kasa = 0;               // ustawiamy flagę kasy na 0
+        kasa_zajeta = 0;        // ustawiamy flagę kasy na 0
 
         int service_time = rand() % 3 + 1; // losowanie czasu symulacji strzyżenia
         sleep(service_time);               // symulacja strzyżenia - domyslnie service_time
         printf(GREEN "Fryzjer %ld: zakończyłem strzyżenie klienta %ld (czas usługi: %d s).\n" RESET,
                id, id_obslugiwany_klient, service_time);
 
-        if (fotel) // jeśli fotel zajęty
+        if (fotel_zajety) // jeśli fotel zajęty
         {
             sem_v(fotele_semafor, 1); // zwalniamy fotel
-            fotel = 0;                // ustawiamy flagę fotela na 0
+            fotel_zajety = 0;         // ustawiamy flagę fotela na 0
         }
 
         // Wydawanie reszty - tylko gdy płatność = 50 zł
         if (platnosc == 50) // jeśli płatność wynosiłą 50
         {
             sem_p(kasa_semafor, 1);                      // zajmujemy semafor kasa
-            kasa = 1;                                    // ustawiamy flagę zajęcia kasy
+            kasa_zajeta = 1;                             // ustawiamy flagę zajęcia kasy
             while ((banknoty[0] < 2 && banknoty[1] < 1)) // Jeśli w kasie nie mamy 2 baknkotów 10 złotych lub 1 banknotu 20 złotowego
             {
                 printf(GREEN "Fryzjer %ld: Nie mogę wydać reszty klientowi %ld. Czekam na uzupełnienie\n" RESET, id, id_obslugiwany_klient);
                 sem_v(kasa_semafor, 1); // zwalniamy semafor aby ktoś inny mógł operować na kasie
-                kasa = 0;               // flaga kasy na 0
+                kasa_zajeta = 0;        // flaga kasy na 0
                 sleep(3);               // czekamy chwilę, może ktoś w tym czasie uzupełni kasę - domyslnie 3
                 sem_p(kasa_semafor, 1); // ponawiamy zajęcie kasy
-                kasa = 1;               // ustawiamy flagę - sprawdzamy ponownie warunek while
+                kasa_zajeta = 1;        // ustawiamy flagę - sprawdzamy ponownie warunek while
             }
             if (banknoty[1] >= 1) // jeśli mamy jeden banknot 20 złotych
             {
@@ -155,7 +155,7 @@ int main()
                        id, id_obslugiwany_klient, banknoty[0], banknoty[1], banknoty[2]);
             }
             sem_v(kasa_semafor, 1); // zwalniamy kasę
-            kasa = 0;               // ustawiamy flagę na 0
+            kasa_zajeta = 0;        // ustawiamy flagę na 0
         }
         // Przygotowujemy komunikat dla klienta, że obsługa została zakończona i reszta jeśli wymagana wydana
         msg.message_type = id_obslugiwany_klient;
@@ -176,7 +176,7 @@ int main()
     printf(GREEN "Fryzjer %ld: wychodzę z pracy.\n" RESET, id);
 }
 
-void sygnal_1(int sig)
+void sig_handler_fryzjer(int sig)
 {
     long id = getpid();                                                   // nabywamy id fryzjera
     printf(RED "Fryzjer %ld: Otrzymałem sygnał końca pracy\n" RESET, id); // informacja o otrzymaniu sygnału końca pracy
@@ -201,20 +201,21 @@ void sygnal_1(int sig)
     else
     {
         // Jeśli fryzjer nie obsługuje klienta to zwalniamy zasoby i kończymy jego pracę
-        zwolnij_zasoby_fryzjer();
+        fryzjer_exit();
         exit(EXIT_SUCCESS);
     }
 }
 
-void zwolnij_zasoby_fryzjer()
+void fryzjer_exit()
 {
+    long id = getpid();
     // Zwolnij semafory
-    if (fotel)
+    if (fotel_zajety)
     {
         printf(GREEN "Fryzjer %ld: Zwalniam fotel.\n" RESET, id);
         sem_v(fotele_semafor, 1);
     }
-    if (kasa)
+    if (kasa_zajeta)
     {
         printf(GREEN "Fryzjer %ld: Zwalniam kasę.\n" RESET, id);
         sem_v(kasa_semafor, 1);

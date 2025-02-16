@@ -59,8 +59,8 @@ void sem_v(int id, int n);
 void error_exit(const char *msg);
 void set_process_limit();
 // fryzjer.c
-void sygnal_1(int sig);
-void zwolnij_zasoby_fryzjer();
+void sig_handler_fryzjer(int sig);
+void fryzjer_exit();
 // kierownik.c
 void zwolnij_zasoby_kierownik();
 void *simulation_timer_thread(void *arg);
