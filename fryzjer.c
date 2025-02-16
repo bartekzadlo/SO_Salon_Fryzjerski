@@ -131,31 +131,7 @@ int main()
         // Wydawanie reszty - tylko gdy płatność = 50 zł
         if (platnosc == 50) // jeśli płatność wynosiłą 50
         {
-            sem_p(kasa_semafor, 1);                      // zajmujemy semafor kasa
-            kasa_zajeta = 1;                             // ustawiamy flagę zajęcia kasy
-            while ((banknoty[0] < 2 && banknoty[1] < 1)) // Jeśli w kasie nie mamy 2 baknkotów 10 złotych lub 1 banknotu 20 złotowego
-            {
-                printf(GREEN "Fryzjer %ld: Nie mogę wydać reszty klientowi %ld. Czekam na uzupełnienie\n" RESET, id, id_obslugiwany_klient);
-                sem_v(kasa_semafor, 1); // zwalniamy semafor aby ktoś inny mógł operować na kasie
-                kasa_zajeta = 0;        // flaga kasy na 0
-                sleep(3);               // czekamy chwilę, może ktoś w tym czasie uzupełni kasę - domyslnie 3
-                sem_p(kasa_semafor, 1); // ponawiamy zajęcie kasy
-                kasa_zajeta = 1;        // ustawiamy flagę - sprawdzamy ponownie warunek while
-            }
-            if (banknoty[1] >= 1) // jeśli mamy jeden banknot 20 złotych
-            {
-                banknoty[1] -= 1; // wydajemy ten banknot
-                printf(GREEN "Fryzjer %ld: wydaję resztę 20 zł klientowi %ld. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
-                       id, id_obslugiwany_klient, banknoty[0], banknoty[1], banknoty[2]);
-            }
-            else // w innym przypadku to oznacza, że mamy wystarczająco banknotów 10 złotych
-            {
-                banknoty[0] -= 2; // wydajemy dwa baknoty 10 złotych
-                printf(GREEN "Fryzjer %ld: wydaję resztę 2 x 10 zł klientowi %ld. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
-                       id, id_obslugiwany_klient, banknoty[0], banknoty[1], banknoty[2]);
-            }
-            sem_v(kasa_semafor, 1); // zwalniamy kasę
-            kasa_zajeta = 0;        // ustawiamy flagę na 0
+            wydaj_reszte();
         }
         // Przygotowujemy komunikat dla klienta, że obsługa została zakończona i reszta jeśli wymagana wydana
         msg.message_type = id_obslugiwany_klient;
@@ -222,4 +198,33 @@ void fryzjer_exit()
     }
     // Odłącz pamięć
     odlacz_pamiec_dzielona(banknoty);
+}
+
+void wydaj_reszte()
+{
+    sem_p(kasa_semafor, 1);                      // zajmujemy semafor kasa
+    kasa_zajeta = 1;                             // ustawiamy flagę zajęcia kasy
+    while ((banknoty[0] < 2 && banknoty[1] < 1)) // Jeśli w kasie nie mamy 2 baknkotów 10 złotych lub 1 banknotu 20 złotowego
+    {
+        printf(GREEN "Fryzjer %ld: Nie mogę wydać reszty klientowi %ld. Czekam na uzupełnienie\n" RESET, id, id_obslugiwany_klient);
+        sem_v(kasa_semafor, 1); // zwalniamy semafor aby ktoś inny mógł operować na kasie
+        kasa_zajeta = 0;        // flaga kasy na 0
+        sleep(3);               // czekamy chwilę, może ktoś w tym czasie uzupełni kasę - domyslnie 3
+        sem_p(kasa_semafor, 1); // ponawiamy zajęcie kasy
+        kasa_zajeta = 1;        // ustawiamy flagę - sprawdzamy ponownie warunek while
+    }
+    if (banknoty[1] >= 1) // jeśli mamy jeden banknot 20 złotych
+    {
+        banknoty[1] -= 1; // wydajemy ten banknot
+        printf(GREEN "Fryzjer %ld: wydaję resztę 20 zł klientowi %ld. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
+               id, id_obslugiwany_klient, banknoty[0], banknoty[1], banknoty[2]);
+    }
+    else // w innym przypadku to oznacza, że mamy wystarczająco banknotów 10 złotych
+    {
+        banknoty[0] -= 2; // wydajemy dwa baknoty 10 złotych
+        printf(GREEN "Fryzjer %ld: wydaję resztę 2 x 10 zł klientowi %ld. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
+               id, id_obslugiwany_klient, banknoty[0], banknoty[1], banknoty[2]);
+    }
+    sem_v(kasa_semafor, 1); // zwalniamy kasę
+    kasa_zajeta = 0;        // ustawiamy flagę na 0
 }
