@@ -23,7 +23,7 @@ int main()
     // Rejestracja funkcji obsługi sygnału SIGHUP (przerwanie) w celu wywołania funkcji sygnal_1 przy otrzymaniu sygnału.
     if (signal(SIGHUP, sig_handler_fryzjer) == SIG_ERR)
     {
-        error_exit("Blad obslugi sygnalu usunięcia fryzjera");
+        error_exit("Błąd obsługi sygnału usunięcia fryzjera");
     }
 
     // Deklaracja zmiennej typu Message, która będzie używana do przechowywania wiadomości wysyłanych i odbieranych w komunikacji między procesami
@@ -81,13 +81,13 @@ int main()
         msg.message_type = id_klienta;
         msg.nadawca = id;
 
-        if (czeka_na_zaplate != 1) // Sprawdzenie flagi
+        if (!czeka_na_zaplate) // Sprawdzenie flagi
         {
             wyslij_komunikat_do_kolejki(msg_qid, &msg); // Wysłanie komunikatu do kolejki o tym, że fryzjer czeka na zapłatę klienta
             czeka_na_zaplate = 1;                       // Ustawienie flagi czeka na zapłatę
         }
 
-        if (odbiera_zaplate != 1) // Sprawdzenie flagi czy fryzjer już odbierał zapłatę
+        if (!odbiera_zaplate) // Sprawdzenie flagi czy fryzjer już odbierał zapłatę
         {
             pobierz_komunikat_z_kolejki(msg_qid, &msg, id); // Pobieramy komunikat o zapłacie
             printf(GREEN "Fryzjer %ld: otrzymałem komunikat o zapłacie.\n" RESET, id);
@@ -134,7 +134,7 @@ int main()
         // Przygotowujemy komunikat dla klienta, że obsługa została zakończona i reszta jeśli wymagana wydana
         msg.message_type = id_klienta;
         msg.nadawca = id;
-        if (koniec_obslugi != 1) // sprawdzamy flagę koniec obsługi
+        if (!koniec_obslugi) // sprawdzamy flagę koniec obsługi
         {
             wyslij_komunikat_do_kolejki(msg_qid, &msg); // wysyłamy komunikat do klienta o zakończeniu obsługi
             koniec_obslugi = 1;                         // ustawiamy flagę

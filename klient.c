@@ -27,9 +27,8 @@ int main()
     // Zmienna do przechowywania wartości płatności za usługę fryzjerską, która będzie losowana.
     int platnosc;
 
-    // Deklaracja klucza do kolejki komunikatów
+    // Deklaracja kluczy
     key_t msg_qkey;
-    // Deklaracja klucza do semaforu poczekalnia
     key_t sem_key_p;
 
     // Tworzymy klucze
@@ -66,7 +65,7 @@ int main()
                 klient_komunikat_poczekalnia = 1;           // flaga potrzebna nam przy zwalnianiu zasobów - potwierdza ona, że klient jest w trakcie obsługi
                 printf(BLUE "Klient %ld: wyslalem komunikat, że jestem w poczekalni.\n" RESET, id_klient);
 
-                if (pobranie_z_poczekalni != 1) // jeśli klient nie został jeszcze pobrany z poczekalni przez żadnego fryzjera
+                if (!pobranie_z_poczekalni) // jeśli klient nie został jeszcze pobrany z poczekalni przez żadnego fryzjera
                 {
                     printf(BLUE "Klient %ld: zostałem pobrany przez fryzjera.\n" RESET, id_klient);
                     pobierz_komunikat_z_kolejki(msg_qid, &msg, id_klient); // pobieramy komunikat od fryzjera
