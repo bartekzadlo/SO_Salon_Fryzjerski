@@ -202,7 +202,7 @@ void *simulation_timer_thread(void *arg)
     {
         if (TP > 0)
         {
-            sleep(TP); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
+            sleep(0); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
         }
         printf(YELLOW "Salon otwarty.\n" RESET);                                                                   // Informacja o otwarciu salonu
         sem_setval(poczekalnia_semafor, K);                                                                        // Inicjalizacji poczekalni - ilość K wolnych miejsc

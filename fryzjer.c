@@ -115,7 +115,7 @@ int main()
         zwolnij_kase();
 
         int service_time = rand() % 3 + 1; // losowanie czasu symulacji strzyżenia
-        sleep(service_time);               // symulacja strzyżenia - domyslnie service_time
+        sleep(0);                          // symulacja strzyżenia - domyslnie service_time
         printf(GREEN "Fryzjer %ld: zakończyłem strzyżenie klienta %ld (czas usługi: %d s).\n" RESET,
                id_fryzjer, id_klienta, service_time);
 
@@ -202,7 +202,7 @@ void wydaj_reszte()
     {
         printf(GREEN "Fryzjer %ld: Nie mogę wydać reszty klientowi %ld. Czekam na uzupełnienie\n" RESET, id_fryzjer, id_klienta);
         zwolnij_kase();
-        sleep(3); // czekamy chwilę, może ktoś w tym czasie uzupełni kasę - domyslnie 3
+        sleep(0); // czekamy chwilę, może ktoś w tym czasie uzupełni kasę - domyslnie 3
         zajmij_kase();
     }
     if (kasa[1] >= 1) // jeśli mamy jeden banknot 20 złotych
