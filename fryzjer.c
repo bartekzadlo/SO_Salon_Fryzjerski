@@ -19,7 +19,7 @@ int main()
 {
     // Inicjalizacja generatora liczb losowych na podstawie czasu systemowego
     srand(time(NULL));
-    // Rejestracja funkcji obsługi sygnału SIGHUP (przerwanie) w celu wywołania funkcji sygnal_1 przy otrzymaniu sygnału.
+    // Rejestracja funkcji obsługi sygnału SIGHUP (przerwanie) w celu wywołania funkcji sig_handler_fryzjer przy otrzymaniu sygnału.
     if (signal(SIGHUP, sig_handler_fryzjer) == SIG_ERR)
     {
         error_exit("Błąd obsługi sygnału usunięcia fryzjera");

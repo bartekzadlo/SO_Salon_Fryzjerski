@@ -15,6 +15,7 @@ int msg_qid;
 // pamięć dzielona
 int shm_id;
 int *kasa; // kasa -  pamiec dzielona
+volatile sig_atomic_t jeden_fryzjer_zabity = 0;
 
 int main()
 {
@@ -236,6 +237,7 @@ void zwolnij_zasoby_kierownik() // funkcja zwalniająca wszelkie zasoby
 
 void tworz_fryzjerow() // funkcja tworząca fryzjerów
 {
+    jeden_fryzjer_zabity = 1;
     for (int i = 0; i < F; i++)
     {
         fryzjerzy[i] = fork();
@@ -249,14 +251,29 @@ void tworz_fryzjerow() // funkcja tworząca fryzjerów
 
 void tworz_klientow() // funkcja tworząca klientów
 {
-    for (int i = 0; i < P; i++)
+    if (jeden_fryzjer_zabity == 1)
     {
-        klienci[i] = fork();
-        if (klienci[i] == 0)
+        for (int i = 1; i < P; i++)
         {
-            execl("./klient", "klient", NULL);
+            klienci[i] = fork();
+            if (klienci[i] == 0)
+            {
+                execl("./klient", "klient", NULL);
+            }
+            printf(YELLOW "Nowy klient %d\n", klienci[i]);
         }
-        printf(YELLOW "Nowy klient %d\n", klienci[i]);
+    }
+    else
+    {
+        for (int i = 0; i < P; i++)
+        {
+            klienci[i] = fork();
+            if (klienci[i] == 0)
+            {
+                execl("./klient", "klient", NULL);
+            }
+            printf(YELLOW "Nowy klient %d\n", klienci[i]);
+        }
     }
 }
 
