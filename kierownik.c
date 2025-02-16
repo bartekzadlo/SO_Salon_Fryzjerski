@@ -89,7 +89,7 @@ int main()
     while (menu != '3')
     {
         printf(CYAN "1 - Zakończ pracę fryzjera\n");
-        printf("2 - Zakończ pracę klientów\n");
+        printf("2 - Natychmiastowo zamknij salon\n");
         printf("3 - Zwolnij zasoby i zakończ program\n" RESET);
 
         while (getchar() != '\n')
@@ -103,7 +103,7 @@ int main()
             zabij_fryzjera(); // sygnał 1 kończy pracę jednego fryzjera
             break;
         case '2':
-            zabij_klientow(); // sygnał 2 kończy natychmiastowo pracę wszystkich klientów
+            sig_handler_int(0); // sygnał 2 kończy natychmiastowo pracę wszystkich klientów
             break;
         case '3':
             koniec(0); // zamyka program, zwalniając ps i ipcs

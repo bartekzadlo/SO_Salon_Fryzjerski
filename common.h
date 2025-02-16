@@ -17,10 +17,10 @@
 #include <termios.h>
 
 /* Parametry symulacji */
-#define F 2  // Liczba fryzjerów (F > 1) – ilość wątków reprezentujących fryzjerów
-#define N 1  // Liczba foteli (N < F) – ograniczenie liczby jednocześnie obsługiwanych klientów
-#define K 2  // Maksymalna liczba klientów w poczekalni
-#define P 10 // Liczba klientów – ilość wątków reprezentujących klientów
+#define F 25   // Liczba fryzjerów (F > 1) – ilość wątków reprezentujących fryzjerów
+#define N 10   // Liczba foteli (N < F) – ograniczenie liczby jednocześnie obsługiwanych klientów
+#define K 400  // Maksymalna liczba klientów w poczekalni
+#define P 1000 // Liczba klientów – ilość wątków reprezentujących klientów
 
 /* Kolory ANSI dla logowania w konsoli */
 #define RESET "\033[0m"
