@@ -216,7 +216,10 @@ void *simulation_timer_thread(void *arg)
         }
         sem_setval(poczekalnia_semafor, 0); // NALEŻY ZAKOMENTOWAĆ GDY SLEEP(0) Zamknięcie poczekalni po upływie czasu - równoznaczne z zamknięciem salonu - kolejni klienci nie wejdą
         printf(YELLOW "Salon zamknięty.\n" RESET);
-        return NULL;
+        zabij_klientow();
+        zabij_fryzjerow();
+        zwolnij_zasoby_kierownik();
+        exit(EXIT_SUCCESS);
     }
 }
 
