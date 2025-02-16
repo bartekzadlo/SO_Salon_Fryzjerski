@@ -16,19 +16,6 @@ int msg_qid;
 int shm_id;
 int *kasa; // kasa -  pamiec dzielona
 
-char get_char(void)
-{
-    struct termios oldt, newt;
-    char ch;
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO); // Wyłącz tryb kanoniczny i echo
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    ch = getchar();
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // Przywróć stare ustawienia
-    return ch;
-}
-
 int main()
 {
     if (signal(SIGINT, sig_handler_int) == SIG_ERR) // Ustawienie obsługi sygnału SIGINT na sig_handler_int.
@@ -105,7 +92,11 @@ int main()
         printf("2 - Zakończ pracę klientów\n");
         printf("3 - Zwolnij zasoby i zakończ program\n" RESET);
 
-        menu = get_char();
+        while (getchar() != '\n')
+            ; // Czeszczenie bufora
+        while (scanf("%c", &menu) != 1)
+            ;
+
         switch (menu)
         {
         case '1':
@@ -127,10 +118,8 @@ int main()
 void sig_handler_int(int s) // obsługa szybkiego końca - zabicia programu
 {
     printf(RED "Wywołano szybki koniec.\n" RESET);
-    struct termios oldt;
-    tcgetattr(STDIN_FILENO, &oldt);          // przywracamy ustawienia terminala
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // ustawiamy poprzedni stan terminala
-    zwolnij_zasoby_kierownik();              // zwalniamy zasoby
+    stop_timer_thread();        // kończymy wątek symulacji czasu
+    zwolnij_zasoby_kierownik(); // zwalniamy zasoby
     // konczymy fryzjerów i klientów
     for (int i = 0; i < F; i++)
     {
@@ -142,9 +131,6 @@ void sig_handler_int(int s) // obsługa szybkiego końca - zabicia programu
     }
     wait_for_process(F); // czekamy na zakończenie procesów
     wait_for_process(P);
-
-    stop_timer_thread(); // kończymy wątek symulacji czasu
-
     exit(EXIT_SUCCESS);
 }
 
