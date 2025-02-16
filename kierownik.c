@@ -154,6 +154,7 @@ void wait_for_process(int n)
 
 void stop_timer_thread()
 {
+    sem_setval(poczekalnia_semafor, 0);
     pthread_cancel(timer_thread);     // Anulowanie wątku zegara (timer_thread)
     pthread_join(timer_thread, NULL); // Oczekiwanie na zakończenie wątku zegara, aby upewnić się, że został poprawnie zatrzymany
 }
@@ -162,8 +163,8 @@ void koniec(int s) // zamykanie salonu
 {
     printf(RED "Wywołano koniec.\n" RESET);
     stop_timer_thread();        // kończymy wątek symulacji czasu - cancel i join
-    zabij_fryzjerow();          // wysyłamy sygnał - zamknięcie procesów wszystkich fryzjerów
     zabij_klientow();           // wysyłamy sygnał - zamknięcie procesów wszystkich klientów
+    zabij_fryzjerow();          // wysyłamy sygnał - zamknięcie procesów wszystkich fryzjerów
     zwolnij_zasoby_kierownik(); // zwalniamy wszystkie zasoby
     exit(EXIT_SUCCESS);
 }

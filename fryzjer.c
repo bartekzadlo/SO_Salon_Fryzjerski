@@ -1,6 +1,6 @@
 #include "common.h"
 
-long id;
+long id_fryzjer;
 int msg_qid;
 int fotele_semafor;
 int kasa_semafor;
@@ -19,7 +19,6 @@ int main()
 {
     // Inicjalizacja generatora liczb losowych na podstawie czasu systemowego
     srand(time(NULL));
-    long id = getpid(); // Pobranie identyfikatora fryzjera
     // Rejestracja funkcji obsługi sygnału SIGHUP (przerwanie) w celu wywołania funkcji sygnal_1 przy otrzymaniu sygnału.
     if (signal(SIGHUP, sig_handler_fryzjer) == SIG_ERR)
     {
@@ -53,32 +52,33 @@ int main()
 
     while (1)
     {
-        if (sygnal_fryzjer) // Jeśli ustawiona flaga sygnału to nie rozpoczynamy ponownej usługi
+        id_fryzjer = getpid(); // Pobranie identyfikatora fryzjera
+        if (sygnal_fryzjer)    // Jeśli ustawiona flaga sygnału to nie rozpoczynamy ponownej usługi
         {
-            printf(GREEN "Fryzjer %ld: otrzymałem sygnał, kończę pracę.\n" RESET, id);
+            printf(GREEN "Fryzjer %ld: otrzymałem sygnał, kończę pracę.\n" RESET, id_fryzjer);
             break;
         }
-        printf(GREEN "Fryzjer %ld: czekam na klientów w poczekalni.\n" RESET, id); // Fryzjer na początku pracy domyślnie czeka na klientów
-        if (fryzjer_komunikat_poczekalnia != 1)                                    // Jeśli fryzjer nie otrzymał komunikatu o kliencie w poczekalni
+        printf(GREEN "Fryzjer %ld: czekam na klientów w poczekalni.\n" RESET, id_fryzjer); // Fryzjer na początku pracy domyślnie czeka na klientów
+        if (fryzjer_komunikat_poczekalnia != 1)                                            // Jeśli fryzjer nie otrzymał komunikatu o kliencie w poczekalni
         {
             pobierz_komunikat_z_kolejki(msg_qid, &msg, 1); // Pobranie komunikatu o kliencie w poczekalni
             fryzjer_komunikat_poczekalnia = 1;             // Ustawienie flagi o tym, że komunikat został przyjęty
         }
 
-        id_klienta = msg.nadawca;                                                           // przypisujemy id obsługiwanego klienta przekazane w komunikacie do zmiennej
-        printf(GREEN "Fryzjer %ld: zaczynam obsługę klienta %ld.\n" RESET, id, id_klienta); // informacja zaczynamy obsługę
+        id_klienta = msg.nadawca;                                                                   // przypisujemy id obsługiwanego klienta przekazane w komunikacie do zmiennej
+        printf(GREEN "Fryzjer %ld: zaczynam obsługę klienta %ld.\n" RESET, id_fryzjer, id_klienta); // informacja zaczynamy obsługę
 
         if (!fotel_zajety) // jeśli fotel nie jest zajęty
         {
             sem_p(fotele_semafor, 1); // zajmujemy semaforem fotel
             fotel_zajety = 1;         // ustawienie flagi o zajęciu fotela
         }
-        printf(GREEN "Fryzjer %ld: zajmuję fotel\n" RESET, id); // Informacja o zajęciu fotela
+        printf(GREEN "Fryzjer %ld: zajmuję fotel\n" RESET, id_fryzjer); // Informacja o zajęciu fotela
 
-        printf(GREEN "Fryzjer %ld: Proszę klienta %ld o zapłatę za strzyżenie.\n" RESET, id, id_klienta); // Przechodzimy do prośby o płatnosc
+        printf(GREEN "Fryzjer %ld: Proszę klienta %ld o zapłatę za strzyżenie.\n" RESET, id_fryzjer, id_klienta); // Przechodzimy do prośby o płatnosc
         // Przygotowanie komunikatu - wezwania do zapłaty
         msg.message_type = id_klienta;
-        msg.nadawca = id;
+        msg.nadawca = id_fryzjer;
 
         if (!czeka_na_zaplate) // Sprawdzenie flagi
         {
@@ -88,8 +88,8 @@ int main()
 
         if (!odbiera_zaplate) // Sprawdzenie flagi czy fryzjer już odbierał zapłatę
         {
-            pobierz_komunikat_z_kolejki(msg_qid, &msg, id); // Pobieramy komunikat o zapłacie
-            printf(GREEN "Fryzjer %ld: otrzymałem komunikat o zapłacie.\n" RESET, id);
+            pobierz_komunikat_z_kolejki(msg_qid, &msg, id_fryzjer); // Pobieramy komunikat o zapłacie
+            printf(GREEN "Fryzjer %ld: otrzymałem komunikat o zapłacie.\n" RESET, id_fryzjer);
             odbiera_zaplate = 1; // Ustawiamy flagę
         }
 
@@ -103,13 +103,13 @@ int main()
             kasa[0] += 1;
             kasa[1] += 1;
             printf(GREEN "Fryzjer %ld: otrzymałem 20 i 10 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
-                   id, kasa[0], kasa[1], kasa[2]);
+                   id_fryzjer, kasa[0], kasa[1], kasa[2]);
         }
         else if (platnosc == 50) // jeśli płatność klienta wyniosła 50 zł to:
         {
             kasa[2] += 1; // dodajemy do kasy baknoty 50 zł
             printf(GREEN "Fryzjer %ld: otrzymałem 50 zł. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
-                   id, kasa[0], kasa[1], kasa[2]);
+                   id_fryzjer, kasa[0], kasa[1], kasa[2]);
         }
 
         zwolnij_kase();
@@ -117,7 +117,7 @@ int main()
         int service_time = rand() % 3 + 1; // losowanie czasu symulacji strzyżenia
         sleep(service_time);               // symulacja strzyżenia - domyslnie service_time
         printf(GREEN "Fryzjer %ld: zakończyłem strzyżenie klienta %ld (czas usługi: %d s).\n" RESET,
-               id, id_klienta, service_time);
+               id_fryzjer, id_klienta, service_time);
 
         if (fotel_zajety) // jeśli fotel zajęty
         {
@@ -132,12 +132,12 @@ int main()
         }
         // Przygotowujemy komunikat dla klienta, że obsługa została zakończona i reszta jeśli wymagana wydana
         msg.message_type = id_klienta;
-        msg.nadawca = id;
+        msg.nadawca = id_fryzjer;
         if (koniec_obslugi != 1) // sprawdzamy flagę koniec obsługi
         {
             wyslij_komunikat_do_kolejki(msg_qid, &msg); // wysyłamy komunikat do klienta o zakończeniu obsługi
             koniec_obslugi = 1;                         // ustawiamy flagę
-            printf(GREEN "Fryzjer %ld: Wysłałem komunikat o zakończeniu usługi.\n" RESET, id);
+            printf(GREEN "Fryzjer %ld: Wysłałem komunikat o zakończeniu usługi.\n" RESET, id_fryzjer);
         }
         // Resetujemy flagi przed kolejną iteracją pracy fryzjera
         fryzjer_komunikat_poczekalnia = 0;
@@ -146,13 +146,12 @@ int main()
         koniec_obslugi = 0;
     }
     // Po wyjściu z pętli pracy fryzjera, logujemy informację o zakończeniu pracy
-    printf(GREEN "Fryzjer %ld: wychodzę z pracy.\n" RESET, id);
+    printf(GREEN "Fryzjer %ld: wychodzę z pracy.\n" RESET, id_fryzjer);
 }
 
 void sig_handler_fryzjer(int sig)
 {
-    long id = getpid();                                                   // nabywamy id fryzjera
-    printf(RED "Fryzjer %ld: Otrzymałem sygnał końca pracy\n" RESET, id); // informacja o otrzymaniu sygnału końca pracy
+    printf(RED "Fryzjer %ld: Otrzymałem sygnał końca pracy\n" RESET, id_fryzjer); // informacja o otrzymaniu sygnału końca pracy
 
     // Ustaw flagi
     if (fryzjer_komunikat_poczekalnia) // jeśli fryzjer jest już po przyjęciu komunikatu - tzn że jest w trakcie obsługi
@@ -181,16 +180,15 @@ void sig_handler_fryzjer(int sig)
 
 void fryzjer_exit()
 {
-    long id = getpid();
     // Zwolnij semafory
     if (fotel_zajety)
     {
-        printf(GREEN "Fryzjer %ld: Zwalniam fotel.\n" RESET, id);
+        printf(GREEN "Fryzjer %ld: Zwalniam fotel.\n" RESET, id_fryzjer);
         sem_v(fotele_semafor, 1);
     }
     if (kasa_zajeta)
     {
-        printf(GREEN "Fryzjer %ld: Zwalniam kasę.\n" RESET, id);
+        printf(GREEN "Fryzjer %ld: Zwalniam kasę.\n" RESET, id_fryzjer);
         sem_v(kasa_semafor, 1);
     }
     // Odłącz pamięć
@@ -199,11 +197,10 @@ void fryzjer_exit()
 
 void wydaj_reszte()
 {
-    long id = getpid();
     zajmij_kase();
     while ((kasa[0] < 2 && kasa[1] < 1)) // Jeśli w kasie nie mamy 2 baknkotów 10 złotych lub 1 banknotu 20 złotowego
     {
-        printf(GREEN "Fryzjer %ld: Nie mogę wydać reszty klientowi %ld. Czekam na uzupełnienie\n" RESET, id, id_klienta);
+        printf(GREEN "Fryzjer %ld: Nie mogę wydać reszty klientowi %ld. Czekam na uzupełnienie\n" RESET, id_fryzjer, id_klienta);
         zwolnij_kase();
         sleep(3); // czekamy chwilę, może ktoś w tym czasie uzupełni kasę - domyslnie 3
         zajmij_kase();
@@ -212,13 +209,13 @@ void wydaj_reszte()
     {
         kasa[1] -= 1; // wydajemy ten banknot
         printf(GREEN "Fryzjer %ld: wydaję resztę 20 zł klientowi %ld. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
-               id, id_klienta, kasa[0], kasa[1], kasa[2]);
+               id_fryzjer, id_klienta, kasa[0], kasa[1], kasa[2]);
     }
     else // w innym przypadku to oznacza, że mamy wystarczająco banknotów 10 złotych
     {
         kasa[0] -= 2; // wydajemy dwa baknoty 10 złotych
         printf(GREEN "Fryzjer %ld: wydaję resztę 2 x 10 zł klientowi %ld. Kasa: 10zł=%d, 20zł=%d, 50zł=%d.\n" RESET,
-               id, id_klienta, kasa[0], kasa[1], kasa[2]);
+               id_fryzjer, id_klienta, kasa[0], kasa[1], kasa[2]);
     }
     zwolnij_kase();
 }
