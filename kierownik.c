@@ -127,7 +127,10 @@ int main()
 void sig_handler_int(int s) // obsługa szybkiego końca - zabicia programu
 {
     printf(RED "Wywołano szybki koniec.\n" RESET);
-    zwolnij_zasoby_kierownik(); // zwalniamy zasoby
+    struct termios oldt;
+    tcgetattr(STDIN_FILENO, &oldt);          // przywracamy ustawienia terminala
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt); // ustawiamy poprzedni stan terminala
+    zwolnij_zasoby_kierownik();              // zwalniamy zasoby
     // konczymy fryzjerów i klientów
     for (int i = 0; i < F; i++)
     {
@@ -212,7 +215,7 @@ void *simulation_timer_thread(void *arg)
     {
         if (TP > 0)
         {
-            sleep(0); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
+            sleep(TP); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
         }
         printf(YELLOW "Salon otwarty.\n" RESET);                                                                   // Informacja o otwarciu salonu
         sem_setval(poczekalnia_semafor, K);                                                                        // Inicjalizacji poczekalni - ilość K wolnych miejsc
@@ -222,10 +225,10 @@ void *simulation_timer_thread(void *arg)
         while (remaining > 0)         // Pętla działa dopóki nie minie czas symulacji
         {
             printf(MAGENTA "Czas pozostały: %d s\n", remaining); // Informacja o pozostałym czasie
-            sleep(0);                                            // Symulacja upływu czasu - MUSI BYĆ USTAWIONY CZAS 1
+            sleep(1);                                            // Symulacja upływu czasu - MUSI BYĆ USTAWIONY CZAS 1
             remaining--;                                         // Zmniejszenie liczby pozostałych sekund
         }
-        // sem_setval(poczekalnia_semafor, 0); // NALEŻY ZAKOMENTOWAĆ GDY SLEEP(0) Zamknięcie poczekalni po upływie czasu - równoznaczne z zamknięciem salonu - kolejni klienci nie wejdą
+        sem_setval(poczekalnia_semafor, 0); // NALEŻY ZAKOMENTOWAĆ GDY SLEEP(0) Zamknięcie poczekalni po upływie czasu - równoznaczne z zamknięciem salonu - kolejni klienci nie wejdą
         printf(YELLOW "Salon zamknięty.\n" RESET);
         return NULL;
     }

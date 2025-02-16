@@ -49,7 +49,7 @@ int main()
         }
         printf(BLUE "Klient %ld: Pracuję.\n" RESET, id_klient);                    // Rozpoczynamy od pracy klienta
         int earning_time = rand() % 10 + 3;                                        // Losowy czas klienta (pomiędzy 3 a 13 sekund)
-        sleep(0);                                                                  // domyslnie earning_time
+        sleep(earning_time);                                                       // domyslnie earning_time
         printf(BLUE "Klient %ld: Próbuję wejść do poczekalni\n" RESET, id_klient); // Klient próbuje wejść do poczekalni
 
         if (!w_poczekalni) // Sprawdzamy, czy klient nie jest już w poczekalni
