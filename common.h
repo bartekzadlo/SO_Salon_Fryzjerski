@@ -69,7 +69,7 @@ void zainicjalizuj_kase();
 void zwolnij_zasoby_kierownik();
 void *simulation_timer_thread(void *arg);
 void stop_timer_thread();
-void wait_for_process(int n);
+void wait_for_process(int count);
 void zabij_fryzjera();
 void zabij_klientow();
 void zabij_fryzjerow();

@@ -134,19 +134,19 @@ void sig_handler_int(int s) // obsługa szybkiego końca - zabicia programu
     exit(EXIT_SUCCESS);
 }
 
-void wait_for_process(int n)
+void wait_for_process(int count)
 {
-    int wPID, status;
-    for (int i = 0; i < n; i++) // Pętla oczekująca na zakończenie n procesów potomnych
+    int child_pid, status;
+    for (int i = 0; i < count; i++) // Pętla oczekująca na zakończenie n procesów potomnych
     {
-        wPID = wait(&status); // Oczekiwanie na zakończenie procesu potomnego
-        if (wPID == -1)       // Sprawdzenie błędu funkcji wait()
+        child_pid = wait(&status); // Oczekiwanie na zakończenie procesu potomnego
+        if (child_pid == -1)       // Sprawdzenie błędu funkcji wait()
         {
-            error_exit("Błąd czekania na proces");
+            error_exit("Błąd oczekiwania na proces potomny");
         }
         else
         {
-            printf(YELLOW "Koniec procesu: %d, status: %d\n" RESET, wPID, status); // Wyświetlenie informacji o zakończonym procesie i jego statusie
+            printf(YELLOW "Koniec procesu: %d, status: %d\n" RESET, child_pid, status); // Wyświetlenie informacji o zakończonym procesie i jego statusie // Wyświetlenie informacji o zakończonym procesie i jego statusie
         }
     }
 }
