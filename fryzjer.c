@@ -19,7 +19,7 @@ int main()
 {
     // Inicjalizacja generatora liczb losowych na podstawie czasu systemowego
     srand(time(NULL));
-
+    long id = getpid(); // Pobranie identyfikatora fryzjera
     // Rejestracja funkcji obsługi sygnału SIGHUP (przerwanie) w celu wywołania funkcji sygnal_1 przy otrzymaniu sygnału.
     if (signal(SIGHUP, sig_handler_fryzjer) == SIG_ERR)
     {
@@ -53,7 +53,6 @@ int main()
 
     while (1)
     {
-        long id = getpid(); // Pobranie identyfikatora fryzjera
         if (sygnal_fryzjer) // Jeśli ustawiona flaga sygnału to nie rozpoczynamy ponownej usługi
         {
             printf(GREEN "Fryzjer %ld: otrzymałem sygnał, kończę pracę.\n" RESET, id);
@@ -134,7 +133,7 @@ int main()
         // Przygotowujemy komunikat dla klienta, że obsługa została zakończona i reszta jeśli wymagana wydana
         msg.message_type = id_klienta;
         msg.nadawca = id;
-        if (!koniec_obslugi) // sprawdzamy flagę koniec obsługi
+        if (koniec_obslugi != 1) // sprawdzamy flagę koniec obsługi
         {
             wyslij_komunikat_do_kolejki(msg_qid, &msg); // wysyłamy komunikat do klienta o zakończeniu obsługi
             koniec_obslugi = 1;                         // ustawiamy flagę
@@ -200,6 +199,7 @@ void fryzjer_exit()
 
 void wydaj_reszte()
 {
+    long id = getpid();
     zajmij_kase();
     while ((kasa[0] < 2 && kasa[1] < 1)) // Jeśli w kasie nie mamy 2 baknkotów 10 złotych lub 1 banknotu 20 złotowego
     {
