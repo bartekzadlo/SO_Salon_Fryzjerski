@@ -12,10 +12,9 @@ int kasa_semafor;
 int poczekalnia_semafor;
 // kolejka komunikatów
 int msg_qid;
-// pamięć dzielona
+volatile sig_atomic_t jeden_fryzjer_zabity = 0;
 int shm_id;
 int *kasa; // kasa -  pamiec dzielona
-volatile sig_atomic_t jeden_fryzjer_zabity = 0;
 
 int main()
 {
