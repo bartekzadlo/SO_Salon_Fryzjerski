@@ -18,7 +18,7 @@ int *banknoty; // kasa/banknoty -  pamiec dzielona
 
 int main()
 {
-    if (signal(SIGINT, szybki_koniec) == SIG_ERR) // Ustawienie obsługi sygnału SIGINT na funkcję szybki_koniec.
+    if (signal(SIGINT, sig_handler_int) == SIG_ERR) // Ustawienie obsługi sygnału SIGINT na funkcję szybki_koniec.
     {
         error_exit("Błąd obsługi sygnału");
     }
@@ -46,9 +46,7 @@ int main()
     poczekalnia_semafor = stworz_semafor(sem_key_p);
     // Dołączenie pamięci współdzielonej i inicjalizacja banknotów w kasie
     banknoty = dolacz_do_pamieci_dzielonej(shm_id);
-    banknoty[0] = 10; // banknoty o nominale 10
-    banknoty[1] = 10; // banknoty o nominale 20
-    banknoty[2] = 10; // banknoty o nominale 50
+    zainicjalizuj_kase();
 
     sem_setval(kasa_semafor, 1);   // ustawiamy semafor kasa na 1 - mamy jedną wspólną kasę, tylko jedna osoba może ją obsługiwać
     sem_setval(fotele_semafor, N); // ustawiamy semafor foteli na N - ilość foteli
@@ -101,10 +99,10 @@ int main()
         switch (menu)
         {
         case '1':
-            wyslij_s1(); // sygnał 1 kończy pracę jednego fryzjera
+            zabij_fryzjera(); // sygnał 1 kończy pracę jednego fryzjera
             break;
         case '2':
-            wyslij_s2(); // sygnał 2 kończy natychmiastowo pracę wszystkich klientów
+            zabij_klientow(); // sygnał 2 kończy natychmiastowo pracę wszystkich klientów
             break;
         case '3':
             koniec(0); // zamyka program, zwalniając ps i ipcs
@@ -119,14 +117,14 @@ int main()
 void koniec(int s) // zamykanie salonu
 {
     printf(RED "Wywołano koniec.\n" RESET);
-    zakoncz_symulacje_czasu();  // kończymy wątek symulacji czasu - cancel i join
-    wyslij_s3();                // wysyłamy sygnał 3 - zamknięcie procesu wszystkich fryzjerów
-    wyslij_s2();                // wysyłamy sygnał 2 - zamknięcie procesu wszystkich klientów
+    stop_timer_thread();        // kończymy wątek symulacji czasu - cancel i join
+    zabij_fryzjerow();          // wysyłamy sygnał - zamknięcie procesów wszystkich fryzjerów
+    zabij_klientow();           // wysyłamy sygnał - zamknięcie procesów wszystkich klientów
     zwolnij_zasoby_kierownik(); // zwalniamy wszystkie zasoby
     exit(EXIT_SUCCESS);
 }
 
-void szybki_koniec(int s) // obsługa szybkiego końca - zabicia programu
+void sig_handler_int(int s) // obsługa szybkiego końca - zabicia programu
 {
     printf(RED "Wywołano szybki koniec.\n" RESET);
     zwolnij_zasoby_kierownik(); // zwalniamy zasoby
@@ -139,42 +137,42 @@ void szybki_koniec(int s) // obsługa szybkiego końca - zabicia programu
     {
         kill(klienci[i], SIGKILL);
     }
-    czekaj_na_procesy(F); // czekamy na zakończenie procesów
-    czekaj_na_procesy(P);
+    wait_for_process(F); // czekamy na zakończenie procesów
+    wait_for_process(P);
 
-    zakoncz_symulacje_czasu(); // kończymy wątek symulacji czasu
+    stop_timer_thread(); // kończymy wątek symulacji czasu
 
     exit(EXIT_SUCCESS);
 }
 
-void wyslij_s1()
+void zabij_fryzjera()
 {
     for (int i = 0; i < 1; i++) // zabicie jednego fryzjera
     {
         kill(fryzjerzy[i], 1); // 1- SYGNAŁ SIGHUP
     }
-    czekaj_na_procesy(1);
+    wait_for_process(1);
 }
 
-void wyslij_s2()
+void zabij_klientow()
 {
     for (int i = 0; i < P; i++) // zabicie wszystkich klientów
     {
         kill(klienci[i], 2); // 2 - SYGNAŁ SIGINT
     }
-    czekaj_na_procesy(P);
+    wait_for_process(P);
 }
 
-void wyslij_s3()
+void zabij_fryzjerow()
 {
     for (int i = 0; i < F; i++) // zabicie wszystkich fryzjerów
     {
         kill(fryzjerzy[i], 1); // 1 - SYGNAŁ SIGHUP
     }
-    czekaj_na_procesy(F);
+    wait_for_process(F);
 }
 
-void czekaj_na_procesy(int n)
+void wait_for_process(int n)
 {
     int wPID, status;
     for (int i = 0; i < n; i++) // Pętla oczekująca na zakończenie n procesów potomnych
@@ -191,7 +189,7 @@ void czekaj_na_procesy(int n)
     }
 }
 
-void zakoncz_symulacje_czasu()
+void stop_timer_thread()
 {
     pthread_cancel(timer_thread);     // Anulowanie wątku zegara (timer_thread)
     pthread_join(timer_thread, NULL); // Oczekiwanie na zakończenie wątku zegara, aby upewnić się, że został poprawnie zatrzymany
@@ -257,4 +255,11 @@ void tworz_klientow() // funkcja tworząca klientów
         }
         printf(YELLOW "Nowy klient %d\n", klienci[i]);
     }
+}
+
+void zainicjalizuj_kase()
+{
+    banknoty[0] = 10; // banknoty o nominale 10
+    banknoty[1] = 10; // banknoty o nominale 20
+    banknoty[2] = 10; // banknoty o nominale 50
 }
