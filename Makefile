@@ -7,6 +7,9 @@ KIEROWNIK_SRCS = kierownik.c $(SRCS)
 KLIENT_SRCS = klient.c $(SRCS)
 FRYZJER_SRCS = fryzjer.c $(SRCS)
 
+# Pliki nagłówkowe
+COMMON_H = common.h
+
 # Pliki wynikowe
 TARGETS = kierownik klient fryzjer
 
@@ -20,6 +23,11 @@ klient: $(KLIENT_SRCS)
 
 fryzjer: $(FRYZJER_SRCS)
 	$(CC) $^ -o $@ $(CFLAGS)
+
+# Ustal zależności dla każdego programu
+kierownik: $(COMMON_H)
+klient: $(COMMON_H)
+fryzjer: $(COMMON_H)
 
 clean:
 	rm -f $(TARGETS)
