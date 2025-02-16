@@ -18,13 +18,34 @@ int *kasa; // kasa -  pamiec dzielona
 
 int main()
 {
+    set_process_limit(); // ustawiamy i sprawdzamy czy nie został przekroczony limit procesów
+
+    if (F <= 1 || N >= F) // walidacja danych F i N
+    {
+        error_exit("Błąd: Warunek F > 1 oraz N < F nie jest spełniony.\n");
+    }
+
+    printf(CYAN "Podaj czas otwarcia (TP) w sekundach: \n" RESET);
+    if (scanf("%d", &TP) != 1)
+    {
+        error_exit("Błąd odczytu TP\n");
+    }
+    printf(CYAN "Podaj czas zamknięcia (TK) w sekundach: \n" RESET);
+    if (scanf("%d", &TK) != 1)
+    {
+        error_exit("Błąd odczytu TK\n");
+    }
+    if (TK <= TP || TK < 0 || TP < 0) // walidacja danych TP i TK - porównanie
+    {
+        error_exit("Błąd: TK musi być większe od TP i jednostki muszą być dodatnie\n");
+    }
+
+    sim_duration = TK - TP; // obliczenie czasu trwania symulacji salonu
+
     if (signal(SIGINT, sig_handler_int) == SIG_ERR) // Ustawienie obsługi sygnału SIGINT na sig_handler_int.
     {
         error_exit("Błąd obsługi sygnału szybkiego końca");
     }
-
-    set_process_limit(); // ustawiamy i sprawdzamy czy nie został przekroczony limit procesów
-    srand(time(NULL));   // Inicjalizacja generatora liczb losowych na podstawie czasu systemowego
 
     // Deklaracja wszystkich kluczy
     key_t msg_qkey;
@@ -53,27 +74,6 @@ int main()
 
     printf(YELLOW "Zainicjalizowano fotele, ilość foteli: %d.\n" RESET, sem_getval(fotele_semafor));
     printf(YELLOW "Zainicjalizowane kasę, stan początkowy kasy - Banknoty 10 zł: %d, Banknoty 20 zł: %d, Banknoty 50 zł: %d\n" RESET, kasa[0], kasa[1], kasa[2]);
-
-    if (F <= 1 || N >= F) // walidacja danych F i N
-    {
-        error_exit("Błąd: Warunek F > 1 oraz N < F nie jest spełniony.\n");
-    }
-
-    printf(CYAN "Podaj czas otwarcia (TP) w sekundach: \n" RESET);
-    if (scanf("%d", &TP) != 1)
-    {
-        error_exit("Błąd odczytu TP\n");
-    }
-    printf(CYAN "Podaj czas zamknięcia (TK) w sekundach: \n" RESET);
-    if (scanf("%d", &TK) != 1)
-    {
-        error_exit("Błąd odczytu TK\n");
-    }
-    if (TK <= TP || TK < 0 || TP < 0) // walidacja danych TP i TK - porównanie
-    {
-        error_exit("Błąd: TK musi być większe od TP i jednostki muszą być dodatnie\n");
-    }
-    sim_duration = TK - TP; // obliczenie czasu trwania symulacji salonu
 
     // tworzenie wątku symulacji czasu - otwiera ona i zamyka salon (nie kończy programu - otwiera i zamyka poczekalnię)
     if (pthread_create(&timer_thread, NULL, simulation_timer_thread, NULL) != 0)
@@ -114,16 +114,6 @@ int main()
     }
 }
 
-void koniec(int s) // zamykanie salonu
-{
-    printf(RED "Wywołano koniec.\n" RESET);
-    stop_timer_thread();        // kończymy wątek symulacji czasu - cancel i join
-    zabij_fryzjerow();          // wysyłamy sygnał - zamknięcie procesów wszystkich fryzjerów
-    zabij_klientow();           // wysyłamy sygnał - zamknięcie procesów wszystkich klientów
-    zwolnij_zasoby_kierownik(); // zwalniamy wszystkie zasoby
-    exit(EXIT_SUCCESS);
-}
-
 void sig_handler_int(int s) // obsługa szybkiego końca - zabicia programu
 {
     printf(RED "Wywołano szybki koniec.\n" RESET);
@@ -143,33 +133,6 @@ void sig_handler_int(int s) // obsługa szybkiego końca - zabicia programu
     stop_timer_thread(); // kończymy wątek symulacji czasu
 
     exit(EXIT_SUCCESS);
-}
-
-void zabij_fryzjera()
-{
-    for (int i = 0; i < 1; i++) // zabicie jednego fryzjera
-    {
-        kill(fryzjerzy[i], 1); // 1- SYGNAŁ SIGHUP
-    }
-    wait_for_process(1);
-}
-
-void zabij_klientow()
-{
-    for (int i = 0; i < P; i++) // zabicie wszystkich klientów
-    {
-        kill(klienci[i], 2); // 2 - SYGNAŁ SIGINT
-    }
-    wait_for_process(P);
-}
-
-void zabij_fryzjerow()
-{
-    for (int i = 0; i < F; i++) // zabicie wszystkich fryzjerów
-    {
-        kill(fryzjerzy[i], 1); // 1 - SYGNAŁ SIGHUP
-    }
-    wait_for_process(F);
 }
 
 void wait_for_process(int n)
@@ -193,6 +156,43 @@ void stop_timer_thread()
 {
     pthread_cancel(timer_thread);     // Anulowanie wątku zegara (timer_thread)
     pthread_join(timer_thread, NULL); // Oczekiwanie na zakończenie wątku zegara, aby upewnić się, że został poprawnie zatrzymany
+}
+
+void koniec(int s) // zamykanie salonu
+{
+    printf(RED "Wywołano koniec.\n" RESET);
+    stop_timer_thread();        // kończymy wątek symulacji czasu - cancel i join
+    zabij_fryzjerow();          // wysyłamy sygnał - zamknięcie procesów wszystkich fryzjerów
+    zabij_klientow();           // wysyłamy sygnał - zamknięcie procesów wszystkich klientów
+    zwolnij_zasoby_kierownik(); // zwalniamy wszystkie zasoby
+    exit(EXIT_SUCCESS);
+}
+
+void zabij_fryzjera()
+{
+    for (int i = 0; i < 1; i++) // zabicie jednego fryzjera
+    {
+        kill(fryzjerzy[i], 1); // 1- SYGNAŁ SIGHUP
+    }
+    wait_for_process(1);
+}
+
+void zabij_fryzjerow()
+{
+    for (int i = 0; i < F; i++) // zabicie wszystkich fryzjerów
+    {
+        kill(fryzjerzy[i], 1); // 1 - SYGNAŁ SIGHUP
+    }
+    wait_for_process(F);
+}
+
+void zabij_klientow()
+{
+    for (int i = 0; i < P; i++) // zabicie wszystkich klientów
+    {
+        kill(klienci[i], 2); // 2 - SYGNAŁ SIGINT
+    }
+    wait_for_process(P);
 }
 
 void *simulation_timer_thread(void *arg)
