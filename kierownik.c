@@ -250,7 +250,11 @@ void *simulation_timer_thread(void *arg)
         zabij_fryzjerow();
         zwolnij_zasoby_kierownik();
         printf(RED "Symulacja zakończona można zakończyć program.\n" RESET);
-        exit(EXIT_SUCCESS);
+        // pthread_cancel(timer_thread);
+        // pthread_join(timer_thread, NULL);
+        // exit(EXIT_SUCCESS);
+        // pthread_exit(0);
+        // kill(getpid(), SIGKILL);
     }
 }
 
