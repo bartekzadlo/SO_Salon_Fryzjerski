@@ -114,9 +114,8 @@ int main()
             break;
         }
     }
-    pthread_join(timer_thread, NULL);
-    printf("tu jestem");
-    return 0;
+    // pthread_join(timer_thread, NULL);
+    // return 0;
 }
 
 void sig_handler_int(int s) // obsługa szybkiego końca - zabicia programu
@@ -255,7 +254,7 @@ void *simulation_timer_thread(void *arg)
     // koniec_symulacji = 1;
     //  pthread_cancel(timer_thread);
     //   pthread_join(timer_thread, NULL);
-    //   exit(EXIT_SUCCESS);
+    exit(EXIT_SUCCESS);
     // return NULL;
     //   kill(getpid(), SIGKILL);
 }
