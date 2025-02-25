@@ -121,15 +121,33 @@ void sig_handler_int(int s) // obsługa szybkiego końca - zabicia programu
     stop_timer_thread();        // kończymy wątek symulacji czasu
     zwolnij_zasoby_kierownik(); // zwalniamy zasoby
     // konczymy fryzjerów i klientów
-    for (int i = 0; i < F; i++)
+    if (jeden_fryzjer_zabity == 1)
     {
-        kill(fryzjerzy[i], SIGKILL);
+        for (int i = 1; i < F; i++)
+        {
+            kill(fryzjerzy[i], SIGKILL);
+        }
     }
+    else
+    {
+        for (int i = 0; i < F; i++)
+        {
+            kill(fryzjerzy[i], SIGKILL);
+        }
+    }
+
     for (int i = 0; i < P; i++)
     {
         kill(klienci[i], SIGKILL);
     }
-    wait_for_process(F); // czekamy na zakończenie procesów
+    if (jeden_fryzjer_zabity == 1)
+    {
+        wait_for_process(F - 1);
+    }
+    else
+    {
+        wait_for_process(F); // czekamy na zakończenie procesów
+    }
     wait_for_process(P);
     exit(EXIT_SUCCESS);
 }
@@ -170,6 +188,7 @@ void koniec(int s) // zamykanie salonu
 
 void zabij_fryzjera()
 {
+    jeden_fryzjer_zabity = 1;
     for (int i = 0; i < 1; i++) // zabicie jednego fryzjera
     {
         kill(fryzjerzy[i], 1); // 1- SYGNAŁ SIGHUP
@@ -179,11 +198,22 @@ void zabij_fryzjera()
 
 void zabij_fryzjerow()
 {
-    for (int i = 0; i < F; i++) // zabicie wszystkich fryzjerów
+    if (jeden_fryzjer_zabity == 1)
     {
-        kill(fryzjerzy[i], 1); // 1 - SYGNAŁ SIGHUP
+        for (int i = 1; i < F; i++) // zabicie wszystkich fryzjerów
+        {
+            kill(fryzjerzy[i], 1); // 1 - SYGNAŁ SIGHUP
+        }
+        wait_for_process(F - 1);
     }
-    wait_for_process(F);
+    else
+    {
+        for (int i = 0; i < F; i++) // zabicie wszystkich fryzjerów
+        {
+            kill(fryzjerzy[i], 1); // 1 - SYGNAŁ SIGHUP
+        }
+        wait_for_process(F);
+    }
 }
 
 void zabij_klientow()
@@ -236,7 +266,6 @@ void zwolnij_zasoby_kierownik() // funkcja zwalniająca wszelkie zasoby
 
 void tworz_fryzjerow() // funkcja tworząca fryzjerów
 {
-    jeden_fryzjer_zabity = 1;
     for (int i = 0; i < F; i++)
     {
         fryzjerzy[i] = fork();
@@ -250,29 +279,14 @@ void tworz_fryzjerow() // funkcja tworząca fryzjerów
 
 void tworz_klientow() // funkcja tworząca klientów
 {
-    if (jeden_fryzjer_zabity == 1)
+    for (int i = 0; i < P; i++)
     {
-        for (int i = 1; i < P; i++)
+        klienci[i] = fork();
+        if (klienci[i] == 0)
         {
-            klienci[i] = fork();
-            if (klienci[i] == 0)
-            {
-                execl("./klient", "klient", NULL);
-            }
-            printf(YELLOW "Nowy klient %d\n", klienci[i]);
+            execl("./klient", "klient", NULL);
         }
-    }
-    else
-    {
-        for (int i = 0; i < P; i++)
-        {
-            klienci[i] = fork();
-            if (klienci[i] == 0)
-            {
-                execl("./klient", "klient", NULL);
-            }
-            printf(YELLOW "Nowy klient %d\n", klienci[i]);
-        }
+        printf(YELLOW "Nowy klient %d\n", klienci[i]);
     }
 }
 
