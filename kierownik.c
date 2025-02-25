@@ -249,6 +249,7 @@ void *simulation_timer_thread(void *arg)
         zabij_klientow();
         zabij_fryzjerow();
         zwolnij_zasoby_kierownik();
+        printf(RED "Symulacja zakończona można zakończyć program.\n" RESET);
         exit(EXIT_SUCCESS);
     }
 }

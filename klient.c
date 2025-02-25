@@ -130,20 +130,6 @@ void sig_handler_klient(int sig) // Funkcja obsługi sygnału SIGINT
     if (klient_komunikat_poczekalnia == 1) // jeśli klient jest już po wysłaniu komunikatu do fryzjera
     {
         sygnal_klient = 1;
-
-        // Sprawdzamy, która część procesu klienta nie została zakończona
-        if (pobranie_z_poczekalni != 1)
-        {
-            pobranie_z_poczekalni = -1;
-        }
-        else if (zaplacone != 1)
-        {
-            zaplacone = -1;
-        }
-        else if (zakonczona_usluga != 1)
-        {
-            zakonczona_usluga = -1;
-        }
     }
     else
     {

@@ -157,18 +157,6 @@ void sig_handler_fryzjer(int sig)
     if (fryzjer_komunikat_poczekalnia) // jeśli fryzjer jest już po przyjęciu komunikatu - tzn że jest w trakcie obsługi
     {
         sygnal_fryzjer = 1; // ustawiamy sygnał fryzjera
-        if (czeka_na_zaplate != 1)
-        {
-            czeka_na_zaplate = -1;
-        }
-        else if (odbiera_zaplate != 1)
-        {
-            odbiera_zaplate = -1;
-        }
-        else if (koniec_obslugi != 1)
-        {
-            koniec_obslugi = -1;
-        }
     }
     else
     {
