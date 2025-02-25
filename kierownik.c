@@ -113,6 +113,8 @@ int main()
             break;
         }
     }
+    pthread_join(timer_thread, NULL);
+    exit(EXIT_SUCCESS);
 }
 
 void sig_handler_int(int s) // obsługa szybkiego końca - zabicia programu
@@ -227,35 +229,33 @@ void zabij_klientow()
 
 void *simulation_timer_thread(void *arg)
 {
-    while (1) // Pętla działania symulowania czasu
+    if (TP > 0)
     {
-        if (TP > 0)
-        {
-            sleep(TP); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
-        }
-        printf(YELLOW "Salon otwarty.\n" RESET);                                                                   // Informacja o otwarciu salonu
-        sem_setval(poczekalnia_semafor, K);                                                                        // Inicjalizacji poczekalni - ilość K wolnych miejsc
-        printf(YELLOW "Zainicjalizowano poczekalnię, ilość miejsc: %d.\n" RESET, sem_getval(poczekalnia_semafor)); // Informacja o inicjalizacji poczekalni
-
-        int remaining = sim_duration; // Zmienna do przechowywania czasu pozostałego do zakończenia symulacji
-        while (remaining > 0)         // Pętla działa dopóki nie minie czas symulacji
-        {
-            printf(MAGENTA "Czas pozostały: %d s\n", remaining); // Informacja o pozostałym czasie
-            sleep(1);                                            // Symulacja upływu czasu - MUSI BYĆ USTAWIONY CZAS 1
-            remaining--;                                         // Zmniejszenie liczby pozostałych sekund
-        }
-        sem_setval(poczekalnia_semafor, 0); // NALEŻY ZAKOMENTOWAĆ GDY SLEEP(0) Zamknięcie poczekalni po upływie czasu - równoznaczne z zamknięciem salonu - kolejni klienci nie wejdą
-        printf(YELLOW "Salon zamknięty.\n" RESET);
-        zabij_klientow();
-        zabij_fryzjerow();
-        zwolnij_zasoby_kierownik();
-        printf(RED "Symulacja zakończona można zakończyć program.\n" RESET);
-        // pthread_cancel(timer_thread);
-        // pthread_join(timer_thread, NULL);
-        // exit(EXIT_SUCCESS);
-        // pthread_exit(0);
-        // kill(getpid(), SIGKILL);
+        sleep(TP); // Jeśli TP (czas opóźnienia otwarcia salonu) > 0, czekamy przez TP sekundy - domyślnie sleep(TP)
     }
+    printf(YELLOW "Salon otwarty.\n" RESET);                                                                   // Informacja o otwarciu salonu
+    sem_setval(poczekalnia_semafor, K);                                                                        // Inicjalizacji poczekalni - ilość K wolnych miejsc
+    printf(YELLOW "Zainicjalizowano poczekalnię, ilość miejsc: %d.\n" RESET, sem_getval(poczekalnia_semafor)); // Informacja o inicjalizacji poczekalni
+
+    int remaining = sim_duration; // Zmienna do przechowywania czasu pozostałego do zakończenia symulacji
+    while (remaining > 0)         // Pętla działa dopóki nie minie czas symulacji
+    {
+        printf(MAGENTA "Czas pozostały: %d s\n", remaining); // Informacja o pozostałym czasie
+        sleep(1);                                            // Symulacja upływu czasu - MUSI BYĆ USTAWIONY CZAS 1
+        remaining--;                                         // Zmniejszenie liczby pozostałych sekund
+    }
+    sem_setval(poczekalnia_semafor, 0); // NALEŻY ZAKOMENTOWAĆ GDY SLEEP(0) Zamknięcie poczekalni po upływie czasu - równoznaczne z zamknięciem salonu - kolejni klienci nie wejdą
+    printf(YELLOW "Salon zamknięty.\n" RESET);
+    zabij_klientow();
+    zabij_fryzjerow();
+    zwolnij_zasoby_kierownik();
+    printf(RED "Symulacja zakończona można zakończyć program.\n" RESET);
+    pthread_cancel(timer_thread);
+    // pthread_join(timer_thread, NULL);
+    // exit(EXIT_SUCCESS);
+    // pthread_exit(0);
+    // kill(getpid(), SIGKILL);
+    // exit(EXIT_SUCCESS);
 }
 
 void zwolnij_zasoby_kierownik() // funkcja zwalniająca wszelkie zasoby
