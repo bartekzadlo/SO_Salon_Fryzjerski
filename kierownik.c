@@ -13,6 +13,7 @@ int poczekalnia_semafor;
 // kolejka komunikatów
 int msg_qid;
 volatile sig_atomic_t jeden_fryzjer_zabity = 0;
+// volatile sig_atomic_t koniec_symulacji = 0;
 int shm_id;
 int *kasa; // kasa -  pamiec dzielona
 
@@ -86,7 +87,7 @@ int main()
 
     // menu obsługi sygnałów
     char menu = 0;
-    while (menu != '3')
+    while (menu != '3' /*&& !koniec_symulacji*/)
     {
         printf(CYAN "1 - Zakończ pracę fryzjera\n");
         printf("2 - Natychmiastowo zamknij salon\n");
@@ -114,7 +115,8 @@ int main()
         }
     }
     pthread_join(timer_thread, NULL);
-    exit(EXIT_SUCCESS);
+    printf("tu jestem");
+    return 0;
 }
 
 void sig_handler_int(int s) // obsługa szybkiego końca - zabicia programu
@@ -250,12 +252,12 @@ void *simulation_timer_thread(void *arg)
     zabij_fryzjerow();
     zwolnij_zasoby_kierownik();
     printf(RED "Symulacja zakończona można zakończyć program.\n" RESET);
-    pthread_cancel(timer_thread);
-    // pthread_join(timer_thread, NULL);
-    // exit(EXIT_SUCCESS);
-    // pthread_exit(0);
-    // kill(getpid(), SIGKILL);
-    // exit(EXIT_SUCCESS);
+    // koniec_symulacji = 1;
+    //  pthread_cancel(timer_thread);
+    //   pthread_join(timer_thread, NULL);
+    //   exit(EXIT_SUCCESS);
+    // return NULL;
+    //   kill(getpid(), SIGKILL);
 }
 
 void zwolnij_zasoby_kierownik() // funkcja zwalniająca wszelkie zasoby
