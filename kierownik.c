@@ -13,7 +13,7 @@ int poczekalnia_semafor;
 // kolejka komunikatów
 int msg_qid;
 volatile sig_atomic_t jeden_fryzjer_zabity = 0;
-// volatile sig_atomic_t koniec_symulacji = 0;
+volatile sig_atomic_t koniec_symulacji = 0;
 int shm_id;
 int *kasa; // kasa -  pamiec dzielona
 
@@ -87,16 +87,41 @@ int main()
 
     // menu obsługi sygnałów
     char menu = 0;
-    while (menu != '3' /*&& !koniec_symulacji*/)
-    {
-        printf(CYAN "1 - Zakończ pracę fryzjera\n");
-        printf("2 - Natychmiastowo zamknij salon\n");
-        printf("3 - Zwolnij zasoby i zakończ program\n" RESET);
 
-        while (getchar() != '\n')
-            ; // Czeszczenie bufora
-        while (scanf("%c", &menu) != 1)
-            ;
+    while (menu != '3' && !koniec_symulacji)
+    {
+        printf("1 - Zakończ pracę fryzjera\n");
+        printf("2 - Natychmiastowo zamknij salon\n");
+        printf("3 - Zwolnij zasoby i zakończ program\n");
+
+        fd_set read_fds;
+        struct timeval timeout;
+
+        FD_ZERO(&read_fds);
+        FD_SET(0, &read_fds); // Dodanie stdin do zestawu
+
+        timeout.tv_sec = TK; // Czas oczekiwania TK sekund
+        timeout.tv_usec = 0;
+
+        int activity = select(1, &read_fds, NULL, NULL, &timeout);
+        if (activity < 0)
+        {
+            perror("select error");
+        }
+        else if (activity == 0)
+        {
+            printf("Czas oczekiwania minął, nie odebrano danych.\n");
+            // Możesz ustawić domyślną wartość menu lub wykonać inną akcję
+            continue; // Powrót do początku pętli
+        }
+        else
+        {
+            if (FD_ISSET(0, &read_fds))
+            {
+                // Wczytywanie znaku z stdin
+                scanf(" %c", &menu); // Spacja przed %c aby zignorować nowe linie
+            }
+        }
 
         switch (menu)
         {
@@ -114,8 +139,8 @@ int main()
             break;
         }
     }
-    // pthread_join(timer_thread, NULL);
-    // return 0;
+    pthread_join(timer_thread, NULL);
+    return 0;
 }
 
 void sig_handler_int(int s) // obsługa szybkiego końca - zabicia programu
@@ -247,11 +272,11 @@ void *simulation_timer_thread(void *arg)
     }
     sem_setval(poczekalnia_semafor, 0); // NALEŻY ZAKOMENTOWAĆ GDY SLEEP(0) Zamknięcie poczekalni po upływie czasu - równoznaczne z zamknięciem salonu - kolejni klienci nie wejdą
     printf(YELLOW "Salon zamknięty.\n" RESET);
+    koniec_symulacji = 1;
     zabij_klientow();
     zabij_fryzjerow();
     zwolnij_zasoby_kierownik();
     printf(RED "Symulacja zakończona można zakończyć program.\n" RESET);
-    // koniec_symulacji = 1;
     //  pthread_cancel(timer_thread);
     //   pthread_join(timer_thread, NULL);
     exit(EXIT_SUCCESS);
